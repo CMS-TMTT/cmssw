@@ -1,0 +1,4 @@
+1) RelVal/ contains CMSSW 9.3.2 RelVal samples. They contain Stubs, but not the Stub->Truth association map.
+
+Emyr Clement added the missing association maps to these RelVal samples. The resulting samples can be
+found in RelVal/eclementMC/ .

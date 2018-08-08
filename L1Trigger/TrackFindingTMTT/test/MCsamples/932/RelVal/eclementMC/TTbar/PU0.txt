@@ -1,0 +1,11 @@
+#######################################################################################################
+# /RelValTTbar_14TeV/CMSSW_9_3_2-93X_upgrade2023_realistic_v2_2023D17noPU-v1/GEN-SIM-DIGI-RAW         #
+# but with added cluster & stub to truth association map, which was missing in original RelVal        #
+# (by Emyr Clement).                                                                                  #
+#######################################################################################################
+
+/store/user/ejclemen/L1TT/RelVal_932/WithTruthAssociation/TTbar/PU0/output_1.root
+/store/user/ejclemen/L1TT/RelVal_932/WithTruthAssociation/TTbar/PU0/output_3.root
+/store/user/ejclemen/L1TT/RelVal_932/WithTruthAssociation/TTbar/PU0/output_4.root
+/store/user/ejclemen/L1TT/RelVal_932/WithTruthAssociation/TTbar/PU0/output_5.root
+/store/user/ejclemen/L1TT/RelVal_932/WithTruthAssociation/TTbar/PU0/output_6.root

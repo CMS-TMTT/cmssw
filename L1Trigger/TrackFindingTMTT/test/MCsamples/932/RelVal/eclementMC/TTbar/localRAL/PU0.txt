@@ -1,0 +1,6 @@
+file:/opt/ppd/scratch/tmp/MCsamples932/RelVal/eclementMC/TTbar/PU0/output_1.root
+#file:/opt/ppd/scratch/tmp/MCsamples932/RelVal/eclementMC/TTbar/PU0/output_2.root
+file:/opt/ppd/scratch/tmp/MCsamples932/RelVal/eclementMC/TTbar/PU0/output_3.root
+file:/opt/ppd/scratch/tmp/MCsamples932/RelVal/eclementMC/TTbar/PU0/output_4.root
+file:/opt/ppd/scratch/tmp/MCsamples932/RelVal/eclementMC/TTbar/PU0/output_5.root
+file:/opt/ppd/scratch/tmp/MCsamples932/RelVal/eclementMC/TTbar/PU0/output_6.root
