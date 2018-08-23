@@ -2,10 +2,9 @@
 * How to setup the framework and how to run our analysis code:
 
 ==== NOTE ====
-The software described below is for running the TMT tracking in CMSSW_9 or CMSSW_10,
-mainly with the tilted barrel geometry.  This differs from the software used
-for the demonstrator and December review, which runs in CMSSW_6 and for the flat barrel tracker
-geometry.  You can find that version of the software here : https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/software/cmssw/trunkSimpleCode6/
+This software has now been moved to GIT, so to access it, follow the instructions in
+https://github.com/CMS-TMTT/cmssw/tree/TMTT_938/L1Trigger/TrackFindingTMTT instead of using
+the SVN commands mentioned below.
 ==============
 
 P.S. You can browse the software in https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/software/cmssw/trunkSimpleCode9 
