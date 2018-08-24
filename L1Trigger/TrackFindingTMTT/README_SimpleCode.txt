@@ -1,13 +1,9 @@
 -------------------------------------------------------------------------------------
 * How to setup the framework and how to run our analysis code:
 
-==== NOTE ====
-This software has now been moved to GIT, so to access it, follow the instructions in
-https://github.com/CMS-TMTT/cmssw/tree/TMTT_938/L1Trigger/TrackFindingTMTT instead of using
-the SVN commands mentioned below.
-==============
-
-P.S. You can browse the software in https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/software/cmssw/trunkSimpleCode9 
+The code is in GITHUB. It can be browsed in in
+https://github.com/CMS-TMTT/cmssw/blob/TMTT_938/L1Trigger/TrackFindingTMTT/ . 
+(An older version of the code can be found in SVN in https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/software/cmssw/trunkSimpleCode9).
 
 - Setup a CMSSW environment. (CMSSW_10_1_5 can also be used & gives identical results)
 cmsrel CMSSW_9_3_8
@@ -19,25 +15,19 @@ cmsenv
 If you are a simple user of the code, and don't intend proposing modifications to it, just check it out:
 # Note the "." at the end of the next line. You need it!
 
-svn co svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/trunkSimpleCode9 .
+git cms-init
+git remote add -t TMTT_938 TMTT https://github.com/CMS-TMTT/cmssw.git
+git fetch TMTT TMTT_938
+git cms-checkout-topic CMS-TMTT:TMTT_938
 
-If instead you are actively working on L1 tracking & may suggest changes to the code, then copy 
-it to your svn branch, and then check it out, so you can play with it.
+(If required, the old SVN code can be obtained with "svn co svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/trunkSimpleCode9 .").
 
-svn copy svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/trunkSimpleCode9/ svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/branch/{YOURBRANCH} -m "Creating xxx branch of tag:xxx"
-# Note the "." at the end of the next line. You need it!
-svn co svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/branch/{YOURBRANCH} .
-
-If later on, you want to update the code in your working area with any changes made to Ian_SimpleCode since you checked it out, do:
- a) Backup your code, either by committing it to your SVN branch or by using "cp -pr src/ ~/srcBackup" 
-    in your top-level CMSSW directory. 
- b) "svn merge svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/trunkSimpleCode9" (to update the files on your disk with changes from the main branch).
- c) Check that there are no SVN conflict messages, and that you understand any differences between your code
-after this merge and your backed up code.
- d) If all OK, then "svn commit" to put this updated code into your SVN branch.
+If instead you are actively working on L1 tracking & may suggest changes to the code, then create your
+own fork, as explained in https://github.com/CMS-TMTT/cmssw/blob/TMTT_938/L1Trigger/TrackFindingTMTT/README.md . This link
+also explains additional GIT commands that developers may need.
 
 - MC samples 
-  You can use the RelVal samples in MCsamples/937/RelVal/ or MCsamples/932/RelVal/eclement/ . 
+  You can use the RelVal samples in L1Trigger/TrackFindingTMTT/test/MCsamples/937/RelVal/ or MCsamples/932/RelVal/eclement/ . (Or in 1032/ if you want CMSSW 10 ones).
   The CMSSW 9.3.7 samples are made with slightly looser stub windows than the 9.3.2 ones.
   (The 9.3.2 ones originally missed the stub-truth association map, so Emyr Clement added it).
 
@@ -194,7 +184,7 @@ showing number of track candidates found & investigating why tracking sometimes 
 "EffiAndFakeRate" = plots of tracking efficiency. 
 
 Each user of the code will probably want to book their own set of histograms inside "Histos". So 
-just consider the version of this class in SVN as a set of examples of how to do things. Don't feel
+just consider the version of this class in GIT as a set of examples of how to do things. Don't feel
 obliged to understand what every histogram does.
 
 17) Class "DeadModuleDB" is used both to emulate dead modules by killing stubs in certain tracker
@@ -246,10 +236,8 @@ git cms-merge-topic skinnari:Tracklet_932
 # Checkout the analysis and plotting scripts from gitlab
 git clone https://gitlab.cern.ch/cms-tracker-phase2-backend-development/BE_software/L1TrackTools.git
 
-# Checkout our private analysis code from svn as explained previously.
-#   e.g. svn co svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/branch/{YOURBRANCH} .
-# Warning: git and svn don't work well together if they both checkout code into the same directory.
-# However, there are currently no name clashes of this kind.
+# Checkout our private analysis code from git as explained previously.
+(see above)
 
 # Compile
 scramv1 b -j8
