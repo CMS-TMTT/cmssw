@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 #---------------------------------------------------------------------------------------------------------
 # This describes the full TMTT track reconstruction chain with 3 GeV threshold, where:
 # the GP divides the tracker into 18 eta sectors (each sub-divided into 2 virtual eta subsectors);  
-# the HT uses a  32x18 array (with no mini-HT array), with transverese HT readout & multiplexing, 
+# the HT uses a  32x18 array followed by 2x2 mini-HT array, with transverese HT readout & multiplexing, 
 # followed by the KF (or optionally SF+SLR) track fit; duplicate track removal (Algo50) is run.
 #---------------------------------------------------------------------------------------------------------
 
@@ -90,7 +90,7 @@ TMTrackProducer_params = cms.PSet(
 
   GeometricProc = cms.PSet(
      # Use an FPGA-friendly approximation to determine track angle dphi from bend in GP?
-     UseApproxB        = cms.bool(False),      # Use approximation for B
+     UseApproxB        = cms.bool(True),       # Use approximation for B
      # Params of approximation if used.
      BApprox_gradient  = cms.double(0.886454), # Gradient term of linear equation for approximating B
      BApprox_intercept = cms.double(0.504148)  # Intercept term of linear equation for approximating B
@@ -125,17 +125,17 @@ TMTrackProducer_params = cms.PSet(
 
   HTArraySpecRphi = cms.PSet(
      HoughMinPt      = cms.double(3.0), # Min track Pt that Hough Transform must find. Also used by StubCuts.KillLowPtStubs and by EtaPhiSectors.UseStubPhi.
-     HoughNbinsPt    = cms.uint32(18),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
-     HoughNbinsPhi   = cms.uint32(32),  # HT array dimension in track phi0 (or phi65 or any other track phi angle. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
+     #HoughNbinsPt    = cms.uint32(18),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
+     #HoughNbinsPhi   = cms.uint32(32),  # HT array dimension in track phi0 (or phi65 or any other track phi angle. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
      # If using Mini-HT, increase these to:
-     #HoughNbinsPt    = cms.uint32(36),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
-     #HoughNbinsPhi   = cms.uint32(64),  # HT array dimension in track phi0 (or phi65 or any other track phi angle. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
+     HoughNbinsPt    = cms.uint32(36),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
+     HoughNbinsPhi   = cms.uint32(64),  # HT array dimension in track phi0 (or phi65 or any other track phi angle. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
      HoughNcellsRphi = cms.int32(-1),   # If > 0, then parameters HoughNbinsPt and HoughNbinsPhi will be calculated from the constraints that their product should equal HoughNcellsRphi and their ratio should make the maximum |gradient|" of stub lines in the HT array equal to 1. If <= 0, then HoughNbinsPt and HoughNbinsPhi will be taken from the values configured above.
      EnableMerge2x2  = cms.bool(False), # Groups of neighbouring 2x2 cells in HT will be treated as if they are a single large cell? N.B. You can only enable this option if your HT array has even numbers of bins in both dimensions. And this cfg param ignored if MiniHTstage = True.  HISTORIC OPTION. SUGGEST NOT USING!
      MaxPtToMerge2x2 = cms.double(3.5), # but only cells with pt < MaxPtToMerge2x2 will be merged in this way (irrelevant if EnableMerge2x2 = false).
      NumSubSecsEta   = cms.uint32(2),   # Subdivide each sector into this number of subsectors in eta within r-phi HT.
      Shape           = cms.uint32(0),   # cell shape: 0 for square, 1 for diamond, 2 hexagon (with vertical sides), 3 square with alternate rows shifted by 0.5*cell_width.
-     MiniHTstage       = cms.bool(False), # Run 2nd stage HT with mini cells inside each 1st stage normal HT cell..
+     MiniHTstage       = cms.bool(True), # Run 2nd stage HT with mini cells inside each 1st stage normal HT cell..
      MiniHoughNbinsPt  = cms.uint32(2),   # Number of mini cells along q/Pt axis inside each normal HT cell.
      MiniHoughNbinsPhi = cms.uint32(2),   # Number of mini cells along phi axis inside each normal HT cell.
      MiniHoughMinPt    = cms.double(3.0), # Below this Pt threshold, the mini HT will not be used, to reduce sensitivity to scattering, with instead tracks found by 1st stage coarse HT sent to output. (HT cell numbering remains as if mini HT were in use everywhere).
@@ -157,8 +157,10 @@ TMTrackProducer_params = cms.PSet(
      # The assumed bend resolution is specified in StubCuts.BendResolution.
      UseBendFilter        = cms.bool(True),
      # Use filter in each HT cell, preventing more than the specified number of stubs being stored in the cell. (Reflecting memory limit of hardware). N.B. Results depend on assumed order of stubs.
+     # N.B. If mini-HT is in use, then this cut applies to coarse-HT.
      #MaxStubsInCell       = cms.uint32(99999), # Setting this to anything more than 99 disables this option
-     MaxStubsInCell      = cms.uint32(16),    # set it equal to value used in hardware.
+     MaxStubsInCell          = cms.uint32(32),    # set it equal to value used in hardware.
+     MaxStubsInCellMiniHough = cms.uint32(16),    # NOT YET ENABLED IN SOFTWARE. Same type of cut for mini-HT (if in use)
      # If BusySectorKill = True, and more than BusySectorNumStubs stubs are assigned to tracks by an r-phi HT array, then the excess tracks are killed, with lowest Pt ones killed first. This is because HT hardware has finite readout time.
      BusySectorKill       = cms.bool(True),
      BusySectorNumStubs   = cms.uint32(144),
@@ -166,15 +168,15 @@ TMTrackProducer_params = cms.PSet(
      # If BusySectorMbinOrder is not empty, then the m-bins are grouped in the specified order, instead of sequentially.
      # (Histos NumStubsPerLink, NumStubsVsLink & MeanStubsPerLink useful for optimising this option).
      #
-     # Choice for 18x32 coarse HT array with 3 GeV Pt threshold.
-     BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2),
-     BusySectorMbinOrder  = cms.vuint32(0,9, 1,10, 2,11, 3,12, 4,13, 5,14, 6,15, 7,16, 8,17),
-     # Choice for 27x32 coarse HT array with 2 GeV Pt threshold.
+     # Choice for 18x32 coarse HT array with 3 GeV Pt threshold, and no Mini-HT.
+     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2),
+     #BusySectorMbinOrder  = cms.vuint32(0,9, 1,10, 2,11, 3,12, 4,13, 5,14, 6,15, 7,16, 8,17),
+     # Choice for 27x32 coarse HT array with 2 GeV Pt threshold, and no Mini-HT
      #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1),   
      #BusySectorMbinOrder  = cms.vuint32(0,14, 1,15, 2,16, 3,17, 4,18, 5,19, 6,20, 7,21, 8,22, 9,23, 10,24, 11,25, 12,26, 13),
      # Choice for 18x32 coarse HT array followed by 2x2 mini-HT array with 3 GeV Pt threshold.
-     #BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2, 18),   
-     #BusySectorMbinOrder   = cms.vuint32(0,18, 2,20, 4,22, 6,24, 8,26, 10,28, 12,30, 14,32, 16,34, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35),
+     BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2, 18),   
+     BusySectorMbinOrder   = cms.vuint32(0,18, 2,20, 4,22, 6,24, 8,26, 10,28, 12,30, 14,32, 16,34, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35),
      # Choice for 18x32 coarse HT array followed by 2x2 mini-HT array with 2 GeV Pt threshold.
      #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1, 27),   
      #BusySectorMbinOrder  = cms.vuint32(0,28, 2,30, 4,32, 6,34, 8,36, 10,38, 12,40, 14,42, 16,44, 18,46, 20,48, 22,50, 24,52, 26, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53),
