@@ -42,8 +42,8 @@ StubCluster::StubCluster( std::vector<const Stub *> stubs, double SectorPhi, int
     int lsign(0);
 
     for( auto stub : stubs ){
-	r_ += stub->r();
-	z_ += stub->z();
+        r_ += stub->r();
+        z_ += stub->z();
 	eta_ += stub->eta();
 	phi_ += wrapRadian( stub->phi() - SectorPhi );
 	std::set<const TP *> assocTPs = stub->assocTPs();

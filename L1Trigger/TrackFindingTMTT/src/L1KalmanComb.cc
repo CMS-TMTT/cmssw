@@ -919,7 +919,7 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
 	 
   std::vector<double> new_xa(nPar_);
   TMatrixD new_pxxa;
-  GetAdjustedState( k, pxcov, fx, stubCluster, new_xa, new_pxxa );
+  GetAdjustedState( k, pxcov, fx, stubCluster, delta, new_xa, new_pxxa );
   if( getSettings()->kalmanDebugLevel() >= 3 ){
     if( nPar_ == 4 )
       cout << "adjusted x = " << new_xa[0] << ", " << new_xa[1] << ", " << new_xa[2] << ", " << new_xa[3] << endl;
@@ -1141,26 +1141,15 @@ TMatrixD L1KalmanComb::GetKalmanMatrix( const TMatrixD &h, const TMatrixD &pxcov
 
 void L1KalmanComb::GetAdjustedState( const TMatrixD &K, const TMatrixD &pxcov, 
 				     const std::vector<double> &x, const StubCluster *stubCluster, 
+				     const std::vector<double>& delta,
 				     std::vector<double> &new_x, TMatrixD &new_xcov )const
 {
   TMatrixD h = H(stubCluster);
-  std::vector<double> m = d(stubCluster);
 
-  for( unsigned i=0; i < new_x.size(); i++ ){
-    new_x.at(i) = 0;
-  }
-
-  std::vector<double> tmpv(m.size(), 0 );
-  for( int i=0; i < h.GetNrows(); i++ ){
-    tmpv.at(i) += m.at(i); 
-    for( int j=0; j < h.GetNcols(); j++ ){
-      tmpv.at(i) += -1. * h(i,j) * x.at(j); 
-    }
-  }
   for( int i=0; i < K.GetNrows(); i++ ){
-    new_x.at(i) += x.at(i);
+    new_x.at(i) = x.at(i);  
     for( int j=0; j < K.GetNcols(); j++ ){
-      new_x.at(i) += K(i,j) * tmpv.at(j);
+      new_x.at(i) += K(i,j) * delta.at(j);
     }
   }
 
@@ -1220,35 +1209,57 @@ std::vector<double> L1KalmanComb::residual(const StubCluster* stubCluster, const
   std::vector<double> delta(2);
   for( unsigned i=0; i<2; i++ ) delta.at(i) = vd.at(i) - hx.at(i);
 
+  // Calculate higher order corrections to residuals.
+
   if (not getSettings()->kalmanHOdodgy()) {
+
+    std::vector<double> correction = {0.,0.};
 
     float inv2R = (getSettings()->invPtToInvR()) * 0.5 * candQoverPt; // alternatively use x().at(0)
     float tanL = x.at(2);
     float z0 = x.at(3);
 
+    float deltaS = 0.;
     if (getSettings()->kalmanHOhelixExp()) {
       // Higher order correction correction to circle expansion for improved accuracy at low Pt.
       double corr = stubCluster->r() * inv2R; 
-      delta[0] += (1./6.)*pow(corr, 3);
+
+      // N.B. In endcap 2S, this correction to correction[0] is exactly cancelled by the deltaS-dependent correction to it below.
+      correction[0] += (1./6.)*pow(corr, 3); 
+
+      deltaS = (1./6.)*(stubCluster->r())*pow(corr, 2);
+      correction[1] -= deltaS * tanL;
     }
 
     if ( (not stubCluster->barrel()) && not (stubCluster->psModule())) {
       // These corrections rely on inside --> outside tracking, so r-z track params in 2S modules known.
       float rShift = (stubCluster->z() - z0)/tanL - stubCluster->r();
 
+      // The above calc of rShift is approximate, so optionally check it with MC truth.
+      // if (tpa_ != nullptr) rShift = (stubCluster->z() - tpa_->z0())/tpa_->tanLambda() - stubCluster->r();
+
+      if (getSettings()->kalmanHOhelixExp()) rShift -= deltaS;
+
       if (getSettings()->kalmanHOprojZcorr() == 1) {
 	// Add correlation term related to conversion of stub residuals from (r,phi) to (z,phi).
-	delta[0] += inv2R * rShift;
+	correction[0] += inv2R * rShift; 
       }
 
       if (getSettings()->kalmanHOalpha()     == 1) {
 	// Add alpha correction for non-radial 2S endcap strips..
-	delta[0] += stubCluster->alpha() * rShift;
+	correction[0] += stubCluster->alpha() * rShift;
       }
+
+      //cout<<"ENDCAP 2S STUB: (r,z)=("<<stubCluster->r()<<","<<stubCluster->z()<<") r*delta="<<stubCluster->r() * correction[0]<<" r*alphaCorr="<<stubCluster->r() * stubCluster->alpha() * rShift<<" rShift="<<rShift<<endl;
     }
+
+    // Apply correction to residuals.
+    delta[0] += correction[0];
+    delta[1] += correction[1];
   }
 
   delta.at(0) = wrapRadian(delta.at(0));
+
   return delta;
 }
 

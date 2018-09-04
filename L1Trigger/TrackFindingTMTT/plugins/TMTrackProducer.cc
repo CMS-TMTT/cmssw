@@ -274,6 +274,11 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	vector<L1fittedTrack> fittedTracksInSec;
         for (const L1track3D& trk : vecTrk3D) {
 
+	  // IRT
+	  //bool OK = (trk.getMatchedTP() != nullptr && trk.getMatchedTP()->pt() > 50 && fabs(trk.getMatchedTP()->eta()) > 1.4 && fabs(trk.getMatchedTP()->eta()) < 1.8);
+          //if (trk.getNumStubs() != trk.getNumLayers()) OK = false;
+          //if (not OK) continue;
+
           // Ensure stubs assigned to this track is digitized with respect to the phi sector the track is in.
 	  if (settings_->enableDigitize()) {
   	    const vector<const Stub*>& stubsOnTrk = trk.getStubs();
