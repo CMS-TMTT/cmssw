@@ -112,6 +112,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   killSomeHTCellsRphi_    ( htFillingRphi_.getParameter<unsigned int>         ( "KillSomeHTCellsRphi"    ) ),
   useBendFilter_          ( htFillingRphi_.getParameter<bool>                 ( "UseBendFilter"          ) ), 
   maxStubsInCell_         ( htFillingRphi_.getParameter<unsigned int>         ( "MaxStubsInCell"         ) ),
+  maxStubsInCellMiniHough_( htFillingRphi_.getParameter<unsigned int>         ( "MaxStubsInCellMiniHough") ),
   busySectorKill_         ( htFillingRphi_.getParameter<bool>                 ( "BusySectorKill"         ) ),
   busySectorNumStubs_     ( htFillingRphi_.getParameter<unsigned int>         ( "BusySectorNumStubs"     ) ),
   busySectorMbinRanges_   ( htFillingRphi_.getParameter<vector<unsigned int>> ( "BusySectorMbinRanges"   ) ),

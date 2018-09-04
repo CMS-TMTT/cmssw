@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 #---------------------------------------------------------------------------------------------------------
 # This describes the full TMTT track reconstruction chain with 3 GeV threshold, where:
 # the GP divides the tracker into 18 eta sectors (each sub-divided into 2 virtual eta subsectors);  
-# the HT uses a  32x18 array (with no Mini-HT array), with transverese HT readout & multiplexing, 
+# the HT uses a  32x18 array followed by 2x2 Mini-HT array, with transverese HT readout & multiplexing, 
 # followed by the KF (or optionally SF+SLR) track fit; duplicate track removal (Algo50) is run.
 #
 # This usually corresponds to the current firmware.
@@ -53,35 +53,35 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 #TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
 #TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring()
 
-#--- Reduce Pt threshold to 2 GeV, still with Mini HT switched off.
+#--- Keep Pt threshold at 3 GeV, with coarse HT, but switch off Mini-HT.
 
+#TMTrackProducer.HTArraySpecRphi.MiniHTstage         = cms.bool(False)  
+#TMTrackProducer.HTFillingRphi.MaxStubsInCell        = cms.uint32(16) 
+#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(18)  # Mini cells in whole HT array.
+#TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi       = cms.uint32(32) 
+#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2)   
+#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,9, 1,10, 2,11, 3,12, 4,13, 5,14, 6,15, 7,16, 8,17)
+
+#--- Reduce Pt threshold to 2 GeV, with coarse HT, and switch off Mini-HT.
+
+#TMTrackProducer.HTArraySpecRphi.MiniHTstage        = cms.bool(False)  
+#TMTrackProducer.HTFillingRphi.MaxStubsInCell       = cms.uint32(16) 
+#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt       = cms.uint32(27)
+#TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi      = cms.uint32(32) 
 #TMTrackProducer.GenCuts.GenMinPt                   = cms.double(2.0)
 #TMTrackProducer.HTArraySpecRphi.HoughMinPt         = cms.double(2.0)
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt       = cms.uint32(27)
-#TMTrackProducer.HTArraySpecRphi.MiniHoughMinPt     = cms.double(3.0) # Mini-HT not used below this Pt, so only coarse HT cells from 1st stage.
 #TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1)   
 #TMTrackProducer.HTFillingRphi.BusySectorMbinOrder  = cms.vuint32(0,14, 1,15, 2,16, 3,17, 4,18, 5,19, 6,20, 7,21, 8,22, 9,23, 10,24, 11,25, 12,26, 13)
 
-#--- Switch on 2nd stage Mini HT with 3 GeV Pt threshold.
+#--- Reduce Pt threshold to 2 GeV, with coarse HT, followed  by Mini-HT.
 
-#TMTrackProducer.HTArraySpecRphi.MiniHTstage         = cms.bool(True)  
-#TMTrackProducer.HTFillingRphi.MaxStubsInCell        = cms.uint32(32) 
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(36)  # Mini cells in whole HT array.
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi       = cms.uint32(64) 
-#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2, 18)   
-#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,18, 2,20, 4,22, 6,24, 8,26, 10,28, 12,30, 14,32, 16,34, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35)
-
-#--- Switch on 2nd stage Mini HT with 2 GeV Pt threshold.
-
-#TMTrackProducer.HTArraySpecRphi.MiniHTstage         = cms.bool(True)  
-#TMTrackProducer.HTFillingRphi.MaxStubsInCell        = cms.uint32(32) 
-#TMTrackProducer.GenCuts.GenMinPt                    = cms.double(2.0)
-#TMTrackProducer.HTArraySpecRphi.HoughMinPt          = cms.double(2.0)
 #TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(54)
 #TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi       = cms.uint32(64) 
+#TMTrackProducer.GenCuts.GenMinPt                    = cms.double(2.0)
+#TMTrackProducer.HTArraySpecRphi.HoughMinPt          = cms.double(2.0)
 #TMTrackProducer.HTArraySpecRphi.MiniHoughMinPt      = cms.double(3.0) # Mini-HT not used below this Pt, to reduce sensitivity to scattering.
 #TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1, 27)   
-#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,28, 2,30, 4,32, 6,34, 8,36, 10,38, #12,40, 14,42, 16,44, 18,46, 20,48, 22,50, 24,52, 26, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53)
+#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,28, 2,30, 4,32, 6,34, 8,36, 10,38, 12,40, 14,42, 16,44, 18,46, 20,48, 22,50, 24,52, 26, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53)
 
 #--- Additional Mini-HT options to improve electron/displaced tracking.
 

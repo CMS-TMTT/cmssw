@@ -40,8 +40,8 @@ TMTrackProducer.TrackFitSettings.KalmanMaxNumStubs  = cms.uint32(6)
 # Enable more sophisticated fit mathematics in KF.
 TMTrackProducer.TrackFitSettings.KalmanHOtilted     = cms.bool(True)
 TMTrackProducer.TrackFitSettings.KalmanHOhelixExp   = cms.bool(True)
-TMTrackProducer.TrackFitSettings.KalmanHOalpha      = cms.uint32(2)
-TMTrackProducer.TrackFitSettings.KalmanHOprojZcorr  = cms.uint32(2)
+TMTrackProducer.TrackFitSettings.KalmanHOalpha      = cms.uint32(1)
+TMTrackProducer.TrackFitSettings.KalmanHOprojZcorr  = cms.uint32(1)
 TMTrackProducer.TrackFitSettings.KalmanHOdodgy      = cms.bool(False)
 
 # Disable internal digitisation of SimpleLR fitter, as was never retuned for nonants.
@@ -49,14 +49,11 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 
 #--- Switch on 2nd stage Mini HT with 2 GeV Pt threshold & allow it to find tracks with stubs in as few as 4 layers.
 
-TMTrackProducer.HTArraySpecRphi.MiniHTstage         = cms.bool(True)  
-TMTrackProducer.HTFillingRphi.MaxStubsInCell        = cms.uint32(32) 
-TMTrackProducer.GenCuts.GenMinPt                    = cms.double(2.0)
-TMTrackProducer.HTArraySpecRphi.HoughMinPt          = cms.double(2.0)
 TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(54)
 TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi       = cms.uint32(64) 
+TMTrackProducer.GenCuts.GenMinPt                    = cms.double(2.0)
+TMTrackProducer.HTArraySpecRphi.HoughMinPt          = cms.double(2.0)
 TMTrackProducer.HTArraySpecRphi.MiniHoughMinPt      = cms.double(3.0) # Mini-HT not used below this Pt, to reduce sensitivity to scattering.
 TMTrackProducer.L1TrackDef.MinStubLayers            = cms.uint32(4) 
 TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 27) # Increased HT output bandwidth to cope with allowing 4 layers.
 TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,28, 2,30, 4,32, 6,34, 8,36, 10,38, 12,40, 14,42, 16,44, 18,46, 20,48, 22,50, 24,52, 26, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53)
-
