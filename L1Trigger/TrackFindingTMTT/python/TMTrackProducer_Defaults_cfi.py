@@ -388,9 +388,9 @@ TMTrackProducer_params = cms.PSet(
      KalmanHOtilted          = cms.bool(False),
      # Higher order circle explansion terms for low Pt.
      KalmanHOhelixExp        = cms.bool(False),
-     # Alpha correction for non-radial 2S endcap strips. (0=disable correction, 1=correct with offset, 2=correct with non-diagonal stub covariance matrix).
+     # Alpha correction for non-radial 2S endcap strips. (0=disable correction, 1=correct with offset, 2=correct with non-diagonal stub covariance matrix). -- Option 1 is easier in FPGA, but only works if fit adds PS stubs before 2S ones.
      KalmanHOalpha           = cms.uint32(0),
-     # Projection from (r,phi) to (z,phi) for endcap 2S modules. (0=disable correction, 1=correct with offset, 2=correct with non-diagonal stub covariance matrix).
+     # Projection from (r,phi) to (z,phi) for endcap 2S modules. (0=disable correction, 1=correct with offset, 2=correct with non-diagonal stub covariance matrix). -- Option 1 is easier in FPGA, but only works if fit adds PS stubs before 2S ones.
      KalmanHOprojZcorr       = cms.uint32(0),
      # Use dodgy calculation to account for non-radial endcap 2S modules that was used in Dec. 2016 demonstrator & use no special treatment for tilted modules.
      KalmanHOdodgy           = cms.bool(True)

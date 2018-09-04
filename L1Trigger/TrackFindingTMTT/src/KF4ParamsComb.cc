@@ -205,7 +205,8 @@ TMatrixD KF4ParamsComb::PddMeas(const StubCluster* stubCluster, const kalmanStat
 
   double a = stubCluster->sigmaX() * stubCluster->sigmaX();
   double b = stubCluster->sigmaZ() * stubCluster->sigmaZ() + err_digi2;
-  double invr2 = (1.0 / stubCluster->r()) * (1.0 / stubCluster->r());
+  double r2 = stubCluster->r() * stubCluster->r();
+  double invr2 = 1./r2;
 
   // Scattering term scaling as 1/Pt.
   double sigmaScat = getSettings()->kalmanMultiScattTerm()/(state->candidate().pt());
@@ -240,45 +241,39 @@ TMatrixD KF4ParamsComb::PddMeas(const StubCluster* stubCluster, const kalmanStat
 
   } else {
 
-    double beta = 0.;
+    vphi = a * invr2 + sigmaScat2;
+    vz = (b * tanl2);
 
     if (not stubCluster->psModule()) {   // Neglect these terms in PS 
+      double beta = 0.;
       // Add correlation term related to conversion of stub residuals from (r,phi) to (z,phi).
       if (getSettings()->kalmanHOprojZcorr() == 2) beta += -inv2R;
       // Add alpha correction for non-radial 2S endcap strips..
       if (getSettings()->kalmanHOalpha()     == 2) beta += -stubCluster->alpha();  // alpha is 0 except in endcap 2S disks
+
+      double beta2 = beta * beta;
+      vphi += b * beta2;
+      vcorr = b * (beta * tanl);
+
+      // IRT - for checking efficiency of removing phi-z correlation from projection.
+      // "ultimate_off1"
+      //vphi  = a * invr2 + b * pow(-stubCluster->alpha(), 2) + b * inv2R2 + sigmaScat2;
+      //vcorr = b * ((-stubCluster->alpha()) * tanl);
+
+      // IRT - This higher order correction doesn't significantly improve the track fit performance, so commented out.
+      //if (getSettings()->kalmanHOhelixExp()) {
+      //  float dsByDr = 1. + (1./2.)*r2*inv2R2; // Allows for z = z0 + s*tanL, where s is not exactly r due to circle.
+      //  vcorr *= dsByDr;
+      //  vz *= dsByDr * dsByDr;
+      //}
+
+      if (getSettings()->kalmanHOdodgy()) {
+        // Use original (Dec. 2016) dodgy implementation was this.
+        vphi = (a * invr2) + (b * inv2R2) + sigmaScat2;
+        vcorr = 0.;
+	vz = (b * tanl2);
+      }
     }
-
-    double beta2 = beta * beta;
-    vphi = a * invr2 + b * beta2 + sigmaScat2;
-    vcorr = b * (beta * tanl);
-
-    if (getSettings()->kalmanHOdodgy()) {
-      // Use original (Dec. 2016) dodgy implementation was this.
-      vphi = (a * invr2) + (b * inv2R2) + sigmaScat2;
-      vcorr = 0.;
-    }
-
-    // IRT - for checking efficiency of removing phi-z correlation from projection.
-    // "ultimate_inv2RcorrOff"
-    //vphi  = a * invr2 + b * pow(-stubCluster->alpha(), 2) + b * inv2R2 + sigmaScat2;
-    //vcorr = b * ((-stubCluster->alpha()) * tanl);
-
-    // IRT - sanity check as to why above is not same as all corrections off for high pt muons.
-    // "ultimate_dodgy_in_endcap_only"
-    //vphi = (a * invr2) + (b * inv2R2) + sigmaScat2;
-    //vcorr = 0.;
-
-    vz = (b * tanl2);
-
-    // if (tpa_->pt() > 40) {
-    //   cout.precision(12);
-    //   cout<<"KF4 uncertainties breakdown : "<<stubCluster->psModule()<<" "<<sqrt(abs(a * invr2))<<" "<<sqrt(abs(b * inv2R2))<<" "<<sqrt(abs(sigmaScat2))<<endl;
-    //   cout<<"KF4 uncertainties vphi : "<<stubCluster->psModule()<<" "<<sqrt(vphi)<<" vs "<< sqrt((a * invr2) + (b * inv2R2) + sigmaScat2)<<endl;
-    //   cout<<"KF4 uncertainties vcorr: "<<stubCluster->psModule()<<" "<<vcorr<<" vs 0.0"<<endl;
-    //   cout<<"KF4 uncertainties vz   : "<<stubCluster->psModule()<<" "<<sqrt(vz)<<endl;
-    //   cout<<"KF4 uncertainties corr : "<<vcorr/sqrt(vz*((a * invr2) + (b * inv2R2) + sigmaScat2))<<endl;
-    // }
   }
 
   p(PHI, PHI) = vphi;

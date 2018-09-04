@@ -66,8 +66,8 @@ class L1KalmanComb : public TrackFitGeneric{
 	double Chi2( const TMatrixD &dcov, const std::vector<double> &delta, bool debug = false )const;
 	TMatrixD GetKalmanMatrix( const TMatrixD &h, const TMatrixD &pxcov, const TMatrixD &dcov )const;
 	void GetAdjustedState( const TMatrixD &K, const TMatrixD &pxcov, 
-		const std::vector<double> &x, const StubCluster *stubCluster,  
-		std::vector<double> &new_x, TMatrixD &new_xcov )const;
+			       const std::vector<double> &x, const StubCluster *stubCluster, const std::vector<double>& delta,  
+			       std::vector<double> &new_x, TMatrixD &new_xcov )const;
 
 
 	virtual std::vector<double> seedx(const L1track3D& l1track3D)const=0;
@@ -79,7 +79,7 @@ class L1KalmanComb : public TrackFitGeneric{
 	virtual TMatrixD PxxModel( const kalmanState *state, const StubCluster *stubCluster )const=0; 
   	virtual TMatrixD PddMeas(const StubCluster* stubCluster, const kalmanState *state )const=0;
 
-  virtual std::vector<double> residual(const StubCluster* stubCluster, const std::vector<double> &x, double candQoverPt )const;
+        virtual std::vector<double> residual(const StubCluster* stubCluster, const std::vector<double> &x, double candQoverPt )const;
 	virtual const kalmanState *updateSeedWithStub( const kalmanState &state, const StubCluster *stubCluster ){ return 0; }
 	virtual bool isGoodState( const kalmanState &state )const{ return true; }
 
