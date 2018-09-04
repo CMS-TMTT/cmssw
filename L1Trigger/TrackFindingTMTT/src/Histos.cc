@@ -2605,7 +2605,8 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
       if ( tp != nullptr ){
 	// IRT
 	if ((resPlotOpt_ && tp->useForAlgEff()) || (not resPlotOpt_)) { // Check TP is good for efficiency measurement (& also comes from signal event if requested)
-	  //if ((resPlotOpt_ && tp->useForAlgEff()) || (not resPlotOpt_ && abs(tp->pdgId()) == 13 && tp->pt() < 3)) { 
+	  //if (not (abs(tp->pdgId()) == 11)) continue;
+	  //if (not (abs(tp->pdgId()) == 13) || (abs(tp->pdgId()) == 211) || (abs(tp->pdgId()) == 321) || (abs(tp->pdgId()) == 2212)) continue;
 	  // Fitted vs True parameter distribution 2D plots
 	  hisFitVsTrueQinvPt_[fitName]->Fill( tp->qOverPt(), fitTrk.qOverPt() );
 	  hisFitVsTruePhi0_[fitName]->Fill( tp->phi0(), fitTrk.phi0( ));
