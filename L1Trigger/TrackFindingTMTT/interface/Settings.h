@@ -129,8 +129,9 @@ public:
   unsigned int         killSomeHTCellsRphi()     const   {return killSomeHTCellsRphi_;} 
   // Use filter in each HT cell using only stubs which have consistent bend, allowing for resolution specified in StubCuts.BendResolution.
   bool                 useBendFilter()           const   {return useBendFilter_;} 
-  // A filter is used each HT cell, which prevents more than the specified number of stubs being stored in the cell. (Reflecting memory limit of hardware).   
+  // A filter is used each HT cell, which prevents more than the specified number of stubs being stored in the cell. (Reflecting memory limit of hardware). N.B. If mini-HT is in use, then this cut applies to coarse-HT.   
   unsigned int         maxStubsInCell()          const   {return maxStubsInCell_;}
+  unsigned int         maxStubsInCellMiniHough() const   {return maxStubsInCellMiniHough_;}
   // If this returns true, and if more than busySectorNumStubs() stubs are assigned to tracks by an r-phi HT array, then 
   // the excess tracks are killed, with lowest Pt ones killed first. This is because hardware has finite readout time.
   bool                 busySectorKill()          const   {return busySectorKill_;}
@@ -497,6 +498,7 @@ private:
   unsigned int         killSomeHTCellsRphi_;
   bool                 useBendFilter_;
   unsigned int         maxStubsInCell_;
+  unsigned int         maxStubsInCellMiniHough_;
   bool                 busySectorKill_;
   unsigned int         busySectorNumStubs_;
   vector<unsigned int> busySectorMbinRanges_;

@@ -381,12 +381,12 @@ private:
   map<string, TH1F*> hisFitEtaUnmatched_;
 
   map<string, TH1F*> hisKalmanNumUpdateCalls_;
-  map<string, TH1F*> hisKalmanChi2SkipLay0Matched_;
-  map<string, TH1F*> hisKalmanChi2SkipLay1Matched_;
-  map<string, TH1F*> hisKalmanChi2SkipLay2Matched_;
-  map<string, TH1F*> hisKalmanChi2SkipLay0Unmatched_;
-  map<string, TH1F*> hisKalmanChi2SkipLay1Unmatched_;
-  map<string, TH1F*> hisKalmanChi2SkipLay2Unmatched_;
+  map<string, TH1F*> hisKalmanChi2DofSkipLay0Matched_;
+  map<string, TH1F*> hisKalmanChi2DofSkipLay1Matched_;
+  map<string, TH1F*> hisKalmanChi2DofSkipLay2Matched_;
+  map<string, TH1F*> hisKalmanChi2DofSkipLay0Unmatched_;
+  map<string, TH1F*> hisKalmanChi2DofSkipLay1Unmatched_;
+  map<string, TH1F*> hisKalmanChi2DofSkipLay2Unmatched_;
 
   map<string, TH1F*> hisFitChi2Matched_;
   map<string, TH1F*> hisFitChi2DofMatched_;

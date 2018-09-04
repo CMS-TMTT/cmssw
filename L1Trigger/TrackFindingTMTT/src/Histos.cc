@@ -2071,12 +2071,12 @@ void Histos::bookTrackFitting() {
     // Monitoring specific track fit algorithms.
     if (fitName.find("KF") != string::npos) {
       hisKalmanNumUpdateCalls_[fitName] = inputDir.make<TH1F>(addn("KalmanNumUpdateCalls"), "; Calls to KF updator;",100,-0.5,99.5);
-      hisKalmanChi2SkipLay0Matched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2SkipLay0Matched"), ";#chi^{2} for nSkippedLayers = 0;", nBinsChi2, chi2Bins );
-      hisKalmanChi2SkipLay1Matched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2SkipLay1Matched"), ";#chi^{2} for nSkippedLayers = 1;", nBinsChi2, chi2Bins );
-      hisKalmanChi2SkipLay2Matched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2SkipLay2Matched"), ";#chi^{2} for nSkippedLayers = 2;", nBinsChi2, chi2Bins );
-      hisKalmanChi2SkipLay0Unmatched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2SkipLay0Unmatched"), ";#chi^{2} for nSkippedLayers = 0;", nBinsChi2, chi2Bins );
-      hisKalmanChi2SkipLay1Unmatched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2SkipLay1Unmatched"), ";#chi^{2} for nSkippedLayers = 1;", nBinsChi2, chi2Bins );
-      hisKalmanChi2SkipLay2Unmatched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2SkipLay2Unmatched"), ";#chi^{2} for nSkippedLayers = 2;", nBinsChi2, chi2Bins );
+      hisKalmanChi2DofSkipLay0Matched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2DofSkipLay0Matched"), ";#chi^{2} for nSkippedLayers = 0;", nBinsChi2, chi2Bins );
+      hisKalmanChi2DofSkipLay1Matched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2DofSkipLay1Matched"), ";#chi^{2} for nSkippedLayers = 1;", nBinsChi2, chi2Bins );
+      hisKalmanChi2DofSkipLay2Matched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2DofSkipLay2Matched"), ";#chi^{2} for nSkippedLayers = 2;", nBinsChi2, chi2Bins );
+      hisKalmanChi2DofSkipLay0Unmatched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2DofSkipLay0Unmatched"), ";#chi^{2} for nSkippedLayers = 0;", nBinsChi2, chi2Bins );
+      hisKalmanChi2DofSkipLay1Unmatched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2DofSkipLay1Unmatched"), ";#chi^{2} for nSkippedLayers = 1;", nBinsChi2, chi2Bins );
+      hisKalmanChi2DofSkipLay2Unmatched_[fitName] = inputDir.make<TH1F>(addn("KalmanChi2DofSkipLay2Unmatched"), ";#chi^{2} for nSkippedLayers = 2;", nBinsChi2, chi2Bins );
     }
 
     // See how far stubs lie from fitted (or true) trajectory
@@ -2336,11 +2336,11 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
 	if (fitName.find("KF") != string::npos) {
 	  // No. of skipped layers on track during Kalman track fit.
 	  if (nSkippedLayers == 0) {
-	    hisKalmanChi2SkipLay0Matched_[fitName]->Fill(fitTrk.chi2());
+	    hisKalmanChi2DofSkipLay0Matched_[fitName]->Fill(fitTrk.chi2dof());
 	  } else if (nSkippedLayers == 1) {
-	    hisKalmanChi2SkipLay1Matched_[fitName]->Fill(fitTrk.chi2());
+	    hisKalmanChi2DofSkipLay1Matched_[fitName]->Fill(fitTrk.chi2dof());
 	  } else if (nSkippedLayers >= 2) {
-	    hisKalmanChi2SkipLay2Matched_[fitName]->Fill(fitTrk.chi2());
+	    hisKalmanChi2DofSkipLay2Matched_[fitName]->Fill(fitTrk.chi2dof());
 	  }
 	}
 
@@ -2384,11 +2384,11 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
 	if (fitName.find("KF") != string::npos) {
 	  // No. of skipped layers on track during Kalman track fit.
 	  if (nSkippedLayers == 0) {
-	    hisKalmanChi2SkipLay0Unmatched_[fitName]->Fill(fitTrk.chi2());
+	    hisKalmanChi2DofSkipLay0Unmatched_[fitName]->Fill(fitTrk.chi2dof());
 	  } else if (nSkippedLayers == 1) {
-	    hisKalmanChi2SkipLay1Unmatched_[fitName]->Fill(fitTrk.chi2());
+	    hisKalmanChi2DofSkipLay1Unmatched_[fitName]->Fill(fitTrk.chi2dof());
 	  } else if (nSkippedLayers >= 2) {
-	    hisKalmanChi2SkipLay2Unmatched_[fitName]->Fill(fitTrk.chi2());
+	    hisKalmanChi2DofSkipLay2Unmatched_[fitName]->Fill(fitTrk.chi2dof());
 	  }
 	}
 
