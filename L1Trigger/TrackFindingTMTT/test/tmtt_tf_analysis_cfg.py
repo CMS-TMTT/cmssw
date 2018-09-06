@@ -77,10 +77,10 @@ process.source = cms.Source ("PoolSource",
 process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 
 #--- Load code that produces our L1 tracks and makes corresponding histograms.
-# process.load('L1Trigger.TrackFindingTMTT.TMTrackProducer_cff')
+process.load('L1Trigger.TrackFindingTMTT.TMTrackProducer_cff')
 
 #--- Alternative cfg including improvements not yet in the firmware. Aimed at L1 trigger studies.
-process.load('L1Trigger.TrackFindingTMTT.TMTrackProducer_Ultimate_cff')
+#process.load('L1Trigger.TrackFindingTMTT.TMTrackProducer_Ultimate_cff')
 #
 #--- Optionally override default configuration parameters here (example given of how).
 
