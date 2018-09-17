@@ -9,6 +9,9 @@
 #include "L1Trigger/TrackFindingTMTT/interface/KF4ParamsComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/KF5ParamsComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/SimpleLR.h"
+#ifdef USE_HLS
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KF4ParamsCombCallHLS.h"
+#endif
 #include "FWCore/Utilities/interface/Exception.h"
 #include <map> 
 #include <new>
@@ -37,6 +40,10 @@ TrackFitGeneric* TrackFitGeneric::create(std::string fitter, const Settings* set
 	return new KF5ParamsComb(settings, 5, fitter );
     } else if (fitter.compare("SimpleLR")==0) {
       return new SimpleLR(settings);
+#ifdef USE_HLS
+    } else if (fitter.compare("KF4ParamsCombHLS")==0){
+      return new KF4ParamsCombCallHLS(settings, 4, fitter );
+#endif
     } else {
       throw cms::Exception("TrackFitGeneric: ERROR you requested unknown track fitter")<<fitter<<endl;
     }
