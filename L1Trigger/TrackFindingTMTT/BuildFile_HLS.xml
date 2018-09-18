@@ -20,7 +20,7 @@
 <use name="boost"/>
 <use name="roothistmatrix"/>
 <!-- Add no-misleading-indentation option to avoid warnings about bug in Boost library. -->
-<flags CXXFLAGS="-g -Wno-unused-variable -Wno-misleading-indentation"/>
+<flags CXXFLAGS="-g -Wno-unused-variable -Wno-misleading-indentation -Wno-maybe-uninitialized"/>
 
 <!-- THE FOLLOWING LINES ARE NEDED IF YOU WANT TO USE KF HLS CODE, BUT THEY REQUIRE YOU TO HAVE VIVADO -->
 <use name="hls"/>                       <!-- link to Vivado HLS libraries & header files -->
