@@ -3,14 +3,14 @@
 To checkout and run, or if your modifications won't need to be put into the central repository, do:
 
 ```
-cmsrel CMSSW_9_3_8
-cd CMSSW_9_3_8/src
+cmsrel CMSSW_10_2_5
+cd CMSSW_10_2_5/src
 cmsenv
 
 git cms-init
-git remote add -t TMTT_938 TMTT https://github.com/CMS-TMTT/cmssw.git
-git fetch TMTT TMTT_938
-git cms-checkout-topic CMS-TMTT:TMTT_938
+git remote add -t TMTT_1025 TMTT https://github.com/CMS-TMTT/cmssw.git
+git fetch TMTT TMTT_1025
+git cms-checkout-topic CMS-TMTT:TMTT_1025
 
 scramv1 b -j 8
 
@@ -23,7 +23,7 @@ Note : that if you want to checkout other packages e.g. the tracklet software, w
 
 # Setup instructions for making modifications
 
-Follow the above instructions.  At this point, you should be on a local branch called TMTT_938.
+Follow the above instructions.  At this point, you should be on a local branch called TMTT_1025.
 
 Below is a simple example of making modifications, pushing them to your remote repository, and making a pull request back to the repository you want your changes to end up in.  In this example, we will use the following as the "central" repository (something equivalent of trunkSimpleCode9 in svn) : https://github.com/CMS-TMTT/cmssw.git . Follow the link, and fork the repository to your own account.  You then need to add your newly forked repository as a remote repository in your local working area, which we will call ```origin```:
 ```
@@ -86,47 +86,47 @@ Now push these changes to your remote repository.
 ```
 git push origin myChanges 
 ```
-You are now ready to make a pull request back to the central repository.  Go the webpage for your remote repository, and you should see a box stating you have just pushed some changes to the myChanges branch, and gives the option to "Compare & pull request".  Make the pull request to merge your changes in the myChanges branch to CMS-TMTT/cmssw:TMTT_938.
+You are now ready to make a pull request back to the central repository.  Go the webpage for your remote repository, and you should see a box stating you have just pushed some changes to the myChanges branch, and gives the option to "Compare & pull request".  Make the pull request to merge your changes in the myChanges branch to CMS-TMTT/cmssw:TMTT_1025.
 
 # Pull changes from the central TMTT repository
 If changes (new commits) have been made to the central CMS-TMTT repository since you first checked it out, you can rebase your branch.  If you have any local changes, you need to ```git add``` and ```git commit``` them first.  Then do:
 ```
-git pull --rebase TMTT TMTT_938
+git pull --rebase TMTT TMTT_1025
 ```
 You may have to resolve conflicts, in the usual git way.
 
 Alternatively, if you don't want to commit your local changes, you can do ```git stash```, perform the rebase, and then ```git stash pop```.
 
 # To run in a newer CMSSW release
-The above repository was setup in CMSSW_9_3_8.  If you want to run our TMTT software in a newer release, e.g. CMSSW_10_2_0, the command above will attempt things like merging all the differences in all packages between CMSSW_9_3_8 and CMSSW_10_2_0.  This can be avoided by performing a ```git cms-rebase-topic```, or by manually performing a spare checkout.  For the former, you can then make a new branch of our software for the new CMSSW release
+The above repository was setup in CMSSW_10_2_5.  If you want to run our TMTT software in a newer release, e.g. CMSSW_10_3_0, the command above will attempt things like merging all the differences in all packages between CMSSW_10_2_5 and CMSSW_10_3_0.  This can be avoided by performing a ```git cms-rebase-topic```, or by manually performing a spare checkout.  For the former, you can then make a new branch of our software for the new CMSSW release
 
 ## Rebase
-This example is moving from CMSSW_9_3_8 (the release the TMTT_938 branch was created in) to CMSSW_10_2_0
+This example is moving from CMSSW_10_2_5 (the release the TMTT_1025 branch was created in) to CMSSW_10_3_0
 ```
-cmsrel CMSSW_10_2_0
-cd CMSSW_10_2_0/src
+cmsrel CMSSW_10_3_0
+cd CMSSW_10_3_0/src
 cmsenv
 
 git cms-init
-git cms-rebase-topic -o CMSSW_9_3_8 CMS-TMTT:TMTT_938
+git cms-rebase-topic -o CMSSW_10_2_5 CMS-TMTT:TMTT_1025
 ```
-You will end up on a branch called TMTT_938, which will have our TMTT software on top of CMSSW_10_2_0.  You can change to a new branch e.g. TMTT_938_10_2_0, and push the new branch to the remote repository (if you have permissions).  If this new CMSSW release and branch should become the "master" branch everyone should work from, then you should also update the recipes/documentation.
+You will end up on a branch called TMTT_1025, which will have our TMTT software on top of CMSSW_10_3_0.  You can change to a new branch e.g. TMTT_1025_10_3_0, and push the new branch to the remote repository (if you have permissions).  If this new CMSSW release and branch should become the "master" branch everyone should work from, then you should also update the recipes/documentation.
 
 ## Manual sparse-checkout
 Here you tell git to only consider the TMTT directory when performing a checkout (which is similar in part is what the above checkout/merge topic commands do, as you don't need to checkout all of CMSSW).
 
-The difference here is that if you make changes and a pull request, the pull request will be back to the CMS-TMTT:TMTT_938 branch.
+The difference here is that if you make changes and a pull request, the pull request will be back to the CMS-TMTT:TMTT_1025 branch.
 ```
-cmsrel CMSSW_10_2_0
-cd CMSSW_10_2_0/src
+cmsrel CMSSW_10_3_0
+cd CMSSW_10_3_0/src
 cmsenv
 
 git cms-init
-git remote add -t TMTT_938 TMTT git@github.com:CMS-TMTT/cmssw.git
-git fetch TMTT TMTT_938
+git remote add -t TMTT_1025 TMTT git@github.com:CMS-TMTT/cmssw.git
+git fetch TMTT TMTT_1025
 
 echo "/L1Trigger/TrackFindingTMTT" >> .git/info/sparse-checkout
 echo "/TMTrackTrigger/MCsamples" >> .git/info/sparse-checkout
 
-git checkout -b myChanges TMTT/TMTT_938
+git checkout -b myChanges TMTT/TMTT_1025
 ```
