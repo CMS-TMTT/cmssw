@@ -5,9 +5,9 @@ The code is in GITHUB. It can be browsed in in
 https://github.com/CMS-TMTT/cmssw/blob/TMTT_938/L1Trigger/TrackFindingTMTT/ . 
 (An older version of the code can be found in SVN in https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/software/cmssw/trunkSimpleCode9).
 
-- Setup a CMSSW environment. (CMSSW_10_1_5 can also be used & gives identical results)
-cmsrel CMSSW_9_3_8
-cd CMSSW_9_3_8/src
+- Setup a CMSSW environment. 
+cmsrel CMSSW_10_2_5
+cd CMSSW_10_2_5/src
 cmsenv
 
 - Software checkout

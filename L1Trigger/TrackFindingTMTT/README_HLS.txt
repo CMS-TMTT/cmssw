@@ -4,9 +4,7 @@ Vivado on your computer, and have set it up by doing something like:
 setenv VIVADO_DIR /opt/ppd/tools/xilinx/Vivado/2018.1
 source $VIVADO_DIR/settings.csh
 
-Then checkout the TMTT CMSSW software following instructions in https://github.com/CMS-TMTT/cmssw/blob/TMTT_938/L1Trigger/TrackFindingTMTT/README.md ,
-but using branch TMTT_938_HLS_ian instead of TMTT_938, as the latter doesn't yet contain
-the HLS code.
+Then checkout the TMTT CMSSW software following instructions in https://github.com/CMS-TMTT/cmssw/blob/TMTT_1025/L1Trigger/TrackFindingTMTT/README.md .
 
 You should then:
 

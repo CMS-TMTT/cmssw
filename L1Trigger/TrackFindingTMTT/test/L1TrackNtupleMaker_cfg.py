@@ -40,7 +40,7 @@ options.register('histFile','Hist.root',VarParsing.VarParsing.multiplicity.singl
 #--- Specify which track finding algorithms
 #--- Options are KF4ParamsComb, SimpleLR, Tracklet, All
 #--- Can provide comma separated list
-options.register('trkFitAlgo','All',VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string,"Name of track helix fit algorithm")
+options.register('trkFitAlgo','KF4ParamsComb',VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string,"Name of track helix fit algorithm")
 
 #--- Specify if stubs need to be produced i.e. they are not available in the input file
 options.register('makeStubs',0,VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.int,"Make stubs, and truth association, on the fly")
@@ -71,7 +71,13 @@ process.TFileService = cms.Service("TFileService",
 process.source = cms.Source ("PoolSource",
                             fileNames = readFiles,
                             secondaryFileNames = secFiles,
-                            duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
+                            duplicateCheckMode = cms.untracked.string('noDuplicateCheck'),
+                            # Following needed to read CMSSW 9 datasets with CMSSW 10
+                            inputCommands = cms.untracked.vstring(
+                              'keep *_*_*_*',
+                              'drop l1tEMTFHit2016*_*_*_*',
+                              'drop l1tEMTFTrack2016*_*_*_*'
+                            )
                             )
 
 process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
