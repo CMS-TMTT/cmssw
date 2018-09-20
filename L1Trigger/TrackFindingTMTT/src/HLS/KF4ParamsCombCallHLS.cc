@@ -209,23 +209,23 @@ const kalmanState* KF4ParamsCombCallHLS::getStateOut(const kalmanState* stateIn,
   const kalmanState* last_state = stateIn; 
   // Factors to convert digitized helix params to floating ones are inverse of those in getDigiStateIn().
   vector<double> x(4); // helix params
-  x[0] = double(stateOutDigi.inv2R) / inv2R_Mult_;
-  x[1] = double(stateOutDigi.phi0) / phiMult_;
-  x[2] = double(stateOutDigi.tanL);
-  x[3] = double(stateOutDigi.z0) / rMult_;
+  x[0] = (double(stateOutDigi.inv2R) + 0.5 / pow(2, stateOutDigi.inv2R.width - stateOutDigi.inv2R.iwidth)) / inv2R_Mult_;
+  x[1] = (double(stateOutDigi.phi0)  + 0.5 / pow(2, stateOutDigi.phi0.width  - stateOutDigi.phi0.iwidth )) / phiMult_;
+  x[2] = (double(stateOutDigi.tanL)  + 0.5 / pow(2, stateOutDigi.tanL.width  - stateOutDigi.tanL.iwidth ));
+  x[3] = (double(stateOutDigi.z0)    + 0.5 / pow(2, stateOutDigi.z0.width    - stateOutDigi.z0.iwidth   )) / rMult_;
   TMatrixD pxx(4,4); // helix covariance matrix
-  pxx[0][0] = double(stateOutDigi.cov_00) / (inv2R_Mult_ * inv2R_Mult_);
-  pxx[1][1] = double(stateOutDigi.cov_11) / (phiMult_ * phiMult_);
-  pxx[2][2] = double(stateOutDigi.cov_22);
-  pxx[3][3] = double(stateOutDigi.cov_33) / (rMult_ * rMult_);
-  pxx[0][1] = double(stateOutDigi.cov_01) / (rMult_ * phiMult_);
+  pxx[0][0] = (double(stateOutDigi.cov_00) + 0.5 / pow(2, stateOutDigi.cov_00.width - stateOutDigi.cov_00.iwidth)) / (inv2R_Mult_ * inv2R_Mult_);
+  pxx[1][1] = (double(stateOutDigi.cov_11) + 0.5 / pow(2, stateOutDigi.cov_11.width - stateOutDigi.cov_11.iwidth)) / (phiMult_ * phiMult_);
+  pxx[2][2] = (double(stateOutDigi.cov_22) + 0.5 / pow(2, stateOutDigi.cov_22.width - stateOutDigi.cov_22.iwidth));
+  pxx[3][3] = (double(stateOutDigi.cov_33) + 0.5 / pow(2, stateOutDigi.cov_33.width - stateOutDigi.cov_33.iwidth)) / (rMult_ * rMult_);
+  pxx[0][1] = (double(stateOutDigi.cov_01) + 0.5 / pow(2, stateOutDigi.cov_01.width - stateOutDigi.cov_01.iwidth)) / (rMult_ * phiMult_);
   pxx[1][0] = pxx[0][1];
-  pxx[2][3] = double(stateOutDigi.cov_23) / (rMult_);
+  pxx[2][3] = (double(stateOutDigi.cov_23) + 0.5 / pow(2, stateOutDigi.cov_23.width - stateOutDigi.cov_23.iwidth)) / (rMult_);
   pxx[3][2] = pxx[2][3];
   TMatrixD K(4,2); // KF gain matrix - don't provide, as can't be used?
   TMatrixD dcov(2,2); // Stub (phi,z) position covariance matrix - don't provide as can't be used?
   const StubCluster* stubcl = stubCluster;
-  double chi2 = stateOutDigi.chiSquared;
+  double chi2 = (double(stateOutDigi.chiSquared) + 0.5 / pow(2, stateOutDigi.chiSquared.width - stateOutDigi.chiSquared.iwidth));
 
   const kalmanState* ks = this->mkState(candidate, n_skipped, kLayer_next, layerId, last_state,
 				        x, pxx, K, dcov, stubcl, chi2);
