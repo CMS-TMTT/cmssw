@@ -380,8 +380,8 @@ bool KF4ParamsComb::isGoodState( const kalmanState &state )const
 
   // IRT
   //if( nStubLayers >= 4 ) {
-  //std::map<std::string, double> tp = getTrackParams(&state);
-  //L1fittedTrack fitTrkTmp(getSettings(), state.candidate(), state.stubs(), tp["qOverPt"], tp["d0"], tp["phi0"], tp["z0"], tp["t"], state.chi2(), nPar_, true);
+  //std::map<std::string, double> trackParams = getTrackParams(&state);
+  //L1fittedTrack fitTrkTmp(getSettings(), state.candidate(), state.stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state.chi2(), nPar_, true);
   //if (abs(int(fitTrkTmp.getCellLocationFit().first) - int(fitTrkTmp.getCellLocationHT().first)) > 1 || abs(int(fitTrkTmp.getCellLocationFit().second) - int(fitTrkTmp.getCellLocationHT().second)) > 1) goodState = false;  
     //cout<<"Consistent "<<abs(int(fitTrkTmp.getCellLocationFit().first) - int(fitTrkTmp.getCellLocationHT().first))<<" "<<abs(int(fitTrkTmp.getCellLocationFit().second) - int(fitTrkTmp.getCellLocationHT().second))<<" tp="<<(tpa_ != nullptr)<<endl;									      
   //}

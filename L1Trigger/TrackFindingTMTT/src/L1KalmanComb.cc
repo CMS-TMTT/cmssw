@@ -68,19 +68,19 @@ void printTPSummary( std::ostream &os, const TP *tp, bool addReturn=true ){
 
 void L1KalmanComb::printTP( std::ostream &os, const TP *tp )const{
         
-  std::map<std::string, double> tp_x;
+  std::map<std::string, double> tpParams;
   bool useForAlgEff(false);
   if( tp ){
     useForAlgEff = tp->useForAlgEff();
-    tp_x["qOverPt"] = tp->qOverPt();
-    tp_x["phi0"] = tp->phi0();
-    tp_x["z0"] = tp->z0();
-    tp_x["t"] = tp->tanLambda();
-    tp_x["d0"] = tp->d0();
+    tpParams["qOverPt"] = tp->qOverPt();
+    tpParams["phi0"] = tp->phi0();
+    tpParams["z0"] = tp->z0();
+    tpParams["t"] = tp->tanLambda();
+    tpParams["d0"] = tp->d0();
   }
   if( tp ){
     os << "  TP index = " << tp->index() << " useForAlgEff = " << useForAlgEff << " ";
-    for( auto pair : tp_x ){
+    for( auto pair : tpParams ){
       os << pair.first << ":" << pair.second << ", "; 
     }
     os << "  inv2R = " << tp->qOverPt() * getSettings()->invPtToInvR() * 0.5; 
@@ -383,9 +383,9 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     //cout<<"Final KF candidate eta="<<cand->candidate().iEtaReg()<<" ns="<<cand->nSkippedLayers()<<" klid="<<cand->nextLayer()-1<<" n="<<cand->nStubLayers()<<endl;
 
     // Get track helix params.
-    std::map<std::string, double> tp = getTrackParams(cand);
+    std::map<std::string, double> trackParams = getTrackParams(cand);
 
-    L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), tp["qOverPt"], tp["d0"], tp["phi0"], tp["z0"], tp["t"], cand->chi2(), nPar_, true);
+    L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
 
     // Store supplementary info, specific to KF fitter.
     returnTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
@@ -395,15 +395,15 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     if (getSettings()->kalmanAddBeamConstr()) {
       if (nPar_ == 5) {
 	double chi2_bcon = 0.;
-	std::map<std::string, double> tp_bcon = getTrackParams_BeamConstr(cand, chi2_bcon);
-	returnTrk.setBeamConstr(tp_bcon["qOverPt"], tp_bcon["phi0"], chi2_bcon);
+	std::map<std::string, double> trackParams_bcon = getTrackParams_BeamConstr(cand, chi2_bcon);
+	returnTrk.setBeamConstr(trackParams_bcon["qOverPt"], trackParams_bcon["phi0"], chi2_bcon);
       }
     }
 
     // for Tom - fitted track params must lie in same sector as HT originally found track in.
     if (!returnTrk.consistentSector()) {
 
-      L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), tp["qOverPt"], tp["d0"], tp["phi0"], tp["z0"], tp["t"], cand->chi2(), nPar_, false);
+      L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
       failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
       return failedTrk;
     }
@@ -452,8 +452,8 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 					for( it_last = last_states.begin(); it_last != last_states.end(); it_last++ ){
 					const kalmanState *state = *it_last;
 				
-					//std::map<std::string, double> tp = getTrackParams(state);
-					//L1fittedTrack returnTrk(getSettings(), l1track3D, state->stubs(), tp["qOverPt"], tp["d0"], tp["phi0"], tp["z0"], tp["t"], state->chi2(), nPar_, true);
+					//std::map<std::string, double> trackParams = getTrackParams(state);
+					//L1fittedTrack returnTrk(getSettings(), l1track3D, state->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state->chi2(), nPar_, true);
 				
 				
 					std::vector<const Stub *> sstubs = state->stubs();
@@ -800,8 +800,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       for( auto best_state : best_states4 ){
 			
       if( tpa && tpa->useForAlgEff() ) {
-      std::map<std::string, double> tp = getTrackParams(best_state);
-      L1fittedTrack returnTrk(getSettings(), l1track3D, best_state->stubs(), tp["qOverPt"], tp["d0"], tp["phi0"], tp["z0"], tp["t"], best_state->chi2(), nPar_, true);
+      std::map<std::string, double> trackParams = getTrackParams(best_state);
+      L1fittedTrack returnTrk(getSettings(), l1track3D, best_state->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], best_state->chi2(), nPar_, true);
       if (returnTrk.getNumMatchedLayers()>=4) {
       //temp_states.push_back(best_state);
       if(i==0) found = true;
@@ -1400,33 +1400,33 @@ void L1KalmanComb::fillSeedHists( const kalmanState *state, const TP *tpa ){
   }
 
   if( tpa && tpa->useForAlgEff() ){
-    std::vector<double> xt(nPar_);
-    xt[0] = tpa->qOverPt();
-    xt[1] = tpa->phi0();
-    xt[2] = tpa->z0();
-    xt[3] = tpa->tanLambda();
-    if( nPar_ == 5 ) xt[4] = tpa->d0();
+    std::vector<double> tpParams(nPar_);
+    tpParams[0] = tpa->qOverPt();
+    tpParams[1] = tpa->phi0();
+    tpParams[2] = tpa->z0();
+    tpParams[3] = tpa->tanLambda();
+    if( nPar_ == 5 ) tpParams[4] = tpa->d0();
     for( unsigned i=0; i < nPar_; i++ ){
       TString hname = Form( "hyt_%d", i );
       if( hytMap.find(hname) == hytMap.end() ){
 	cout << hname << " does not exist." << endl;
       }
-      else hytMap[hname]->Fill(xt[i]);
+      else hytMap[hname]->Fill(tpParams[i]);
     }
     //Histogram Fill : Seed state 
-    std::map<std::string, double> mx0 = getTrackParams( state );
-    std::vector<double> vx0(nPar_);
-    vx0[0] = mx0["qOverPt"];
-    vx0[1] = mx0["phi0"];
-    vx0[2] = mx0["z0"];
-    vx0[3] = mx0["t"];
-    if( nPar_ == 5 ) vx0[4] = mx0["d0"];
+    std::map<std::string, double> trackParams = getTrackParams( state );
+    std::vector<double> trackParVec(nPar_);
+    trackParVec[0] = trackParams["qOverPt"];
+    trackParVec[1] = trackParams["phi0"];
+    trackParVec[2] = trackParams["z0"];
+    trackParVec[3] = trackParams["t"];
+    if( nPar_ == 5 ) trackParVec[4] = trackParams["d0"];
     for( unsigned i=0; i < nPar_; i++ ){
       TString hname = Form( "hy0_%d", i );
       if( hy0Map.find(hname) == hy0Map.end() ){
 	cout << hname << " does not exist." << endl;
       }
-      else hy0Map[hname]->Fill(vx0[i]);
+      else hy0Map[hname]->Fill(trackParVec[i]);
     }
   }
 }
