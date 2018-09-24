@@ -21,7 +21,9 @@
 #include <iostream>
 #endif
 
-#define PRINT_HLSINPUT
+#ifdef PRINT_SUMMARY
+//#define PRINT_HLSINPUT
+#endif
 
 #ifdef CMSSW_GIT_HASH
 namespace TMTT {
