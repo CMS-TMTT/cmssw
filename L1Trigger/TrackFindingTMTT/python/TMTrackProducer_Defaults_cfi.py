@@ -68,11 +68,11 @@ TMTrackProducer_params = cms.PSet(
      #
      PhiSectorBits   = cms.uint32(6),    # Bits used to store phi sector number -- NOT USED
      PhiSBits        = cms.uint32(14),   # Bits used to store phiS coord. (13 enough?)
-     PhiSRange       = cms.double(0.6981317008),  # Range phiS coord. covers in radians.
+     PhiSRange       = cms.double(0.698131700),  # Range phiS coord. covers in radians.
      RtBits          = cms.uint32(12),   # Bits used to store Rt coord.
-     RtRange         = cms.double(103.0382), # Range Rt coord. covers in units of cm.
+     RtRange         = cms.double(103.1103), # Range Rt coord. covers in units of cm.
      ZBits           = cms.uint32(14),   # Bits used to store z coord.
-     ZRange          = cms.double(824.306), # Range z coord. covers in units of cm.
+     ZRange          = cms.double(824.883), # Range z coord. covers in units of cm.
      # The following four parameters do not need to be specified if FirmwareType = 1 (i.e., daisy-chain firmware) 
      DPhiBits        = cms.untracked.uint32(8),    # Bits used to store Delta(phi) track angle.
      DPhiRange       = cms.untracked.double(1.),   # Range Delta(phi) covers in radians.
@@ -82,7 +82,7 @@ TMTrackProducer_params = cms.PSet(
      #--- Parameters available in GP board (excluding any in common with MP specified above).
      #
      PhiOBits        = cms.uint32(15),      # Bits used to store PhiO parameter.
-     PhiORange       = cms.double(1.396263402), # Range PhiO parameter covers.
+     PhiORange       = cms.double(1.396263400), # Range PhiO parameter covers.
      BendBits        = cms.uint32(6)        # Bits used to store stub bend.
   ),
 
@@ -428,13 +428,13 @@ TMTrackProducer_params = cms.PSet(
     #======= SimpleLR digi parameters ========
     SLR_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     SLR_oneOver2rBits = cms.uint32(13),
-    SLR_oneOver2rRange = cms.double(0.01355084),
+    SLR_oneOver2rRange = cms.double(0.01354135),
     SLR_d0Bits = cms.uint32(12), # Made up by Ian as never yet discussed.
     SLR_d0Range  = cms.double(10.),
     SLR_phi0Bits = cms.uint32(18),
     SLR_phi0Range = cms.double(1.3962636), # phi0 is actually only digitised relative to centre of sector.
     SLR_z0Bits = cms.uint32(12),
-    SLR_z0Range  = cms.double(51.51942),
+    SLR_z0Range  = cms.double(51.555509),
     SLR_tanlambdaBits = cms.uint32(15),
     SLR_tanlambdaRange = cms.double(32.0),
     SLR_chisquaredBits = cms.uint32(8),
@@ -443,13 +443,13 @@ TMTrackProducer_params = cms.PSet(
     #====== Kalman Filter Digi parameters ========
     KF_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     KF_oneOver2rBits = cms.uint32(18),
-    KF_oneOver2rRange = cms.double(0.01355084),
+    KF_oneOver2rRange = cms.double(0.013541449),
     KF_d0Bits = cms.uint32(12), # Made up by Ian as never yet discussed.
     KF_d0Range  = cms.double(10.),
     KF_phi0Bits = cms.uint32(18),
-    KF_phi0Range = cms.double(1.3962636),  # phi0 is actually only digitised relative to centre of sector.
+    KF_phi0Range = cms.double(1.3962634),  # phi0 is actually only digitised relative to centre of sector.
     KF_z0Bits = cms.uint32(18),
-    KF_z0Range  = cms.double(51.51942),
+    KF_z0Range  = cms.double(51.55517),
     KF_tanlambdaBits = cms.uint32(18),
     KF_tanlambdaRange = cms.double(32.),
     KF_chisquaredBits = cms.uint32(17),

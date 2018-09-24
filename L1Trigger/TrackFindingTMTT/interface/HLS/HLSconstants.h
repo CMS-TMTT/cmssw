@@ -20,8 +20,8 @@ namespace KalmanHLS {
 // Digitisation multipliers (from data format doc).
 // KF uses same multiplier for r as for stubs in DTC, but one extra bit to accomodate larger range,
 // since KF measures r w.r.t. beamline. And it uses r multiplier for z too.
-static const float rMult = pow(2.,BSR-1)/103.0382;
-static const float phiMult = pow(2.,BSP)/0.698131701;
+static const float rMult = pow(2.,BSR-1)/103.1103;
+static const float phiMult = pow(2.,BSP)/0.698131700;
 static const float rphiMult = rMult*phiMult;
 static const float inv2R_Mult = (phiMult/rMult);
 

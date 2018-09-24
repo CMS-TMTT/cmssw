@@ -21,6 +21,8 @@
 #include <iostream>
 #endif
 
+#define PRINT_HLSINPUT
+
 #ifdef CMSSW_GIT_HASH
 namespace TMTT {
 
@@ -39,6 +41,27 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   stateOut.etaSectorID = stateIn.etaSectorID;
   stateOut.etaSectorZsign = stateIn.etaSectorZsign;
   stateOut.valid = (stateIn.valid && stateIn.valid);
+
+#ifdef PRINT_HLSINPUT
+  std::cout<<"HLS INPUT stub: r="<<stub.r<<" phiS="<<stub.phiS<<" z="<<stub.z/2<<std::endl;
+  std::cout<<"HLS INPUT helix: (m,c)=("<<stateIn.mBin<<","<<stateIn.cBin<<")"
+           <<" layers (ID, skip)=("<<stateIn.layerID<<","<<stateIn.nSkippedLayers<<")"
+           <<" 1/2R="<<ap_fixed<B18,B18>(stateIn.inv2R.range( B18 - 1, 0))
+	   <<" phi0="<<ap_fixed<B18,B18>(stateIn.phi0.range( B18 - 1, 0))
+	   <<" tanL="<<ap_fixed<B18,B18>(stateIn.tanL.range( B18 - 1, 0))
+	   <<" z0="  <<ap_fixed<B18,B18>(stateIn.z0.range( B18 - 1, 0))
+	   <<" chi2="<<ap_ufixed<B17,B17>(stateIn.chiSquared.range( B17 - 1, 0))
+	   <<std::endl;
+  std::cout<<"HLS INPUT cov:"
+           <<" cov00="<<ap_fixed<B25,B25>(stateIn.cov_00.range( B25 - 1, 0))
+           <<" cov11="<<ap_fixed<B25,B25>(stateIn.cov_11.range( B25 - 1, 0))
+           <<" cov22="<<ap_fixed<B25,B25>(stateIn.cov_22.range( B25 - 1, 0))
+           <<" cov33="<<ap_fixed<B25,B25>(stateIn.cov_33.range( B25 - 1, 0))
+           <<" cov01="<<ap_fixed<B18,B18>(stateIn.cov_01.range( B18 - 1, 0))
+           <<" cov23="<<ap_fixed<B18,B18>(stateIn.cov_23.range( B18 - 1, 0))
+	   <<std::endl;
+#endif
+
 
 #ifdef PRINT_SUMMARY
   static bool first = true;
