@@ -2,7 +2,7 @@
 * How to setup the framework and how to run our analysis code:
 
 The code is in GITHUB. It can be browsed in in
-https://github.com/CMS-TMTT/cmssw/blob/TMTT_938/L1Trigger/TrackFindingTMTT/ . 
+https://github.com/CMS-TMTT/cmssw/blob/TMTT_1025/L1Trigger/TrackFindingTMTT/ . 
 (An older version of the code can be found in SVN in https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/software/cmssw/trunkSimpleCode9).
 
 - Setup a CMSSW environment. 
@@ -12,19 +12,7 @@ cmsenv
 
 - Software checkout
 
-If you are a simple user of the code, and don't intend proposing modifications to it, just check it out:
-# Note the "." at the end of the next line. You need it!
-
-git cms-init
-git remote add -t TMTT_938 TMTT https://github.com/CMS-TMTT/cmssw.git
-git fetch TMTT TMTT_938
-git cms-checkout-topic CMS-TMTT:TMTT_938
-
-(If required, the old SVN code can be obtained with "svn co svn+ssh://svn.cern.ch/reps/UK-TrackTrig/software/cmssw/trunkSimpleCode9 .").
-
-If instead you are actively working on L1 tracking & may suggest changes to the code, then create your
-own fork, as explained in https://github.com/CMS-TMTT/cmssw/blob/TMTT_938/L1Trigger/TrackFindingTMTT/README.md . This link
-also explains additional GIT commands that developers may need.
+Check out from GIT following instructions in https://github.com/CMS-TMTT/cmssw/blob/TMTT_1025/L1Trigger/TrackFindingTMTT/README.md .
 
 - MC samples 
   You can use the RelVal samples in L1Trigger/TrackFindingTMTT/test/MCsamples/937/RelVal/ or MCsamples/932/RelVal/eclement/ . (Or in 1032/ if you want CMSSW 10 ones).
