@@ -27,7 +27,7 @@ static const float inv2R_Mult = (phiMult/rMult);
 
 // Beam spot length & reference radii w.r.t. beamline.
 static const float beamSpotLength= 15.0;
-static const float chosenRofPhi = 61.279;
+static const float chosenRofPhi = 61.273;
 
 static const StubHLS::TR chosenRofPhi_digi = chosenRofPhi*rMult;
 static const float chosenRofZ = 50.0;

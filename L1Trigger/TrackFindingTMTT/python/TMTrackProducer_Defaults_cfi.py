@@ -101,7 +101,7 @@ TMTrackProducer_params = cms.PSet(
   PhiSectors = cms.PSet(
      NumPhiOctants      = cms.uint32(9),    # Divisions of Tracker at DTC
      NumPhiSectors      = cms.uint32(18),   # Divisions of Tracker at GP.
-     ChosenRofPhi       = cms.double(61.279), # Use phi of track at this radius for assignment of stubs to phi sectors & also for one of the axes of the r-phi HT. If ChosenRofPhi=0, then use track phi0. - Should be an integer multiple of the stub r digitisation granularity.
+     ChosenRofPhi       = cms.double(61.273), # Use phi of track at this radius for assignment of stubs to phi sectors & also for one of the axes of the r-phi HT. If ChosenRofPhi=0, then use track phi0. - Should be an integer multiple of the stub r digitisation granularity.
      #--- You can set one or both the following parameters to True.
      UseStubPhi         = cms.bool(True),  # Require stub phi to be consistent with track of Pt > HTArraySpec.HoughMinPt that crosses HT phi axis?
      UseStubPhiTrk      = cms.bool(True),  # Require stub phi0 (or phi65 etc.) as estimated from stub bend, to lie within HT phi axis, allowing tolerance(s) specified below?
