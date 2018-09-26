@@ -12,6 +12,8 @@ process = cms.Process("Demo")
 
 process.load('Configuration.Geometry.GeometryExtended2023D17Reco_cff')
 process.load('Configuration.Geometry.GeometryExtended2023D17_cff')
+#process.load('Configuration.Geometry.GeometryExtended2023D21Reco_cff')
+#process.load('Configuration.Geometry.GeometryExtended2023D21_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -23,6 +25,8 @@ options = VarParsing.VarParsing ('analysis')
 
 #--- Specify input MC
 options.register('inputMC', 'MCsamples/937/RelVal/TTbar/PU200.txt',
+#options.register('inputMC', 'MCsamples/1020/RelVal/TTbar/PU200_D17.txt',
+#options.register('inputMC', 'MCsamples/1020/RelVal/TTbar/PU200_D21.txt',
 
 # Fastest to use a local copy ...
 #options.register('inputMC', 'MCsamples/937/RelVal/TTbar/localRAL/PU200.txt', 

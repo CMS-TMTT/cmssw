@@ -1,0 +1,9 @@
+This contains RelVal samples from CMSSW 10.2.0.pre5
+
+/RelValTT*/CMSSW_10_2_0_pre5*upgrade2023*D17*/GEN-SIM-DIGI-RAW
+
+The D26=T9 sample has 20% increased tracker material budget for systematic studies.
+
+The D21=T6 sample has the latest tracker geometry.
+
+The D17=T5 sample has the older tracker geometry as used also in the CMSSW 9.3.7 RelVal samples.
