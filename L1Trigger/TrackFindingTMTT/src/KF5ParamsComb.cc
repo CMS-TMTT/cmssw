@@ -261,7 +261,7 @@ TMatrixD KF5ParamsComb::PddMeas(const StubCluster* stubCluster, const kalmanStat
 	  scaleTilted = getApproxB(stubCluster->z(), stubCluster->r());
 	} else {                             // Exact C++ implementation. 
 	  float tilt = stubCluster->moduleTilt();
-	  float scaleTilted = sin(tilt) + cos(tilt)*tanl;
+	  scaleTilted = sin(tilt) + cos(tilt)*tanl;
 	}
       }
       float scaleTilted2 = scaleTilted*scaleTilted;

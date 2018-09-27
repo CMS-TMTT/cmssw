@@ -93,7 +93,7 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 #TMTrackProducer.L1TrackDef.MinStubLayers            = cms.uint32(4)  # HT accepts tracks with >= 4 layers
 #TMTrackProducer.TrackFitSettings.KalmanRemove2PScut = cms.bool(True)
 #To study displaced tracking, include non-prompt particles in efficiency definition.
-#TMTrackProducer.GenCuts.GenMaxVertR                 = cms.uint32(30.) 
+#TMTrackProducer.GenCuts.GenMaxVertR                 = cms.double(30.) 
 
 #--- Unusual HT cell shapes
 
