@@ -189,7 +189,6 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   // Casting from ap_fixed to ap_int rounds to zero, not -ve infinity, so cast to ap_fixed with no fractional part first.
   AP_INT(BMH) mBinHelix_tmp = AP_FIXED(BMH,BMH)(x_new._0  * (1 << invRToMbin_bitShift));
   AP_INT(BCH) cBinHelix_tmp = AP_FIXED(BCH,BCH)(phiAtRefR / (1 << phiToCbin_bitShift));
-  extraOut.mBinInRange = (mBinHelix_tmp >= minPtBin && mBinHelix_tmp <= maxPtBin);
   bool cBinInRange = (cBinHelix_tmp >= minPhiBin && cBinHelix_tmp <= maxPhiBin);
   // Duplicate removal works best in mBinHelix is forced back into HT array if it lies just outside.
   if (mBinHelix_tmp < minPtBin) {
@@ -216,6 +215,7 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
 
   extraOut.sectorCut = (cBinInRange && inEtaSector);
   extraOut.consistent = (extraOut.mBinHelix == stateIn.mBin && extraOut.cBinHelix == stateIn.cBin);
+  extraOut.htBinWithin1Cut = (abs(extraOut.mBinHelix - stateIn.mBin) <= 1 && abs(extraOut.cBinHelix - stateIn.cBin) <= 1);
 
   //std::cout<<"ZCALC "<<x_new._3<<" "<<chosenRofZ_digi<<" "<<x_new._2<<std::endl;
 
@@ -224,7 +224,8 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
 
   //std::cout<<"ZZZ RANGE "<<etaBounds.z_[stateIn.etaSectorID]<<" < "<<zAtRefR<<" < "<<etaBounds.z_[stateIn.etaSectorID+1]<<" sec="<<stateIn.etaSectorID<<" zsign="<<stateIn.etaSectorZsign<<std::endl;
 
-  //std::cout<<"CHECK IN RANGE: m "<<extraOut.mBinInRange<<" c "<<cBinInRange<<" sec "<<inEtaSector<<std::endl;
+  //std::cout<<"CHECK HT WITHIN 1 BIN: "<<extraOut.htBinWithin1Cut<<std::endl;
+  //std::cout<<"CHECK IN RANGE: c"<<cBinInRange<<" sec "<<inEtaSector<<std::endl;
   
   //std::cout<<"EXTRA: z0Cut="<<extraOut.z0Cut<<" ptCut="<<extraOut.ptCut<<" chi2Cut="<<extraOut.chiSquaredCut<<" PScut="<<extraOut.sufficientPScut<<std::endl;
   //std::cout<<"EXTRA: mBin="<<int(stateIn.mBin)<<" "<<int(mBinHelix_tmp)<<" cBin="<<int(stateIn.cBin)<<" "<<int(cBinHelix_tmp)<<" consistent="<<extraOut.consistent<<std::endl;

@@ -148,7 +148,7 @@ struct KFstateHLS {
   // This is the number of skipped layers assuming we find a stub in the layer the KF updator is currently searched. The KF updator in HLS/Maxeller does not incremement it.
   AP_UINT(2)  nSkippedLayers;
   AP_UINT(6)  candidateID;    // Not used by KF updator. Just helps VHDL keep track of which state this is. 
-  AP_UINT(4)  eventID;        // Not used by KF updator. Just helps VHDL keep track of which event this is. - 2 bits more than Andy's VHDL for no good reason?
+  AP_UINT(3)  eventID;        // Not used by KF updator. Just helps VHDL keep track of which event this is.
   AP_UINT(4)  etaSectorID; // Eta sector ID, but counting away from 0 near theta=PI/2 & increasing to 8 near endcap. (Named SectorID in Maxeller).
   AP_UINT(1)  etaSectorZsign;  // True if eta sector is in +ve z side of tracker; False otherwise. (Named zSign in Maxeller).
   AP_UINT(1)  valid; // Used by external code when calculation finished on valid input state & stub.
@@ -162,7 +162,7 @@ struct ExtraOutHLS {
   AP_UINT(1)    ptCut;
   AP_UINT(1)    chiSquaredCut;
   AP_UINT(1)    sufficientPScut; // Enough PS layers
-  AP_UINT(1)    mBinInRange;  // Not needed. Must be true if track passes Pt cut.
+  AP_UINT(1)    htBinWithin1Cut;  
   AP_INT(BHT_C) mBinHelix;    // HT bin that fitted helix params lie within.
   AP_INT(BHT_M) cBinHelix;
   AP_UINT(1)    sectorCut;   // Helix parameters lie within Sector.
