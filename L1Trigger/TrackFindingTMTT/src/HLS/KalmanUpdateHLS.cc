@@ -191,14 +191,17 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   AP_INT(BCH) cBinHelix_tmp = AP_FIXED(BCH,BCH)(phiAtRefR / (1 << phiToCbin_bitShift));
   bool cBinInRange = (cBinHelix_tmp >= minPhiBin && cBinHelix_tmp <= maxPhiBin);
   // Duplicate removal works best in mBinHelix is forced back into HT array if it lies just outside.
+  AP_INT(BHT_M) mBinHelix_tmp_trunc;
   if (mBinHelix_tmp < minPtBin) {
-    extraOut.mBinHelix = minPtBin;
+    mBinHelix_tmp_trunc = minPtBin;
   } else if (mBinHelix_tmp > maxPtBin) {
-    extraOut.mBinHelix = maxPtBin;
+    mBinHelix_tmp_trunc = maxPtBin;
   } else {
-    extraOut.mBinHelix = mBinHelix_tmp;
+    mBinHelix_tmp_trunc = mBinHelix_tmp;
   }
-  extraOut.cBinHelix = cBinHelix_tmp;
+  AP_INT(BHT_C) cBinHelix_tmp_trunc = cBinHelix_tmp;
+  extraOut.mBinHelix = mBinHelix_tmp_trunc;
+  extraOut.cBinHelix = cBinHelix_tmp_trunc;
   //std::cout<<"MBIN helix "<<extraOut.mBinHelix<<" tmp "<<mBinHelix_tmp<<" ht "<<stateIn.mBin<<std::endl;
   //std::cout<<"CBIN helix "<<extraOut.cBinHelix<<" tmp "<<cBinHelix_tmp<<" ht "<<stateIn.cBin<<std::endl;
 
@@ -214,8 +217,13 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   bool inEtaSector = (zAtRefR > etaBounds.z_[stateIn.etaSectorID] && zAtRefR < etaBounds.z_[stateIn.etaSectorID+1]);
 
   extraOut.sectorCut = (cBinInRange && inEtaSector);
-  extraOut.consistent = (extraOut.mBinHelix == stateIn.mBin && extraOut.cBinHelix == stateIn.cBin);
-  extraOut.htBinWithin1Cut = (abs(extraOut.mBinHelix - stateIn.mBin) <= 1 && abs(extraOut.cBinHelix - stateIn.cBin) <= 1);
+  extraOut.consistent = (mBinHelix_tmp_trunc == stateIn.mBin && cBinHelix_tmp_trunc == stateIn.cBin);
+  // The following long-winded calc. saves a clock cycle.
+  AP_INT(BHT_M) mPlus1  = stateIn.mBin + AP_INT(BHT_M)(1);
+  AP_INT(BHT_M) mMinus1 = stateIn.mBin - AP_INT(BHT_M)(1);
+  AP_INT(BHT_C) cPlus1  = stateIn.cBin + AP_INT(BHT_C)(1);
+  AP_INT(BHT_C) cMinus1 = stateIn.cBin - AP_INT(BHT_C)(1);
+  extraOut.htBinWithin1Cut = ((mBinHelix_tmp_trunc == stateIn.mBin || mBinHelix_tmp_trunc == mPlus1 || mBinHelix_tmp_trunc == mMinus1) && (cBinHelix_tmp_trunc == stateIn.cBin || cBinHelix_tmp_trunc == cPlus1 || cBinHelix_tmp_trunc == cMinus1));
 
   //std::cout<<"ZCALC "<<x_new._3<<" "<<chosenRofZ_digi<<" "<<x_new._2<<std::endl;
 
