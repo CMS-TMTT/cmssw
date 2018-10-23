@@ -22,7 +22,7 @@
 #endif
 
 #ifdef PRINT_SUMMARY
-//#define PRINT_HLSINPUT
+//#define PRINT_HLSARGS
 #endif
 
 #ifdef CMSSW_GIT_HASH
@@ -43,27 +43,6 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   stateOut.etaSectorID = stateIn.etaSectorID;
   stateOut.etaSectorZsign = stateIn.etaSectorZsign;
   stateOut.valid = (stateIn.valid && stateIn.valid);
-
-#ifdef PRINT_HLSINPUT
-  std::cout<<"HLS INPUT stub: r="<<stub.r<<" phiS="<<stub.phiS<<" z="<<stub.z/2<<std::endl;
-  std::cout<<"HLS INPUT helix: (m,c)=("<<stateIn.mBin<<","<<stateIn.cBin<<")"
-           <<" layers (ID, skip)=("<<stateIn.layerID<<","<<stateIn.nSkippedLayers<<")"
-           <<" 1/2R="<<ap_fixed<B18,B18>(stateIn.inv2R.range( B18 - 1, 0))
-	   <<" phi0="<<ap_fixed<B18,B18>(stateIn.phi0.range( B18 - 1, 0))
-	   <<" tanL="<<ap_fixed<B18,B18>(stateIn.tanL.range( B18 - 1, 0))
-	   <<" z0="  <<ap_fixed<B18,B18>(stateIn.z0.range( B18 - 1, 0))
-	   <<" chi2="<<ap_ufixed<B17,B17>(stateIn.chiSquared.range( B17 - 1, 0))
-	   <<std::endl;
-  std::cout<<"HLS INPUT cov:"
-           <<" cov00="<<ap_fixed<B25,B25>(stateIn.cov_00.range( B25 - 1, 0))
-           <<" cov11="<<ap_fixed<B25,B25>(stateIn.cov_11.range( B25 - 1, 0))
-           <<" cov22="<<ap_fixed<B25,B25>(stateIn.cov_22.range( B25 - 1, 0))
-           <<" cov33="<<ap_fixed<B25,B25>(stateIn.cov_33.range( B25 - 1, 0))
-           <<" cov01="<<ap_fixed<B18,B18>(stateIn.cov_01.range( B18 - 1, 0))
-           <<" cov23="<<ap_fixed<B18,B18>(stateIn.cov_23.range( B18 - 1, 0))
-	   <<std::endl;
-#endif
-
 
 #ifdef PRINT_SUMMARY
   static bool first = true;
@@ -184,12 +163,17 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   extraOut.sufficientPScut = not (nStubs <= 2 && V._2Smodule); 
 
   KFstateHLS::TP phiAtRefR = x_new._1 - chosenRofPhi_digi * x_new._0;
-  StubHLS::TZ    zAtRefR   = x_new._3 + chosenRofZ_digi * x_new._2; // Intentional use of StubHLS::TZ type
+  StubHLS::TZ      zAtRefR = x_new._3 + chosenRofZ_digi * x_new._2; // Intentional use of StubHLS::TZ type
   // Constants BMH & BCH below set in HLSconstants.h
   // Casting from ap_fixed to ap_int rounds to zero, not -ve infinity, so cast to ap_fixed with no fractional part first.
-  AP_INT(BMH) mBinHelix_tmp = AP_FIXED(BMH,BMH)(x_new._0  * (1 << invRToMbin_bitShift));
-  AP_INT(BCH) cBinHelix_tmp = AP_FIXED(BCH,BCH)(phiAtRefR / (1 << phiToCbin_bitShift));
+  AP_INT(BMH) mBinHelix_tmp = AP_FIXED(BMH,BMH)( 
+				AP_FIXED(B18+invRToMbin_bitShift,BH0+invRToMbin_bitShift)(x_new._0) << invRToMbin_bitShift
+					       );
+  AP_INT(BCH) cBinHelix_tmp = AP_FIXED(BCH,BCH)(
+						AP_FIXED(B18+phiToCbin_bitShift,BH1)(phiAtRefR) >> phiToCbin_bitShift
+					       );
   bool cBinInRange = (cBinHelix_tmp >= minPhiBin && cBinHelix_tmp <= maxPhiBin);
+
   // Duplicate removal works best in mBinHelix is forced back into HT array if it lies just outside.
   AP_INT(BHT_M) mBinHelix_tmp_trunc;
   if (mBinHelix_tmp < minPtBin) {
@@ -239,6 +223,45 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   //std::cout<<"EXTRA: mBin="<<int(stateIn.mBin)<<" "<<int(mBinHelix_tmp)<<" cBin="<<int(stateIn.cBin)<<" "<<int(cBinHelix_tmp)<<" consistent="<<extraOut.consistent<<std::endl;
   //std::cout<<"EXTRA: in sector="<<extraOut.sectorCut<<" in eta="<<inEtaSector<<" phiAtR="<<phiAtRefR<<" zAtR="<<zAtRefR<<std::endl;
   
+#ifdef PRINT_HLSARGS
+  std::cout<<"HLS INPUT stub: r="<<stub.r<<" phiS="<<stub.phiS<<" z="<<stub.z/2<<std::endl;
+  std::cout<<"HLS INPUT: HT (m,c)=("<<stateIn.mBin<<","<<stateIn.cBin<<")"
+           <<" layers (ID, skip)=("<<stateIn.layerID<<","<<stateIn.nSkippedLayers<<")"
+           <<" 1/2R="<<ap_fixed<B18,B18>(stateIn.inv2R.range( B18 - 1, 0))
+	   <<" phi0="<<ap_fixed<B18,B18>(stateIn.phi0.range( B18 - 1, 0))
+	   <<" tanL="<<ap_fixed<B18,B18>(stateIn.tanL.range( B18 - 1, 0))
+	   <<" z0="  <<ap_fixed<B18,B18>(stateIn.z0.range( B18 - 1, 0))
+	   <<" chi2="<<ap_ufixed<B17,B17>(stateIn.chiSquared.range( B17 - 1, 0))
+	   <<std::endl;
+  std::cout<<"HLS INPUT cov:"
+           <<" cov00="<<ap_fixed<B25,B25>(stateIn.cov_00.range( B25 - 1, 0))
+           <<" cov11="<<ap_fixed<B25,B25>(stateIn.cov_11.range( B25 - 1, 0))
+           <<" cov22="<<ap_fixed<B25,B25>(stateIn.cov_22.range( B25 - 1, 0))
+           <<" cov33="<<ap_fixed<B25,B25>(stateIn.cov_33.range( B25 - 1, 0))
+           <<" cov01="<<ap_fixed<B18,B18>(stateIn.cov_01.range( B18 - 1, 0))
+           <<" cov23="<<ap_fixed<B18,B18>(stateIn.cov_23.range( B18 - 1, 0))
+	   <<std::endl;
+  std::cout<<"HLS OUTPUT: HT (m,c)=("<<stateOut.mBin<<","<<stateOut.cBin<<")"
+           <<" layers (ID, skip)=("<<stateOut.layerID<<","<<stateOut.nSkippedLayers<<")"
+           <<" 1/2R="<<ap_fixed<B18,B18>(stateOut.inv2R.range( B18 - 1, 0))
+	   <<" phi0="<<ap_fixed<B18,B18>(stateOut.phi0.range( B18 - 1, 0))
+	   <<" tanL="<<ap_fixed<B18,B18>(stateOut.tanL.range( B18 - 1, 0))
+	   <<" z0="  <<ap_fixed<B18,B18>(stateOut.z0.range( B18 - 1, 0))
+	   <<" chi2="<<ap_ufixed<B17,B17>(stateOut.chiSquared.range( B17 - 1, 0))
+	   <<std::endl;
+  std::cout<<"HLS OUTPUT cov:"
+           <<" cov00="<<ap_fixed<B25,B25>(stateOut.cov_00.range( B25 - 1, 0))
+           <<" cov11="<<ap_fixed<B25,B25>(stateOut.cov_11.range( B25 - 1, 0))
+           <<" cov22="<<ap_fixed<B25,B25>(stateOut.cov_22.range( B25 - 1, 0))
+           <<" cov33="<<ap_fixed<B25,B25>(stateOut.cov_33.range( B25 - 1, 0))
+           <<" cov01="<<ap_fixed<B18,B18>(stateOut.cov_01.range( B18 - 1, 0))
+           <<" cov23="<<ap_fixed<B18,B18>(stateOut.cov_23.range( B18 - 1, 0))
+	   <<std::endl;
+  std::cout<<"HLS OUTPUT EXTRA:"
+           <<" Helix (m,c)=("<<extraOut.mBinHelix<<","<<extraOut.cBinHelix<<")"
+	   <<std::endl;
+#endif
+
 }
 
 // Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res

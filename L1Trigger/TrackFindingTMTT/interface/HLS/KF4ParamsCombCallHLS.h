@@ -32,6 +32,11 @@ public:
   // Print summary info to help tune bit ranges of HLS calculations.
   virtual void endJob() {KalmanHLS::CHECK_AP::printCheckMap();}
 
+protected:
+
+  // Is this HLS code?
+  virtual bool isHLS() {return true;};
+
 private:
 
   // Get digital stub info that the KF VHDL injects into the KF state updater (Maxeller/HLS)
@@ -41,7 +46,7 @@ private:
   KalmanHLS::KFstateHLS getDigiStateIn(unsigned int skipped, unsigned int layer, const kalmanState* state);
 
   // Convert digitized ourput KF state to floating point.
-  const kalmanState* getStateOut(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS& stateOutDigi);
+  const kalmanState* getStateOut(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS& stateOutDigi, const KalmanHLS::ExtraOutHLS& extraOut);
 
   // This is identical to version in KF4ParamsComb, deciding if a state passes cuts,
   // except that it also checks the cut decisions produced by the HLS KalmanUpdate.

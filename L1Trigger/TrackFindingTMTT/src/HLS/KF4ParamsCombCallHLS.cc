@@ -43,11 +43,8 @@ const kalmanState* KF4ParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigne
   KalmanHLS::ExtraOutHLS extraOut;
   KalmanHLS::KalmanUpdateHLS(stubDigi, stateInDigi, stateOutDigi, extraOut);
 
-  // Store the extra info provided by the HLS updator about whether the state passes cuts.
-  extraOut_ = extraOut;
-
   // Convert digitized ourput KF state to floating point.
-  const kalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi);
+  const kalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, extraOut);
 
   return newState;
 }
@@ -197,7 +194,7 @@ KalmanHLS::KFstateHLS KF4ParamsCombCallHLS::getDigiStateIn(unsigned int skipped,
 
 //=== Convert digitized ourput KF state to floating point.
 
-const kalmanState* KF4ParamsCombCallHLS::getStateOut(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS& stateOutDigi) {
+const kalmanState* KF4ParamsCombCallHLS::getStateOut(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS& stateOutDigi, const KalmanHLS::ExtraOutHLS& extraOut) {
   // Convert digitized helix state to floating point one.
   // Also copy some info directly from input floating point to output floating point state, if unchanged.
 
@@ -229,6 +226,10 @@ const kalmanState* KF4ParamsCombCallHLS::getStateOut(const kalmanState* stateIn,
 
   const kalmanState* ks = this->mkState(candidate, n_skipped, kLayer_next, layerId, last_state,
 				        x, pxx, K, dcov, stubcl, chi2);
+
+  // Store the extra info provided by the HLS updator about whether the state passes cuts.
+  extraOut_ = extraOut;
+  (const_cast<kalmanState*>(ks))->setHLSextra(int(extraOut.mBinHelix) + getSettings()->houghNbinsPt()/2, int(extraOut.cBinHelix) + getSettings()->houghNbinsPhi()/2, bool(extraOut.consistent));
 
 #ifdef IRT_DEBUG
   if (ks->candidate().getMatchedTP() != nullptr) {

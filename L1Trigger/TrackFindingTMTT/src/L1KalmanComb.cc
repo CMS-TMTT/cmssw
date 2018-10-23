@@ -387,6 +387,19 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
     L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
 
+    if( getSettings()->kalmanDebugLevel() >= 2 ){
+      if (this->isHLS()) {
+        // Check if (m,c) corresponding to helix params are correctly calculated by HLS code.
+        unsigned int mBinHelixHLS, cBinHelixHLS;
+        bool consistentHLS;
+        cand->getHLSextra(mBinHelixHLS, cBinHelixHLS, consistentHLS);
+        bool HLS_OK = ((mBinHelixHLS == returnTrk.getCellLocationFit().first) && (cBinHelixHLS == returnTrk.getCellLocationFit().second));
+        if (not HLS_OK) std::cout<<"CHECK BinHelix: OK = "<<HLS_OK
+                                 <<" (HLS,C++) m=("<<mBinHelixHLS<<","<<returnTrk.getCellLocationFit().first <<")"
+                                 <<" c=("<<cBinHelixHLS<<","<<returnTrk.getCellLocationFit().second<<")"<<endl;
+      }
+    }
+
     // Store supplementary info, specific to KF fitter.
     returnTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
 

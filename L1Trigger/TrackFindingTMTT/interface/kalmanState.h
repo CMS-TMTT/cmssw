@@ -65,6 +65,10 @@ class kalmanState{
 	void dump( ostream &os, const TP *tp=0, bool all=0 )const;
 	void setChi2( double p ){ chi2_ = p; }
 
+        // If using HLS, note/get additional output produced by HLS core.
+        void setHLSextra(unsigned int mBinHelix, unsigned int cBinHelix, bool consistent) { mBinHelixHLS_ = mBinHelix; cBinHelixHLS_ = cBinHelix; consistentHLS_ = consistent;}
+        void getHLSextra(unsigned int& mBinHelix, unsigned int& cBinHelix, bool& consistent) const { mBinHelix = mBinHelixHLS_; cBinHelix = cBinHelixHLS_; consistent = consistentHLS_;}
+
     private:
 	unsigned              kLayerNext_;
 	unsigned                 layerId_;
@@ -85,6 +89,10 @@ class kalmanState{
 	double                         z_;
         L1track3D              l1track3D_;
 
+       // Additional output from HLS if using it.
+       unsigned int mBinHelixHLS_; 
+       unsigned int cBinHelixHLS_; 
+       bool consistentHLS_; 
 };
 
 }

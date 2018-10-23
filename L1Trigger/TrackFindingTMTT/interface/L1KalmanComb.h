@@ -35,6 +35,7 @@ class L1KalmanComb : public TrackFitGeneric{
 
 	L1fittedTrack fit(const L1track3D& l1track3D);
 	void bookHists();
+
     protected:
 	static  std::map<std::string, double> getTrackParams( const L1KalmanComb *p, const kalmanState *state );
 	virtual std::map<std::string, double> getTrackParams( const kalmanState *state ) const=0;
@@ -102,6 +103,9 @@ class L1KalmanComb : public TrackFitGeneric{
 
         // Function to calculate approximation for tilted barrel modules (aka B) copied from Stub class.
         float getApproxB(float z, float r) const;
+
+        // Is this HLS code?
+        virtual bool isHLS() {return false;};
 
     protected:
 	unsigned nPar_;

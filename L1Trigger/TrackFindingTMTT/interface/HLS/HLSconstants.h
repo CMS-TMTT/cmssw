@@ -46,7 +46,7 @@ static const float kalmanMultScatTerm = 0.00075; // Same as cfg param of same na
 
 // Phi sectors
 static const float TWO_PI = 2*3.14159265;
-static const int numPhiSectors = 16;
+static const int numPhiSectors = 18;
 static const float phiSectorWidth = TWO_PI / numPhiSectors;
 
 // Bit shift *_bitShift to calculate HT cell from digitized (phi, invR) of helix params.
