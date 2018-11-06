@@ -119,6 +119,7 @@ void TP::fillUseForEff() {
 
      // Add additional cut on particle transverse impact parameter.
     if (fabs(d0_) > settings_->genMaxD0()) useForEff_ = false;
+    if (fabs(z0_) > settings_->genMaxZ0()) useForEff_ = false;
   }
 }
 
