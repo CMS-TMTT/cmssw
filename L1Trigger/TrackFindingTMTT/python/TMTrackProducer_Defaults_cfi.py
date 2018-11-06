@@ -28,6 +28,7 @@ TMTrackProducer_params = cms.PSet(
      GenMaxVertR      = cms.double(1.0), # Max distance of particle production vertex from centre of CMS.
      GenMaxVertZ      = cms.double(30.0),
      GenMaxD0         = cms.double(5.0), # Max transverse impact parameter.
+     GenMaxZ0         = cms.double(999.0), # Max transverse impact parameter.
      GenPdgIds        = cms.vuint32(), # Only particles with these PDG codes used for efficiency measurement.
 
      # Additional cut on MC truth tracks used for algorithmic tracking efficiency measurements.

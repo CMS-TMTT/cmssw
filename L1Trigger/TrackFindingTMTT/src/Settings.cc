@@ -39,6 +39,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   genMaxVertR_            ( genCuts_.getParameter<double>                     ( "GenMaxVertR"            ) ),
   genMaxVertZ_            ( genCuts_.getParameter<double>                     ( "GenMaxVertZ"            ) ),
   genMaxD0_               ( genCuts_.getParameter<double>                     ( "GenMaxD0"               ) ),
+  genMaxZ0_               ( genCuts_.getParameter<double>                     ( "GenMaxZ0"               ) ),
   genMinStubLayers_       ( genCuts_.getParameter<unsigned int>               ( "GenMinStubLayers"       ) ),
 
   //=== Cuts applied to stubs before arriving in L1 track finding board.
