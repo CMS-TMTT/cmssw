@@ -1,9 +1,12 @@
-///=== This is the base class for the Kalman Combinatorial Filter track fit algorithm.
-
-///=== All variable names & equations come from Fruhwirth KF paper
-///=== http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
-
-///=== Written by: Ian Tomalin
+/**
+ * This is the top-level HLS function, which updates a helix state by adding a stub to it.
+ * N.B. It therefore can't use the Settings class or any external libraries! Nor can it be a C++ class.
+ *
+ * All variable names & equations come from Fruhwirth KF paper
+ * http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
+ * 
+ * Author: Ian Tomalin
+ */
 
 #ifdef CMSSW_GIT_HASH
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanUpdateHLS.h"

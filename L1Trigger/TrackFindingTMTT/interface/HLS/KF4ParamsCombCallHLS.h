@@ -1,6 +1,12 @@
-///=== This is the Kalman Combinatorial Filter for 4 helix parameters track fit algorithm.
-///=== It is identical to KF4ParamsComb, except that the state updator is modified 
-///=== to call the code developed for HLS firmware.
+/**
+ * This is the interface between the C++ KF framework in CMSSW and the HLS code.
+ * It is identical to KF4ParamsComb, except that the state updator is modified 
+ *
+ * All variable names & equations come from Fruhwirth KF paper
+ * http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
+ * 
+ * Author: Ian Tomalin
+ */
  
 #ifndef __KF4PARAMSCOMBCALLHLS__
 #define __KF4PARAMSCOMBCALLHLS__

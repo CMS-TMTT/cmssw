@@ -1,5 +1,13 @@
-///=== This is the KF updator code used in HLS firmware.
-///=== N.B. It therefore can't use the Settings class or any external libraries! Nor can it be a C++ class.
+/**
+ * This is the top-level HLS function, which updates a helix state by adding a stub to it.
+ * N.B. It therefore can't use the Settings class or any external libraries! Nor can it be a C++ class.
+ *
+ * All variable names & equations come from Fruhwirth KF paper
+ * http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
+ * 
+ * Author: Ian Tomalin
+ */
+
  
 #ifndef __KalmanUpdateHLS__
 #define __KalmanUpdateHLS__

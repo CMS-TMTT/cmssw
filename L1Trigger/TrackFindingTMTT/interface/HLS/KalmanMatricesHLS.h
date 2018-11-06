@@ -1,8 +1,11 @@
-///=== This defines the Matrices used by the KF updator in HLS firmware.
-///=== N.B. It therefore can't use the Settings class or any external libraries! Nor can it be a C++ class.
-
-///=== All variable names & equations come from Fruhwirth KF paper
-///=== http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
+/**
+ * This defines the KF matrices and the operations performance on them.
+ *
+ *  All variable names & equations come from Fruhwirth KF paper
+ * http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
+ *
+ * Author: Ian Tomalin
+ */
  
 #ifndef __KalmanMatricesHLS__
 #define __KalmanMatricesHLS__

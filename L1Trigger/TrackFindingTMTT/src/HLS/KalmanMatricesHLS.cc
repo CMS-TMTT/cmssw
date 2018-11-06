@@ -1,9 +1,11 @@
-///=== This is the base class for the Kalman Combinatorial Filter track fit algorithm.
-
-///=== All variable names & equations come from Fruhwirth KF paper
-///=== http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
-
-///=== Written by: Ian Tomalin
+/**
+ * This defines the KF matrices and the operations performance on them.
+ *
+ *  All variable names & equations come from Fruhwirth KF paper
+ * http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
+ *
+ * Author: Ian Tomalin
+ */
 
 #ifdef CMSSW_GIT_HASH
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS.h"

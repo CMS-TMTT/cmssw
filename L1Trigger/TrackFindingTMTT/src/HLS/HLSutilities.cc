@@ -1,3 +1,9 @@
+/**
+ * General HLS utilities, not specific to KF.
+ *
+ * Author: Ian Tomalin
+ */
+
 #ifdef CMSSW_GIT_HASH
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSutilities.h"
 #else

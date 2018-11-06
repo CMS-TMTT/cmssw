@@ -1,3 +1,9 @@
+/**
+ * General HLS utilities, not specific to KF.
+ *
+ * Author: Ian Tomalin
+ */
+
 #ifndef __HLSutilities__
 #define __HLSutilities__
 
