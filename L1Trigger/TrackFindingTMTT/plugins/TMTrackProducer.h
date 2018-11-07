@@ -40,11 +40,11 @@ private:
   virtual void endJob() ;
 
 private:
-  const edm::EDGetTokenT<TrackingParticleCollection> tpInputTag;
-  const edm::EDGetTokenT<DetSetVec> stubInputTag;
-  const edm::EDGetTokenT<TTStubAssMap> stubTruthInputTag;
-  const edm::EDGetTokenT<TTClusterAssMap> clusterTruthInputTag;
-  const edm::EDGetTokenT<reco::GenJetCollection> genJetInputTag_;
+  edm::EDGetTokenT<DetSetVec> stubInputTag;
+  edm::EDGetTokenT<TrackingParticleCollection> tpInputTag;
+  edm::EDGetTokenT<TTStubAssMap> stubTruthInputTag;
+  edm::EDGetTokenT<TTClusterAssMap> clusterTruthInputTag;
+  edm::EDGetTokenT<reco::GenJetCollection> genJetInputTag_;
 
   // Configuration parameters
   Settings *settings_;

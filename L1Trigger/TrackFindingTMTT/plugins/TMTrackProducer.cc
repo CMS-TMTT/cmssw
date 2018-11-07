@@ -35,15 +35,20 @@ using boost::numeric::ublas::matrix;
 namespace TMTT {
 
 TMTrackProducer::TMTrackProducer(const edm::ParameterSet& iConfig):
-  tpInputTag( consumes<TrackingParticleCollection>( iConfig.getParameter<edm::InputTag>("tpInputTag") ) ),
   stubInputTag( consumes<DetSetVec>( iConfig.getParameter<edm::InputTag>("stubInputTag") ) ),
-  stubTruthInputTag( consumes<TTStubAssMap>( iConfig.getParameter<edm::InputTag>("stubTruthInputTag") ) ),
-  clusterTruthInputTag( consumes<TTClusterAssMap>( iConfig.getParameter<edm::InputTag>("clusterTruthInputTag") ) ),
-  genJetInputTag_( consumes<reco::GenJetCollection>( iConfig.getParameter<edm::InputTag>("genJetInputTag") ) ),
   trackerGeometryInfo_()
 {
   // Get configuration parameters
   settings_ = new Settings(iConfig);
+
+  if (settings_->enableMCtruth()) {
+    // These lines use lots of CPU, even if no use of truth info is made later.
+    tpInputTag = consumes<TrackingParticleCollection>( iConfig.getParameter<edm::InputTag>("tpInputTag") );
+    stubTruthInputTag = consumes<TTStubAssMap>( iConfig.getParameter<edm::InputTag>("stubTruthInputTag") );
+    clusterTruthInputTag = consumes<TTClusterAssMap>( iConfig.getParameter<edm::InputTag>("clusterTruthInputTag") );
+    genJetInputTag_ = consumes<reco::GenJetCollection>( iConfig.getParameter<edm::InputTag>("genJetInputTag") );
+  }
+
   trackFitters_ = settings_->trackFitters();
   useRZfilter_ = settings_->useRZfilter();
   runRZfilter_  = (useRZfilter_.size() > 0); // Do any fitters require an r-z track filter to be run?
