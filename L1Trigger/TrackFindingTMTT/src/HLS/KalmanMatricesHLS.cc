@@ -218,25 +218,45 @@ MatrixInverseR::MatrixInverseR(const MatrixR& R) : _10(_01)
 
   // Find leading non-zero bit.
   enum {iMIN = 2*BDET}; // Increasing this reduces FPGA resources. But don't make so big that most significant bit of det is below this value. If reduced below 2*BDET, code below must be modified to allow for det_short being less than 2*BDET bits.
+
   AP_UINT(B7) msb = iMIN; // most-significant bit counting from zero at the right-most bit.
+
   // This takes 5 clock cycles & uses 4 BRAM.
   for (AP_UINT(B7) i = iMIN+1; i < BDW; i++) {
     if (det[i]) msb = i;
   }
 
-  // Get leading BDET bits of determinant, and take its reciprocal using look-up table.
+  // // This uses built-in C function to save 1 clock cycle, but at cost of 2 extra BRAM.
+  // AP_UINT(B7) lzero = __builtin_clz((unsigned int)(det.range(BDW-1,iMIN+1))); // Finds location of leading non-zero bit.
+  // AP_UINT(B7) msb = (32+iMIN)-lzero;
+
   AP_UINT(B7) lsb = msb - BDET + 1;
   const AP_UINT(BDET) det_veryshort = det.range(msb, lsb);
+  SW_UFIXED(2*BDET,BDET) det_short;
+  det_short.range(2*BDET-1, 0) = det.range(msb, lsb - BDET);
 
+  // // This saves 2 clock cycles, at cost of 1 extra DSP. But it fails timing when compiled in Vivado.
+  // AP_FIXED(BDW,BDI) det_noLeadZeros = det;
+  // for (AP_UINT(B7) i = BDW - 1; i > iMIN; i--) {
+  //   if (det_noLeadZeros[BDW-1]) {
+  //     msb = i;
+  //     break;
+  //   } else {
+  //     det_noLeadZeros = det_noLeadZeros << 1;
+  //   }
+  // }
+  // AP_UINT(B7) lsb = msb - BDET + 1;
+  // const AP_UINT(BDET) det_veryshort = det_noLeadZeros.range(BDW-1, BDW-BDET);
+  // SW_UFIXED(2*BDET,BDET) det_short;
+  // det_short.range(2*BDET-1, 0) = det_noLeadZeros.range(BDW-1, BDW-2*BDET);
+
+  // Take reciprocal with lookup table.
   static const OneOverInt calcOneOverInt;
   SW_UFIXED(BDET,OneOverInt::BOI) invDet_veryshort = calcOneOverInt.getIt(det_veryshort);
 
   // Determine higher order corrections to reciprocal.
   // (If det = a + b, where b small, this solves for x, where x is small, (a + b) * (A + x) = 1,
-  // where A is an approximation to 1/A. So x = A*(1 - A*a - A*b), and (A+x) = A*(2 - A*a - A*b). 
-
-  SW_UFIXED(2*BDET,BDET) det_short;
-  det_short.range(2*BDET-1, 0) = det.range(msb, lsb - BDET);
+  // where A is a LUT approximation to 1/a. So x = A*(1 - A*a - A*b), and (A+x) = A*(2 - A*a - A*b). 
 
   // This is inverse determinant, aside from shift factor SHIFT.
   // First line uses one less clock cycle than second line, but one more DSP ...
