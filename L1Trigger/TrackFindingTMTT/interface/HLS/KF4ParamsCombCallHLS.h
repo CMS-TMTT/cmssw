@@ -13,7 +13,8 @@
  
 #include "L1Trigger/TrackFindingTMTT/interface/KF4ParamsComb.h"
 // Defines StubHLS & KFstateHLS & ExtraOutHLS.
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KF4interfaceHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
 
 using namespace std;
 

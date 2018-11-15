@@ -297,6 +297,7 @@ bool KF4ParamsCombCallHLS::isGoodState( const kalmanState &state ) const
   // Check if HLS & C++ KF agree ...
 
   if (goodState && not goodState_HLS) {
+    // Errors caused by small precision errors in chi2 cut value.
     cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<extraOut_.z0Cut<<" "<<extraOut_.ptCut<<" "<<extraOut_.chiSquaredCut<<" "<<extraOut_.sufficientPScut<<endl;
     cout<<"chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<endl;
   } else if (not goodState && goodState_HLS) {

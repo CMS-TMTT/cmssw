@@ -14,13 +14,15 @@
 
 // Defines StateHLS & KFstateHLS. Also defines finite bit integers & floats.
 #ifdef CMSSW_GIT_HASH
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KF4interfaceHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSutilities.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS.h"
 #else
-#include "KF4interfaceHLS.h"
-#include "KalmanMatricesHLS.h"
 #include "HLSutilities.h"
+#include "StubHLS.h"
+#include "KFstateHLS.h"
+#include "KalmanMatricesHLS.h"
 #endif
  
 #ifdef CMSSW_GIT_HASH

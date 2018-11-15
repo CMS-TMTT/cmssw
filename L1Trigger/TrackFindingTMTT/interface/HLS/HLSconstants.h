@@ -3,10 +3,12 @@
 
 #ifdef CMSSW_GIT_HASH
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSutilities.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KF4interfaceHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
 #else
 #include "HLSutilities.h"
-#include "KF4interfaceHLS.h"
+#include "StubHLS.h"
+#include "KFstateHLS.h"
 #endif
 
 #ifdef CMSSW_GIT_HASH
@@ -53,7 +55,7 @@ static const float phiSectorWidth = TWO_PI / numPhiSectors;
 // Chosen such that pow(2,+-shift) = (dcBin_digi, dmBin_digi) calculated below.
 // (where sign diff is because in KalmanUpdate.cc, one is used to shift right & one to shift left).
 // Adjust if you change bits assigned to stubs.
-enum {phiToCbin_bitShift = 7, invRToMbin_bitShift = 2+BEX};
+enum {phiToCbin_bitShift = 7, invRToMbin_bitShift = 4};
 enum {BCH=BH1-phiToCbin_bitShift, BMH=BH0+invRToMbin_bitShift};
 
 // Size of HT cells

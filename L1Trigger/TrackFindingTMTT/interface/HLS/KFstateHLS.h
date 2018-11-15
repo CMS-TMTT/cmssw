@@ -1,8 +1,15 @@
-#ifndef __KF4interfaceHLS__
-#define __KF4interfaceHLS__
+#ifndef __KFstateHLS__
+#define __KFstateHLS__
 
-// If defined, then add 2 extra bits to stub r & z coords relative to Dec. 2016 format.
-#define EXTRA_BITS
+/**
+ * This defines Helix States for the Kalman Filter HLS code.
+ * N.B. It therefore can't use the Settings class or any external libraries! Nor can it be a C++ class.
+ *
+ * All variable names & equations come from Fruhwirth KF paper
+ * http://dx.doi.org/10.1016/0168-9002%2887%2990887-4
+ * 
+ * Author: Ian Tomalin
+ */
 
 // If defined, use 25 bits for the off-diagonal elements of the helix param covariance matrix.
 // Ian thinks this is needed to avoid bit overflows messing up some tracks (although the effect on tracking
@@ -10,7 +17,7 @@
 // It is unnecessary if the hit errors are inflated to allow for scattering.
 //#define COV_EXTRA_BITS
 
-// If defined, set optimum numbers of bits for Ultrascale instead of Virtex7 FPGAs.
+// If defined, set optimum numbers of bits for Ultrascale instead of Virtex7 FPGAs. Requires VHDL change too.
 //#define ULTRASCALE
 
 // Must use AP_UINT(1) instead of bool, due to bug in HLS IP export.
@@ -55,55 +62,19 @@ enum B_DSP {
   B17=B18-1, B24=B25-1, B34=B35-1
 };
 
-// Extra bits for stub (r,z) coords. -- Also influences helix digitisation.
-#ifdef EXTRA_BITS
-enum B_EXTRA {BEX = 2};
-#else
-enum B_EXTRA {BEX = 0};
-#endif
-
-// Total number of bits taken from https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/firmware/trunk/cactusupgrades/projects/tracktrigger/kalmanfit/firmware/hdl/packages/stubs.vhd
-
-// Number of bits needed for integer part of stub info.
-// (For r & z, this is 1 larger than HT output format, since KF VHDL internally redigitizes them, measuring
-//  r w.r.t. beamline & uses r digi multipler for z. Except that in nonant data format, KF VHDL actually
-// uses z multiplier that is factor 2 smaller than r multiplier. By using BSZ1 = BSZ - 1 below,
-// the additional factor 2 is applied at the VHDL-HLS interface. ).
-// For octant format
-//enum B_STUB {BSR = 10+1+BEX, BSZ = 12+1+BEX, BSP=14, BSZ1 = BSZ};
-// For nonant format
-enum B_STUB {BSR = 10+1+BEX, BSZ = 12+1+BEX, BSP=14, BSZ1 = BSZ - 1};
-
 // Total number of bits from  https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/firmware/trunk/cactusupgrades/projects/tracktrigger/kalmanfit/firmware/hdl/packages/KFstates.vhd .
 // Fractional number of bits from dfeFixMax() or dfeFix() in Maxeller code https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/firmware/trunk/cactusupgrades/projects/tracktrigger/kalmanfit/firmware/cgn/src/formats/State.maxj
 // Can change if modify seed covariance in VHDL accordingly.
 
-// Number of bits needed for integer part of helix parameters & chi2 & their sign
-//enum B_HELIX {BH0 = 7-BEX, BH1 = 14, BH2 = 5, BH3 = 9+BEX, BCHI = 10};
-// IRT make compatible with data format doc.
-enum B_HELIX {BH0 = 5-BEX, BH1 = 15, BH2 = 5, BH3 = 9+BEX, BCHI = 10};
+// But updated to include 2 extra bits for stub (r,z) & factor 4 increase in seed tanL uncertainty.
+
+// Number of bits for helix params & chi2.
+enum B_HELIX {BH0 = 3, BH1 = 15, BH2 = 5, BH3 = 11, BCHI = 10};
 // Number of bits needed for integer part of helix covariance matrix & their sign.
-//enum B_HCOV {BHC00 = -1-2*BEX, BHC11 = 17, BHC22 = -2, BHC33=13+2*BEX, BHC01=8-BEX, BHC23=6+BEX};
-// IRT: scaled up tanL uncertainty from seed by factor 4, requiring this change.
-enum B_HCOV {BHC00 = -1-2*BEX, BHC11 = 17, BHC22 = 0, BHC33=13+2*BEX, BHC01=8-BEX, BHC23=6+BEX};
-// Number of bits needed for integer part of track fit chi3.
+enum B_HCOV {BHC00 = -5, BHC11 = 17, BHC22 = 0, BHC33=17, BHC01=6, BHC23=8};
 
 // Bits used for Hough (m,c) bins.
 enum B_HT {BHT_C = 6, BHT_M = 6};   // Nonants
-//enum B_HT {BHT_C = 6, BHT_M = 5};  // Octants
-
-struct StubHLS {
-  typedef AP_UFIXED(BSR,BSR) TR;
-  //  typedef AP_UFIXED(BSR,BSR) TR;
-  typedef AP_FIXED(BSZ1,BSZ)  TZ;
-  typedef AP_FIXED(BSP,BSP)  TP;
-  // The digitized stub parameters here differ slightly from those used in the HT, to simplify the KF maths.
-  TR r;      // Note this is r, not rT, so is unsigned. (Misnamed in Maxeller) -- IRT: I suspect only 10 bits are needed.
-  TZ z;      // This is (rMult/zMult) larger than digitised z used by HT, so needs one more bit.
-  TP phiS;
-  // IRT: Maxeller transmits stub layerId (not reducedLayerId). I assume this can't be used for anything, so don't do it here.
-  AP_UINT(1)       valid; // Used by external code to indicate if input data is valid.
-};
 
 // Format of KF helix state existing Maxeller firmware, keeping only useful elements.
 

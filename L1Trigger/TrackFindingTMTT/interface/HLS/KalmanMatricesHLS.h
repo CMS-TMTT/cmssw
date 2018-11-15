@@ -12,13 +12,15 @@
 
 // Defines StateHLS & KFstateHLS. Also defines finite bit integers & floats.
 #ifdef CMSSW_GIT_HASH
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KF4interfaceHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSconstants.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSutilities.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSconstants.h"
 #else
-#include "KF4interfaceHLS.h"
-#include "HLSconstants.h"
 #include "HLSutilities.h"
+#include "StubHLS.h"
+#include "KFstateHLS.h"
+#include "HLSconstants.h"
 #endif
  
 #ifdef CMSSW_GIT_HASH
@@ -83,7 +85,7 @@ public:
   typedef AP_UFIXED(B34,BVZZ) TVZZ;
   typedef AP_UFIXED(1,1)       TV0;
 
-  enum {BM=10+BEX}; // Used for pitch. May need increasing if larger r or phi multipliers used.
+  enum {BM=12}; // Used for pitch. May need increasing if larger r or phi multipliers used.
   typedef AP_UFIXED(B17,BM) TM;
 
 public:
@@ -103,7 +105,7 @@ public:
 
 class PitchOverR_2 {
 public:
-  enum {BRED = 2 + BEX}; // To save ROM resources, reduce granularity in r by this number of bits. 
+  enum {BRED = 4}; // To save ROM resources, reduce granularity in r by this number of bits. 
   enum {MAXN = 1 << (BSR - BRED)}; // pow(2,BSR) // Max. value of [r / pow(2,BRED)].
   // Number of bits chosen based on CalcCheck job summary.
   typedef AP_UFIXED(12,5)   TPOR;
