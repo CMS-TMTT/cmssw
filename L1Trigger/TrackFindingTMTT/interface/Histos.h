@@ -268,10 +268,12 @@ private:
   map<string, TH1F*>     hisLayersPerTrueTrack_;
   map<string, TH1F*>     hisPSLayersPerTrueTrack_;
 
-  map<string, TH1F*>     hisNumTracksPerLink_;
   map<string, TH1F*>     hisNumStubsPerLink_;
   map<string, TH2F*>     hisNumStubsVsLink_;
   map<string, TProfile*> profMeanStubsPerLink_;
+  map<string, TH1F*>     hisNumTrksPerLink_;
+  map<string, TH2F*>     hisNumTrksVsLink_;
+  map<string, TProfile*> profMeanTrksPerLink_;
 
   map<string, TProfile*> profExcessStubsPerTrackVsPt_;
   map<string, TH1F*>     hisFracMatchStubsOnTracks_;

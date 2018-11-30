@@ -1003,10 +1003,12 @@ void Histos::bookTrackCands(bool withRZfilter) {
   hisLayersPerTrueTrack_[tName] = inputDir.make<TH1F>(addn("LayersPerTrueTrack"),";No. of layers with stubs per genuine track;",20,-0.5,19.5);
   hisPSLayersPerTrueTrack_[tName] = inputDir.make<TH1F>(addn("PSLayersPerTrueTrack"),";No. of PS layers with stubs per genuine track;",20,-0.5,19.5);
 
-  hisNumTracksPerLink_[tName] = inputDir.make<TH1F>(addn("NumTracksPerLink"), "; No. tracks/event per HT output opto-link;", 50,-0.5,49.5);
-  hisNumStubsPerLink_[tName] = inputDir.make<TH1F>(addn("NumStubsPerLink"), "; No. stubs/event per HT output opto-link;", 50,-0.5,299.5);
-  hisNumStubsVsLink_[tName] = inputDir.make<TH2F>(addn("NumStubsVsLink"), "; HT output opto-link; No. stubs/event", 72, -0.5, 71.5, 15,-0.5,299.5);
-  profMeanStubsPerLink_[tName] = inputDir.make<TProfile>(addn("MeanStubsPerLink"), "; Mean stubs/event received per HT output opto-link;", 72,-0.5,71.5);
+  hisNumStubsPerLink_[tName] = inputDir.make<TH1F>(addn("NumStubsPerLink"), "; Mean #stubs per HT output opto-link;", 50,-0.5,199.5);
+  hisNumStubsVsLink_[tName] = inputDir.make<TH2F>(addn("NumStubsVsLink"), "; HT output opto-link; No. stubs/event", 36, -0.5, 35.5, 20,-0.5,199.5);
+  profMeanStubsPerLink_[tName] = inputDir.make<TProfile>(addn("MeanStubsPerLink"), "; Mean #stubs per HT output opto-link;", 36,-0.5,35.5);
+  hisNumTrksPerLink_[tName] = inputDir.make<TH1F>(addn("NumTrksPerLink"), "; Mean #tracks per HT output opto-link;", 50,-0.5,49.5);
+  hisNumTrksVsLink_[tName] = inputDir.make<TH2F>(addn("NumTrksVsLink"), "; HT output opto-link; No. tracks/event", 72, -0.5, 71.5, 20,-0.5,49.5);
+  profMeanTrksPerLink_[tName] = inputDir.make<TProfile>(addn("MeanTrksPerLink"), "; Mean #tracks per HT output opto-link;", 36,-0.5,35.5);
 
   // Checks if tracks have too many stubs to be stored in memory in each cell.
   profExcessStubsPerTrackVsPt_[tName] = inputDir.make<TProfile>(addn("ExcessStubsPerTrackVsPt"),";q/Pt; Prob. of too many stubs per track",16,0.,maxAbsQoverPt);
@@ -1138,7 +1140,7 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
   //=== Count track candidates found in the tracker. 
 
   unsigned int nTracks = 0;
-  const unsigned int numPhiOctants = 8;
+  const unsigned int numPhiOctants = settings_->numPhiOctants();;
   vector<unsigned int> nTracksInOctant(numPhiOctants, 0);
   for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
     unsigned int nTracksInEtaReg = 0;
@@ -1202,29 +1204,44 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
   // Plot number of tracks & number of stubs per output HT opto-link.
 
   if (not withRZfilter) {
+    const unsigned int numPhiSecPerOct = numPhiSectors_/numPhiOctants;
+    // Hard-wired bodge
+    const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerOct;
+
     for (unsigned int iPhiOct = 0; iPhiOct < numPhiOctants; iPhiOct++) {
       // Each octant has a separate set of links.
 
-      map<unsigned int, unsigned int> stubsToLinkCount;
-      const unsigned int numPhiSecPerOct = numPhiSectors_/numPhiOctants;
+      vector<unsigned int> stubsToLinkCount(nLinks, 0);
+      vector<unsigned int> trksToLinkCount(nLinks, 0);
       for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerOct; iSecInOct++) {
 	unsigned int iPhiSec = iPhiOct * numPhiSecPerOct + iSecInOct;
 	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
 	  const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 	  for (const L1track3D& trk : get3Dtrk.trackCands3D(false)) {
 	    unsigned int link = trk.optoLinkID();
-	    hisNumTracksPerLink_[tName]->Fill(link);
-	    stubsToLinkCount[link] += trk.getNumStubs();
+	    if (link < nLinks) {
+  	      stubsToLinkCount[link] += trk.getNumStubs();
+	      trksToLinkCount[link] += 1;
+	    } else {
+	      // Bug -- array too small ...
+	      //cout<<"MESS UP "<<link<<endl;
+	    }
 	  }
 	}
       }
 
-      for (const auto& p : stubsToLinkCount) {
-        unsigned int link  = p.first;
-        unsigned int nstbs = p.second;
+      for (unsigned int link = 0; link < nLinks; link++) {
+        unsigned int nstbs = stubsToLinkCount[link];
         hisNumStubsPerLink_[tName]->Fill(nstbs);
         hisNumStubsVsLink_[tName]->Fill(link, nstbs);
         profMeanStubsPerLink_[tName]->Fill(link, nstbs);
+      }
+
+      for (unsigned int link = 0; link < nLinks; link++) {
+        unsigned int ntrks = trksToLinkCount[link];
+        hisNumTrksPerLink_[tName]->Fill(ntrks);
+        hisNumTrksVsLink_[tName]->Fill(link, ntrks);
+        profMeanTrksPerLink_[tName]->Fill(link, ntrks);
       }
     }
   }
