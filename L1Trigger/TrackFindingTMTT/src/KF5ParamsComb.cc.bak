@@ -354,11 +354,6 @@ TMatrixD KF5ParamsComb::PxxModel( const kalmanState *state, const StubCluster *s
   return p;
 }
 
-std::string KF5ParamsComb::getParams(){
-  return "KF5ParamsComb";
-}
-
-
 bool KF5ParamsComb::isGoodState( const kalmanState &state )const
 {
 

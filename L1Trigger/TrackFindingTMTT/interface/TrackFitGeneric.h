@@ -41,7 +41,6 @@ public:
   // Optional debug printout at end of job.
   virtual void endJob() {}
 
-  virtual std::string getParams()=0;
   const Settings* getSettings()const{return settings_;}
   unsigned nDupStubs()const{ return nDupStubs_; }
 

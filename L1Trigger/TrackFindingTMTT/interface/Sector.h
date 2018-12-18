@@ -17,7 +17,7 @@ class Sector {
 
 public:
   
-  Sector() {}
+  Sector() : settings_(nullptr) {}
   ~Sector() {}
 
   // Initialization.

@@ -57,8 +57,6 @@ class L1KalmanComb : public TrackFitGeneric{
 	const kalmanState *mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const kalmanState *last_state, 
 				    const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2 );
 
-	virtual std::string getParams()=0;
-
     protected:
 	/* Methods */
 	std::vector<double> Hx( const TMatrixD &pH, const std::vector<double> &x )const;

@@ -34,9 +34,21 @@ namespace TMTT {
 namespace KalmanHLS {
 #endif
 
+//--- Explicit instantiation required for all non-specialized templates, to allow them to be implemented 
+//--- in .cc files.
+
+template void kalmanUpdateHLS(const StubHLS& stub, const KFstateHLS<4>& stateIn, KFstateHLS<4>& stateOut, ExtraOutHLS<4>& extraOut);
+
+template void kalmanUpdateHLS(const StubHLS& stub, const KFstateHLS<5>& stateIn, KFstateHLS<5>& stateOut, ExtraOutHLS<5>& extraOut);
+
+template TCHI_INT calcDeltaChi2(const VectorRes<4>& res, const MatrixInverseR<4>& Rinv);
+
+template TCHI_INT calcDeltaChi2(const VectorRes<5>& res, const MatrixInverseR<5>& Rinv);
+
 //=== Add stub to old KF helix state to get new KF helix state.
 
-void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS& stateOut, ExtraOutHLS& extraOut) {
+template <unsigned int NPAR>
+void kalmanUpdateHLS(const StubHLS& stub, const KFstateHLS<NPAR>& stateIn, KFstateHLS<NPAR>& stateOut, ExtraOutHLS<NPAR>& extraOut) {
   stateOut.cBin = stateIn.cBin;
   stateOut.mBin = stateIn.mBin;
   stateOut.layerID = stateIn.layerID;
@@ -51,7 +63,7 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   static bool first = true;
   if (first) {
     first = false;
-    std::cout<<std::endl<<"KF HLS bodge bits: V="<<BODGE_V<<" S="<<BODGE_S<<" R="<<BODGE_R<<" IR="<<BODGE_IR<<" DET="<<BODGE_DET<<" K="<<BODGE_K<<" RES="<<BODGE_RES<<" CHI2="<<BODGE_CHI2<<std::endl<<std::endl;
+    std::cout<<std::endl<<"KF HLS bodge bits: V="<<BODGE<NPAR>::V<<" S="<<BODGE<NPAR>::S<<" R="<<BODGE<NPAR>::R<<" IR="<<BODGE<NPAR>::IR<<" DET="<<BODGE<NPAR>::DET<<" K="<<BODGE<NPAR>::K<<" RES="<<BODGE<NPAR>::RES<<" CHI2="<<BODGE<NPAR>::CHI2<<std::endl<<std::endl;
   }
 #endif
 
@@ -66,32 +78,32 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   MatrixV V(stub.r, stub.z, stateIn.inv2R, stateIn.tanL, stateIn.mBin);
 
   // Store vector of input helix params.
-  VectorX x(stateIn.inv2R, stateIn.phi0, stateIn.tanL, stateIn.z0);
+  VectorX<NPAR> x(stateIn.inv2R, stateIn.phi0, stateIn.tanL, stateIn.z0);
 
   // Store covariance matrix of input helix params.
-  MatrixC C(stateIn.cov_00, stateIn.cov_11, stateIn.cov_22, stateIn.cov_33, stateIn.cov_01, stateIn.cov_23);
+  MatrixC<NPAR> C(stateIn);
 
   // Calculate matrix of derivatives of predicted stub coords w.r.t. helix params.
-  MatrixH H(stub.r);
+  MatrixH<NPAR> H(stub.r);
 
   // Calculate S = H*C, and its transpose St, which is equal to C*H(transpose).
-  MatrixS           S(H, C);
-  MatrixS_transpose St(S);
+  MatrixS<NPAR>           S(H, C);
+  MatrixS_transpose<NPAR> St(S);
 
   // Calculate covariance matrix of predicted residuals R = V + H*C*Ht = V + H*St, and its inverse.
   // (Call this Rmat instead of R to avoid confusion with track radius).
-  MatrixR        Rmat(V, H, St);
-  MatrixInverseR RmatInv(Rmat);
+  MatrixR<NPAR>  Rmat(V, H, St);
+  MatrixInverseR<NPAR> RmatInv(Rmat);
 
   // Calculate Kalman gain matrix * determinant(R): K = S*R(inverse)
-  MatrixK K(St, RmatInv);
+  MatrixK<NPAR> K(St, RmatInv);
 
   // Calculate hit residuals.
-  VectorRes res(m, H, x); 
+  VectorRes<NPAR> res(m, H, x); 
 
   // Calculate output helix params & their covariance matrix.
-  VectorX x_new(x, K, res);
-  MatrixC C_new(C, K, S);
+  VectorX<NPAR> x_new(x, K, res);
+  MatrixC<NPAR> C_new(C, K, S);
  
   /*
   // Useful to debug C matrices with negative determinants, by fully recalculating them in double precision.
@@ -165,8 +177,8 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   extraOut.chiSquaredCut = (chi2 <= chi2_digi_cut[nStubs]) || innerLayer;
   extraOut.sufficientPScut = not (nStubs <= 2 && V._2Smodule); 
 
-  KFstateHLS::TP phiAtRefR = x_new._1 - chosenRofPhi_digi * x_new._0;
-  StubHLS::TZ      zAtRefR = x_new._3 + chosenRofZ_digi * x_new._2; // Intentional use of StubHLS::TZ type
+  typename KFstateHLS<NPAR>::TP phiAtRefR = x_new._1 - chosenRofPhi_digi * x_new._0;
+  StubHLS::TZ                   zAtRefR = x_new._3 + chosenRofZ_digi * x_new._2; // Intentional use of StubHLS::TZ type
   // Constants BMH & BCH below set in HLSconstants.h
   // Casting from ap_fixed to ap_int rounds to zero, not -ve infinity, so cast to ap_fixed with no fractional part first.
   AP_INT(BMH) mBinHelix_tmp = AP_FIXED(BMH,BMH)( 
@@ -210,7 +222,9 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
   AP_INT(BHT_M) mMinus1 = stateIn.mBin - AP_INT(BHT_M)(1);
   AP_INT(BHT_C) cPlus1  = stateIn.cBin + AP_INT(BHT_C)(1);
   AP_INT(BHT_C) cMinus1 = stateIn.cBin - AP_INT(BHT_C)(1);
-  extraOut.htBinWithin1Cut = ((mBinHelix_tmp_trunc == stateIn.mBin || mBinHelix_tmp_trunc == mPlus1 || mBinHelix_tmp_trunc == mMinus1) && (cBinHelix_tmp_trunc == stateIn.cBin || cBinHelix_tmp_trunc == cPlus1 || cBinHelix_tmp_trunc == cMinus1));
+  // This cut is not needed within KF HLS. Will be done in KF or DR VDHL. 
+  //extraOut.htBinWithin1Cut = ((mBinHelix_tmp_trunc == stateIn.mBin || mBinHelix_tmp_trunc == mPlus1 || mBinHelix_tmp_trunc == mMinus1) && (cBinHelix_tmp_trunc == stateIn.cBin || cBinHelix_tmp_trunc == cPlus1 || cBinHelix_tmp_trunc == cMinus1));
+  extraOut.htBinWithin1Cut = true;
 
   //std::cout<<"ZCALC "<<x_new._3<<" "<<chosenRofZ_digi<<" "<<x_new._2<<std::endl;
 
@@ -219,7 +233,7 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
 
   //std::cout<<"ZZZ RANGE "<<etaBounds.z_[stateIn.etaSectorID]<<" < "<<zAtRefR<<" < "<<etaBounds.z_[stateIn.etaSectorID+1]<<" sec="<<stateIn.etaSectorID<<" zsign="<<stateIn.etaSectorZsign<<std::endl;
 
-  //std::cout<<"CHECK HT WITHIN 1 BIN: "<<extraOut.htBinWithin1Cut<<std::endl;
+  //std::cout<<"CHECK HT WITHIN 1 BIN: "<<extraOut.htBinWithin1Cut<<std::endl;
   //std::cout<<"CHECK IN RANGE: c"<<cBinInRange<<" sec "<<inEtaSector<<std::endl;
   
   //std::cout<<"EXTRA: z0Cut="<<extraOut.z0Cut<<" ptCut="<<extraOut.ptCut<<" chi2Cut="<<extraOut.chiSquaredCut<<" PScut="<<extraOut.sufficientPScut<<std::endl;
@@ -268,12 +282,13 @@ void KalmanUpdateHLS(const StubHLS& stub, const KFstateHLS& stateIn, KFstateHLS&
 }
 
 // Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
-TCHI_INT calcDeltaChi2(const VectorRes& res, const MatrixInverseR& Rinv) {
+template <unsigned int NPAR>
+TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv) {
   // Simplify calculation by noting that Rinv is symmetric.
 #ifdef USE_FIXED
-  typedef MatrixInverseR::TRI00_short TRI00_short;
-  typedef MatrixInverseR::TRI11_short TRI11_short;
-  typedef MatrixInverseR::TRI01_short TRI01_short;
+  typedef typename MatrixInverseR<NPAR>::TRI00_short TRI00_short;
+  typedef typename MatrixInverseR<NPAR>::TRI11_short TRI11_short;
+  typedef typename MatrixInverseR<NPAR>::TRI01_short TRI01_short;
   TCHI_INT dChi2 = (res._0 * res._0) * TRI00_short(Rinv._00) +
                    (res._1 * res._1) * TRI11_short(Rinv._11) +
                2 * (res._0 * res._1) * TRI01_short(Rinv._01);

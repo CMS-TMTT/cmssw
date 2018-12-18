@@ -214,8 +214,4 @@ std::map<std::string, double> ChiSquared4ParamsApprox::convertParams(std::vector
     return result;
 }
 
-std::string ChiSquared4ParamsApprox::getParams(){
-    return "ChiSquared4ParamsApprox";
-}
-
 }

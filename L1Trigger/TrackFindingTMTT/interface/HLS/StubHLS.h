@@ -54,7 +54,8 @@ namespace KalmanHLS {
 
 enum B_STUB {BSR = 12+1, BSZ = 14+1, BSP=14, BSZ1 = BSZ - 1}; // nonants
 
-struct StubHLS {
+class StubHLS {
+public:
   typedef AP_UFIXED(BSR,BSR) TR;
   //  typedef AP_UFIXED(BSR,BSR) TR;
   typedef AP_FIXED(BSZ1,BSZ)  TZ;

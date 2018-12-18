@@ -17,6 +17,10 @@ namespace TMTT {
 namespace KalmanHLS {
 #endif
 
+//--- Number of helix parameters for track fit.
+
+static const unsigned int N_HELIX_PAR = 4;
+
 //-- Copied from Maxeller code Constants.maxj
 
 // Digitisation multipliers (from data format doc).
@@ -97,15 +101,15 @@ public:
 //static const EtaBoundaries etaBoundaries;
 
 // Cuts to select acceptable track states.
-static const KFstateHLS::TZ z0_digi_cut = beamSpotLength*rMult;  // r multiplier used for z in KF.
-static const KFstateHLS::TR inv2R_digi_cut_4lay = inv2Rcut_4lay*inv2R_Mult;
-static const KFstateHLS::TR inv2R_digi_cut_2lay = inv2Rcut_2lay*inv2R_Mult;
+static const KFstateHLS<5>::TZ z0_digi_cut = beamSpotLength*rMult;  // r multiplier used for z in KF.
+static const KFstateHLS<5>::TR inv2R_digi_cut_4lay = inv2Rcut_4lay*inv2R_Mult;
+static const KFstateHLS<5>::TR inv2R_digi_cut_2lay = inv2Rcut_2lay*inv2R_Mult;
 // 1/2R cut for different #stubs on track. Element 0 is never used.
-static const KFstateHLS::TR inv2R_digi_cut[] = {0, 0, inv2R_digi_cut_2lay, inv2R_digi_cut_2lay, inv2R_digi_cut_4lay, inv2R_digi_cut_4lay, inv2R_digi_cut_4lay, inv2R_digi_cut_4lay};
+static const KFstateHLS<5>::TR inv2R_digi_cut[] = {0, 0, inv2R_digi_cut_2lay, inv2R_digi_cut_2lay, inv2R_digi_cut_4lay, inv2R_digi_cut_4lay, inv2R_digi_cut_4lay, inv2R_digi_cut_4lay};
 
 // Chi2 cut for different #stubs on track. Taken from KF*ParamsComb::isGoodState(). Element 0 is never used.
-//static const KFstateHLS::TCHI chi2_digi_cut[] = {1023, 1023, 15, 100, 320, 1023, 1023, 1023}; 
-static const KFstateHLS::TCHI chi2_digi_cut[] = {1023, 1023, 10, 30, 80, 120, 160, 1023}; 
+//static const KFstateHLS<5>::TCHI chi2_digi_cut[] = {1023, 1023, 15, 100, 320, 1023, 1023, 1023}; 
+static const KFstateHLS<5>::TCHI chi2_digi_cut[] = {1023, 1023, 10, 30, 80, 120, 160, 1023}; 
 
 #ifdef CMSSW_GIT_HASH
 }

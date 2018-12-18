@@ -12,8 +12,6 @@ public:
  
     ~ChiSquared4ParamsApprox(){}
  
-    std::string getParams();
- 
 protected:
     std::vector<double> seed(const L1track3D& l1track3D);
     std::vector<double> residuals(std::vector<double> x);

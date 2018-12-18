@@ -1,12 +1,13 @@
 ///=== This is the Kalman Combinatorial Filter for 4 helix parameters track fit algorithm.
  
  
-#include "L1Trigger/TrackFindingTMTT/interface/KF4ParamsComb.h"
+#include "L1Trigger/TrackFindingTMTT/interface/KFParamsComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/kalmanState.h"
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #define CKF_DEBUG
 
 namespace TMTT {
+
 
 /*
 // Scattering constants - HISTORIC NOT USED.
@@ -46,7 +47,7 @@ static double wrapRadian( double t ){
 
 
 
-KF4ParamsComb::KF4ParamsComb(const Settings* settings, const uint nPar, const string &fitterName ) : L1KalmanComb(settings, nPar, fitterName ){
+KFParamsComb::KFParamsComb(const Settings* settings, const uint nPar, const string &fitterName ) : L1KalmanComb(settings, nPar, fitterName ){
 
   hdxmin[INV2R] = -1.1e-4;
   hdxmax[INV2R] = +1.1e-4;
@@ -56,6 +57,10 @@ KF4ParamsComb::KF4ParamsComb(const Settings* settings, const uint nPar, const st
   hdxmax[Z0] = +4.1;
   hdxmin[T] = -6.;
   hdxmax[T] = +6.;
+  if (nPar_ == 5) {
+    hdxmin[D0] = -1.001;
+    hdxmax[D0] = +1.001;
+  }
 
   hxmin[INV2R] = -0.3 * 0.0057;
   hxmax[INV2R] = +0.3 * 0.0057;
@@ -65,6 +70,10 @@ KF4ParamsComb::KF4ParamsComb(const Settings* settings, const uint nPar, const st
   hxmax[Z0] = +120;
   hxmin[T] = -6.;
   hxmax[T] = +6.;
+  if (nPar_ == 5) {
+    hxmin[D0] = -3.5;
+    hxmax[D0] = +3.5;
+  }
 
   hddMeasmin[PHI0] = -1.e1;
   hddMeasmax[PHI0] = +1.e1;
@@ -75,7 +84,6 @@ KF4ParamsComb::KF4ParamsComb(const Settings* settings, const uint nPar, const st
   hresmin[PHI0] = -10.;
   hresmax[PHI0] = +10.;
 
-
   hxaxtmin[INV2R] = -1.e-3;
   hxaxtmax[INV2R] = +1.e-3;
   hxaxtmin[PHI0] = -1.e-1;
@@ -84,10 +92,14 @@ KF4ParamsComb::KF4ParamsComb(const Settings* settings, const uint nPar, const st
   hxaxtmax[Z0] = +10.;
   hxaxtmin[T] = -1.e-0;
   hxaxtmax[T] = +1.e-0;
+  if (nPar_ == 5) {
+    hxaxtmin[D0] = -1.001;
+    hxaxtmax[D0] = +1.001;
+  }
 }
 
 
-std::map<std::string, double> KF4ParamsComb::getTrackParams(const kalmanState *state )const{
+std::map<std::string, double> KFParamsComb::getTrackParams(const kalmanState *state )const{
 
   std::vector<double> x = state->xa();
   std::map<std::string, double> y;
@@ -95,17 +107,47 @@ std::map<std::string, double> KF4ParamsComb::getTrackParams(const kalmanState *s
   y["phi0"] = wrapRadian( x.at(PHI0) + sectorPhi() );
   y["z0"] = x.at(Z0);
   y["t"] = x.at(T);
-  y["d0"] = 0;
+  if (nPar_ == 5) {
+    y["d0"] = x.at(D0);
+  }
   return y;
 }
+
+/* If using 5 param helix fit, get track params with beam-spot constraint & track fit chi2 from applying it. */
+
+std::map<std::string, double> KFParamsComb::getTrackParams_BeamConstr( const kalmanState *state, double& chi2 ) const {
+  if (nPar_ == 5) {
+    std::map<std::string, double> y;
+    std::vector<double> x = state->xa();
+    TMatrixD cov_xa       = state->pxxa(); 
+    double deltaChi2 = (x.at(D0) * x.at(D0)) / cov_xa[D0][D0];
+    chi2 = state->chi2() + deltaChi2;
+    // Apply beam-spot constraint to helix params in transverse plane only, as most sensitive to it.
+    x[INV2R] -= x.at(D0) * (cov_xa[INV2R][D0] / cov_xa[D0][D0]); 
+    x[PHI0 ] -= x.at(D0) * (cov_xa[PHI0 ][D0] / cov_xa[D0][D0]); 
+    x[D0   ]  = 0.0;
+    y["qOverPt"] = x.at(INV2R) / getSettings()->invPtToInvR() * 2.; 
+    y["phi0"]    = wrapRadian( x.at(PHI0) + sectorPhi() );
+    y["z0"]      = x.at(Z0);
+    y["t"]       = x.at(T);
+    y["d0"]      = x.at(D0);
+    return y;
+  } else {
+    return (this->getTrackParams(state));
+  }
+}
+
  
-/* The Kalman measurement matrix = derivative of helix intercept w.r.t. helix params
+/* The Kalman measurement matrix = derivative of helix intercept w.r.t. helix params 
  * Here I always measure phi(r), and z(r) */
-TMatrixD KF4ParamsComb::H(const StubCluster* stubCluster)const{
+TMatrixD KFParamsComb::H(const StubCluster* stubCluster)const{
   TMatrixD h(2, nPar_);
   double r = stubCluster->r();
   h(PHI,INV2R) = -r;
   h(PHI,PHI0) = 1;
+  if (nPar_ == 5) {
+    h(PHI,D0) = -1./r;
+  }
   h(Z,Z0) = 1;
   h(Z,T) = r;
   return h;
@@ -113,54 +155,62 @@ TMatrixD KF4ParamsComb::H(const StubCluster* stubCluster)const{
 
 // Not used?
 
-TMatrixD KF4ParamsComb::dH(const StubCluster* stubCluster)const{
+TMatrixD KFParamsComb::dH(const StubCluster* stubCluster)const{
 
   double dr(0);
   if(stubCluster->layerId() > 10){
     dr = stubCluster->sigmaZ();
   }
 
+  double r = stubCluster->r();
+
   TMatrixD h(2, nPar_);
   h(PHI,INV2R) = -dr;
+  if (nPar_ == 5) {
+    h(PHI,D0) = dr/(r*r);
+  }
   h(Z,T) = dr;
 
   return h;
 }
  
 /* Seed the state vector */
-std::vector<double> KF4ParamsComb::seedx(const L1track3D& l1track3D)const{
+std::vector<double> KFParamsComb::seedx(const L1track3D& l1track3D)const{
 
   std::vector<double> x(nPar_);
   x[INV2R] = getSettings()->invPtToInvR() * l1track3D.qOverPt()/2;
   x[PHI0]  = wrapRadian( l1track3D.phi0() - sectorPhi() );
   x[Z0]    = l1track3D.z0();
   x[T]     = l1track3D.tanLambda();
+  if (nPar_ == 5) {
+    x[D0]    = 0;
+  }
     
   return x;
 }
 
 /* Seed the covariance matrix */
-TMatrixD KF4ParamsComb::seedP(const L1track3D& l1track3D)const{
+TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
   TMatrixD p(nPar_,nPar_);
 
   double c = getSettings()->invPtToInvR() / 2; 
 
-  if ( getSettings()->numEtaRegions() == 18 ) { 
-      
-    // optimised for 18x2 sectors with additional error factor in pt/phi to avoid pulling towards wrong HT params
-    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; 
-    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; 
-    p(Z0,Z0) = 5.0 * 5.0; 
-    p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
-      
-  } else {
-      
-    // choose large errors
-    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 10; 
-    p(PHI0,PHI0) = 0.0051 * 0.0051 * 10; 
-    p(Z0,Z0) = 5.0 * 5.0; 
-    p(T,T) = 0.25 * 0.25 * 10;
-      
+  // Assumed track seed (from HT) uncertainty in transverse impact parameter.
+  const float d0Sigma = 1.0;
+
+  // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
+  p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
+  p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; // Based on HT cell size.
+  p(Z0,Z0) = 5.0 * 5.0; 
+  p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
+  if (nPar_ == 5) {
+    p(D0,D0) = d0Sigma * d0Sigma; 
+  } 
+
+
+  if ( getSettings()->numEtaRegions() <= 12 ) {    
+    // Inflate eta errors
+    p(T,T) = p(T,T) * 2 * 2;
   }
 
   return p;
@@ -168,7 +218,7 @@ TMatrixD KF4ParamsComb::seedP(const L1track3D& l1track3D)const{
 
 /* The forecast matrix
  * (here equals identity matrix) */
-TMatrixD KF4ParamsComb::F(const StubCluster* stubCluster, const kalmanState *state )const{
+TMatrixD KFParamsComb::F(const StubCluster* stubCluster, const kalmanState *state )const{
   TMatrixD F(nPar_,nPar_);
   for(unsigned int n = 0; n < nPar_; n++)
     F(n, n) = 1;
@@ -176,7 +226,7 @@ TMatrixD KF4ParamsComb::F(const StubCluster* stubCluster, const kalmanState *sta
 }
 
 /* the vector of measurements */
-std::vector<double> KF4ParamsComb::d(const StubCluster* stubCluster )const{
+std::vector<double> KFParamsComb::d(const StubCluster* stubCluster )const{
   std::vector<double> meas;
   meas.resize(2);
   meas[PHI] = wrapRadian( stubCluster->phi() - sectorPhi() );
@@ -185,7 +235,7 @@ std::vector<double> KF4ParamsComb::d(const StubCluster* stubCluster )const{
 }
 
 // Assumed hit resolution in (phi,z)
-TMatrixD KF4ParamsComb::PddMeas(const StubCluster* stubCluster, const kalmanState *state )const{
+TMatrixD KFParamsComb::PddMeas(const StubCluster* stubCluster, const kalmanState *state )const{
 
   double inv2R = (getSettings()->invPtToInvR()) * 0.5 * state->candidate().qOverPt(); // alternatively use state->xa().at(INV2R)
   double inv2R2 = inv2R * inv2R;
@@ -285,8 +335,8 @@ TMatrixD KF4ParamsComb::PddMeas(const StubCluster* stubCluster, const kalmanStat
 
 }
 
-// State uncertainty due to scattering -- HISTORIC NOT USED 
-TMatrixD KF4ParamsComb::PxxModel( const kalmanState *state, const StubCluster *stubCluster )const
+// State uncertainty due to scattering -- HISTORIC NOT USED
+TMatrixD KFParamsComb::PxxModel( const kalmanState *state, const StubCluster *stubCluster )const
 {
 
   TMatrixD p(nPar_,nPar_);
@@ -317,36 +367,41 @@ TMatrixD KF4ParamsComb::PxxModel( const kalmanState *state, const StubCluster *s
   return p;
 }
 
-
-std::string KF4ParamsComb::getParams(){
-  return "KF4ParamsComb";
-}
-
-
-bool KF4ParamsComb::isGoodState( const kalmanState &state )const
+bool KFParamsComb::isGoodState( const kalmanState &state )const
 {
+  // Cut values. (Layer 0 entry here is dummy). -- todo : make configurable
+
+  vector<float> z0Cut, ptTolerance, d0Cut, chi2Cut;
+  //  Layer   =    0      1      2     3     4      5      6
+  z0Cut       = { 999.,  999.,   15.,  15.,  15.,   15.,   15.};
+  ptTolerance = { 999.,  999.,   0.1,  0.1,  0.05, 0.05,  0.05};
+  d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,    5.};  // Only used for 5 param helix fit
+  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};
 
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );
-
-  // todo : make configurable
-
-  // N.B. Code below changed by Alexander Morton to allow tracking down to Pt = 2 GeV.
 
   double pt=fabs( getSettings()->invPtToInvR() / (2*state.xa()[INV2R]) ); 
   double z0=fabs( state.xa()[Z0] ); 
 
   // state parameter selections
-  if( nStubLayers >= 2 ){
-      
-    if( z0 > 15. ) goodState = false;      
 
-    const double tolerance = (nStubLayers >= 4)  ?  0.05  :  0.1;
-    if( pt < getSettings()->houghMinPt() - tolerance) goodState = false;
+  if (z0 > z0Cut[nStubLayers] ) goodState = false;
+  if( pt < getSettings()->houghMinPt() - ptTolerance[nStubLayers] ) goodState = false;
+  if (nPar_ == 5) {
+    double d0=fabs( state.xa()[D0] ); 
+    if( d0 > d0Cut[nStubLayers] ) goodState = false;
   }
 
-  // chi2 selections
-  if (getSettings()->kalmanMultiScattTerm() < 0.0001) { // scattering ignored
+  // chi2 selection
+
+  if (getSettings()->kalmanMultiScattTerm() > 0.0001) {   // Scattering taken into account
+
+    if (state.chi2() > chi2Cut[nStubLayers]) goodState=false; // No separate pT selection needed
+
+  } else {  // scattering ignored - HISTORIC
+
+    // N.B. Code below changed by Alexander Morton to allow tracking down to Pt = 2 GeV.
     if( nStubLayers == 2 ) {
       if (state.chi2() > 15.0) goodState=false; // No separate pT selection needed
     } else if ( nStubLayers == 3 ) {
@@ -363,34 +418,12 @@ bool KF4ParamsComb::isGoodState( const kalmanState &state )const
       if (state.chi2() > 2840.0 && pt <= 2.7) goodState=false;
     }
 
-  } else { // scattering taken into account.
-
-    if( nStubLayers == 2 ) {  
-      if (state.chi2() > 10.0) goodState=false; // No separate pT selection needed
-    } else if ( nStubLayers == 3 ) {
-      if (state.chi2() > 30.0) goodState=false;
-    } else if ( nStubLayers == 4 ) {  
-      if (state.chi2() > 80.0) goodState=false;
-    } else if ( nStubLayers == 5 ) {  // NEEDS TUNING FOR 5 OR 6 LAYERS !!!
-      if (state.chi2() > 120.0) goodState=false;
-    } else if ( nStubLayers >= 6 ) {  // NEEDS TUNING FOR 5 OR 6 LAYERS !!!
-      if (state.chi2() > 160.0) goodState=false;
-    }
   }
-
-  // IRT
-  //if( nStubLayers >= 4 ) {
-  //std::map<std::string, double> trackParams = getTrackParams(&state);
-  //L1fittedTrack fitTrkTmp(getSettings(), state.candidate(), state.stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state.chi2(), nPar_, true);
-  //if (abs(int(fitTrkTmp.getCellLocationFit().first) - int(fitTrkTmp.getCellLocationHT().first)) > 1 || abs(int(fitTrkTmp.getCellLocationFit().second) - int(fitTrkTmp.getCellLocationHT().second)) > 1) goodState = false;  
-    //cout<<"Consistent "<<abs(int(fitTrkTmp.getCellLocationFit().first) - int(fitTrkTmp.getCellLocationHT().first))<<" "<<abs(int(fitTrkTmp.getCellLocationFit().second) - int(fitTrkTmp.getCellLocationHT().second))<<" tp="<<(tpa_ != nullptr)<<endl;									      
-  //}
 
   if ( getSettings()->kalmanDebugLevel() >= 1 && tpa_ != nullptr) {
     if (not goodState) cout<<"State veto: nlay="<<nStubLayers;
     if (goodState)     cout<<"State kept: nlay="<<nStubLayers; 
-    cout<<" chi2="<<state.chi2()<<" pt="<<pt;
-    if (tpa_ != nullptr) cout<<" pt(mc)="<<tpa_->pt();
+    cout<<" chi2="<<state.chi2()<<" pt="<<pt<<" pt(mc)="<<tpa_->pt();
     cout<<" tanL="<<state.xa()[T]<<" z0="<<z0<<" phi0="<<state.xa()[PHI0]<<endl;
   }
 

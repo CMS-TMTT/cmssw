@@ -25,8 +25,6 @@ public:
  
     L1fittedTrack fit(const L1track3D& l1track3D);
  
-    virtual std::string getParams()=0;
- 
 protected:
     /* Methods */
     virtual std::vector<double> seed(const L1track3D& l1track3D)=0;
