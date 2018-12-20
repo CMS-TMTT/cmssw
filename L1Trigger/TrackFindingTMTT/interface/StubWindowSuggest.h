@@ -29,9 +29,12 @@ class StubWindowSuggest {
 
 public:
   
-  // Initialize.
+  // Initialize (for use with TMTT).
   StubWindowSuggest(const Settings* settings, const TrackerTopology*  trackerTopo) :
     settings_(settings), ptMin_(settings->houghMinPt()), theTrackerTopo_(trackerTopo) {} 
+
+  // Initialize (for use with HYBRID)
+  StubWindowSuggest(const Settings* settings) : settings_(settings), ptMin_(settings->houghMinPt()) {}
 
   ~StubWindowSuggest() {}
 

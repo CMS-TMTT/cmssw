@@ -198,19 +198,31 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
   // Assumed track seed (from HT) uncertainty in transverse impact parameter.
   const float d0Sigma = 1.0;
 
-  // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
-  p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
-  p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; // Based on HT cell size.
-  p(Z0,Z0) = 5.0 * 5.0; 
-  p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
-  if (nPar_ == 5) {
-    p(D0,D0) = d0Sigma * d0Sigma; 
-  } 
+  if (getSettings()->hybrid()) {
 
+    p(INV2R,INV2R) = 100000*0.0157 * 0.0157 * c * c * 10; // N.B. Such large uncertainty may cause problems.
+    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; 
+    p(Z0,Z0) = 5.0 * 5.0; 
+    p(T,T) = 0.25 * 0.25 * 4;
+    if (nPar_ == 5) {
+      p(D0,D0) = d0Sigma * d0Sigma; 
+    } 
 
-  if ( getSettings()->numEtaRegions() <= 12 ) {    
-    // Inflate eta errors
-    p(T,T) = p(T,T) * 2 * 2;
+  } else {
+
+    // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
+    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
+    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; // Based on HT cell size.
+    p(Z0,Z0) = 5.0 * 5.0; 
+    p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
+    if (nPar_ == 5) {
+      p(D0,D0) = d0Sigma * d0Sigma; 
+    } 
+
+    if ( getSettings()->numEtaRegions() <= 12 ) {    
+      // Inflate eta errors
+      p(T,T) = p(T,T) * 2 * 2;
+    }
   }
 
   return p;
@@ -420,10 +432,12 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
   }
 
-  if ( getSettings()->kalmanDebugLevel() >= 1 && tpa_ != nullptr) {
+  if ( (getSettings()->kalmanDebugLevel() >= 1 && tpa_ != nullptr) ||
+       (getSettings()->kalmanDebugLevel() >= 1 && getSettings()->hybrid()) ) {
     if (not goodState) cout<<"State veto: nlay="<<nStubLayers;
     if (goodState)     cout<<"State kept: nlay="<<nStubLayers; 
-    cout<<" chi2="<<state.chi2()<<" pt="<<pt<<" pt(mc)="<<tpa_->pt();
+    cout<<" chi2="<<state.chi2()<<" pt="<<pt;
+    if (tpa_ != nullptr) cout<<" pt(mc)="<<tpa_->pt();
     cout<<" tanL="<<state.xa()[T]<<" z0="<<z0<<" phi0="<<state.xa()[PHI0]<<endl;
   }
 

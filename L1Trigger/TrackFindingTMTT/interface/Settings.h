@@ -15,7 +15,13 @@ namespace TMTT {
 class Settings {
 
 public:
+
+  // Constructor for HYBRID (sets config to hard-wired consts to allow use outside CMSSW).
+  Settings();
+
+  // Constructor for TMTT (reads config from python cfg)
   Settings(const edm::ParameterSet& iConfig);
+
   ~Settings(){}
 
   //=== General settings.
@@ -397,6 +403,18 @@ public:
   void                 setBfield(float bField)           {bField_ = bField;}
   float                getBfield()               const   {if (bField_ == 0.) throw cms::Exception("Settings.h:You attempted to access the B field before it was initialized"); return bField_;}
 
+  //=== Settings used for HYBRID TRACKING code only.
+
+  // Is hybrid tracking in use?
+  bool                 hybrid()                  const {return hybrid_;}
+  // Info about geometry, needed for use of hybrid outside CMSSW.
+  double               ssStripPitch()            const {return ssStripPitch_;}
+  double               ssNStrips()               const {return ssNStrips_;}
+  double               ssStripLength()           const {return ssStripLength_;}
+  double               psStripPitch()            const {return psStripPitch_;}
+  double               psNStrips()               const {return psNStrips_;}
+  double               psPixelLength()           const {return psPixelLength_;}
+
 private:
 
   // Parameter sets for differents types of configuration parameter.
@@ -644,6 +662,16 @@ private:
 
   // B-field in Tesla
   float                bField_;
+
+  // Hybrid tracking
+  bool                 hybrid_;
+
+  double               psStripPitch_;
+  double               psNStrips_;
+  double               psPixelLength_;
+  double               ssStripPitch_;
+  double               ssNStrips_;
+  double               ssStripLength_;
 };
 
 }

@@ -461,6 +461,10 @@ TMTrackProducer_params = cms.PSet(
     Other_skipTrackDigi = cms.bool( True ) 
   ),
 
+  #===== Use HYBRID TRACKING (Tracklet pattern reco + TMTT KF -- requires tracklet C++ too) =====
+  
+  Hybrid = cms.bool( False),
+
   #===== Debug printout & plots
   Debug  = cms.uint32(1), #(0=none, 1=print #tracks/event, 2+ print more info)
   # When making helix parameter resolution plots, only use particles from the physics event (True)

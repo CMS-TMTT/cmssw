@@ -361,8 +361,9 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     std::cout << "===============================================================================" << endl;
     std::cout << "Track Finding candidate in [phi_sec, eta_reg] = [" << l1track3D.iPhiSec() << ", " << l1track3D.iEtaReg() << "]";
     std::cout <<"  HT (M,C) = ("<<l1track3D.getCellLocationHT().first << ", " 
-	                        << l1track3D.getCellLocationHT().second << ")  q/pt="<<
-                  l1track3D.qOverPt()<<" tanL="<<l1track3D.tanLambda()<<std::endl;
+	                        <<l1track3D.getCellLocationHT().second << ")  q/pt="
+	      <<l1track3D.qOverPt()<<" tanL="<<l1track3D.tanLambda()<< " phi0="<<l1track3D.phi0()
+                                <<" nStubs="<<l1track3D.getNumStubs()<<std::endl;
     printTP( cout, tpa );
     if( getSettings()->kalmanDebugLevel() >= 2 ){
       printStubLayers( cout, stubs );
@@ -372,7 +373,6 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
   //Kalman Filter
   std::vector<const kalmanState *> cands = doKF( l1track3D, stubcls, tpa );
-
 
  
   //return L1fittedTrk for the selected state (if KF produced one it was happy with).
@@ -413,12 +413,13 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
       }
     }
 
-    // for Tom - fitted track params must lie in same sector as HT originally found track in.
-    if (!returnTrk.consistentSector()) {
-
-      L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
-      failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
-      return failedTrk;
+    // Fitted track params must lie in same sector as HT originally found track in.
+    if (! getSettings()->hybrid() ) { // consistentSector() function not yet working for Hybrid.
+      if (! returnTrk.consistentSector()) {
+        L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
+        failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
+        return failedTrk;
+      }
     }
 
     //candidate dump

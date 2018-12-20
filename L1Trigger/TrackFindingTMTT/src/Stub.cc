@@ -25,7 +25,22 @@ string Stub::trackerGeometryVersion_ = "UNKNOWN";
 bool       Stub::stubKillerInit_ = false;
 StubKiller Stub::stubKiller_;
 
-//=== Store useful info about this stub.
+//=== Store useful info about the stub (for use with HYBRID code), with hard-wired constants to allow use outside CMSSW.
+
+Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology) : 
+  phi_(phi), r_(r), z_(z), bend_(bend), iphi_(iphi), alpha_(alpha), psModule_(psModule), layerId_(layerid), barrel_(barrel), 
+  digitalStub_(settings), stubWindowSuggest_(settings)
+{ //work in progress on better constructor for new hybrid
+  if (psModule && barrel) {tiltedBarrel_ = true;}
+  if (!psModule) {
+    stripPitch_ = settings->ssStripPitch(); nStrips_=settings->ssNStrips(); sigmaPar_=settings->ssStripLength()/std::sqrt(12.0);
+  } else {
+    stripPitch_ = settings->psStripPitch(); nStrips_=settings->psNStrips(); sigmaPar_=settings->psPixelLength()/std::sqrt(12.0);
+  }
+  sigmaPerp_ = stripPitch_/std::sqrt(12.0);
+}
+
+//=== Store useful info about stub (for use with TMTT code).
 
 Stub::Stub(const TTStubRef& ttStubRef, unsigned int index_in_vStubs, const Settings* settings, 
            const TrackerGeometry*  trackerGeometry, const TrackerTopology*  trackerTopology) : 

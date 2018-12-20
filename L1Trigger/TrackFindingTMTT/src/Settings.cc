@@ -4,7 +4,56 @@
 
 namespace TMTT {
 
-///=== Get configuration parameters
+// Set config params for HYBRID TRACKING via hard-wired consts to allow use outside CMSSW.
+
+Settings::Settings() {
+  reduceLayerID_=true;
+  useLayerID_=true;
+  minFracMatchStubsOnReco_=-99;
+  minFracMatchStubsOnTP_=-99;
+  minNumMatchLayers_=4;
+  minNumMatchPSLayers_=0;
+  stubMatchStrict_=false;
+  minStubLayers_=4;
+  minPtToReduceLayers_=99999.;
+  deadReduceLayers_=false;
+  kalmanMinNumStubs_=4;
+  kalmanMaxNumStubs_=4;
+  numPhiOctants_=9;
+  numPhiSectors_=9;
+  kalmanRemove2PScut_=true;
+  killScenario_=0;
+  kalmanMaxSkipLayers_=6;
+  kalmanDebugLevel_=1;
+  enableDigitize_=false;
+  houghMinPt_=2.0;
+  chosenRofPhi_=55.0;
+  houghNbinsPt_=18;
+  handleStripsPhiSec_=1;
+  useApproxB_=true;
+  kalmanHOtilted_=true; 
+  kalmanHOhelixExp_=true;
+  kalmanHOalpha_=1;
+  kalmanHOdodgy_=false;
+  kalmanHOprojZcorr_=1;
+  bApprox_gradient_=0.886454;
+  bApprox_intercept_=0.504148;
+  handleStripsEtaSec_=false;
+  kalmanFillInternalHists_=false;
+  kalmanMultiScattTerm_=0.00075;
+  kalmanMultiScattFactor_=0.0;
+
+  hybrid_=true;
+  psStripPitch_=0.01;
+  psNStrips_=960;
+  psPixelLength_=0.1467;
+  ssStripPitch_=0.009;
+  ssNStrips_=1016;
+  ssStripLength_=5.0250;
+  bField_=3.8112;
+}
+
+///=== Get configuration parameters from python cfg for TMTT tracking.
 
 Settings::Settings(const edm::ParameterSet& iConfig) :
 
@@ -261,8 +310,16 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   writeOutEdmFile_        ( iConfig.getUntrackedParameter<bool>               ( "WriteOutEdmFile", true) ),
 
   // Bfield in Tesla. (Unknown at job initiation. Set to true value for each event
-  bField_                 (0.)
+  bField_                 (0.),
 
+  // Hybrid tracking
+  hybrid_                 ( iConfig.getParameter<bool>                        ( "Hybrid"                 ) ),
+  psStripPitch_           (0.),
+  psNStrips_              (0.),
+  psPixelLength_          (0.),
+  ssStripPitch_           (0.),
+  ssNStrips_              (0.),
+  ssStripLength_          (0.)
 {
   // If user didn't specify any PDG codes, use e,mu,pi,K,p, to avoid picking up unstable particles like Xi-.
   vector<unsigned int> genPdgIdsUnsigned( genCuts_.getParameter<vector<unsigned int> >   ( "GenPdgIds" ) ); 

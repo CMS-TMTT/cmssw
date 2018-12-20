@@ -38,6 +38,8 @@ public:
 
   DegradeBend(const TrackerTopology* trackerTopo) : theTrackerTopo_(trackerTopo) {}
 
+  DegradeBend() {}
+
   // Given the original bend, flag indicating if this is a PS or 2S module, & detector identifier,
   // this return the degraded stub bend, a boolean indicatng if stub bend was outside the assumed window
   // size programmed below, and an integer indicating how many values of the original bend
