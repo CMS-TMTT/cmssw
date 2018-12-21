@@ -18,13 +18,13 @@ Settings::Settings() {
   minPtToReduceLayers_=99999.;
   deadReduceLayers_=false;
   kalmanMinNumStubs_=4;
-  kalmanMaxNumStubs_=4;
+  kalmanMaxNumStubs_=6;
   numPhiOctants_=9;
   numPhiSectors_=9;
   kalmanRemove2PScut_=true;
   killScenario_=0;
-  kalmanMaxSkipLayers_=6;
-  kalmanDebugLevel_=1;
+  kalmanMaxSkipLayers_=2;
+  kalmanDebugLevel_=2;
   enableDigitize_=false;
   houghMinPt_=2.0;
   chosenRofPhi_=55.0;
@@ -43,6 +43,7 @@ Settings::Settings() {
   kalmanMultiScattTerm_=0.00075;
   kalmanMultiScattFactor_=0.0;
 
+  // Cfg params & constants required only for HYBRID tracking (as taken from DB for TMTT).
   hybrid_=true;
   psStripPitch_=0.01;
   psNStrips_=960;
@@ -50,7 +51,18 @@ Settings::Settings() {
   ssStripPitch_=0.009;
   ssNStrips_=1016;
   ssStripLength_=5.0250;
+  zMaxNonTilted_[1] = 15.3; // max z at which non-tilted modules are found in inner 3 barrel layers.
+  zMaxNonTilted_[2] = 24.6; 
+  zMaxNonTilted_[3] = 33.9; 
+
   bField_=3.8112;
+
+  if (hybrid_) {
+    if (not useApproxB_) {
+      std::cout<<"TMTT Settings Error: module tilt angle unknown, so must set useApproxB = true"<<std::endl;
+      exit(1);
+    }
+  }
 }
 
 ///=== Get configuration parameters from python cfg for TMTT tracking.

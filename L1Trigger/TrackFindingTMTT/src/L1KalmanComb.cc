@@ -102,23 +102,22 @@ static void printStubLayers( std::ostream &os, std::vector<const Stub *> &stubs 
 }
 
 static void printStubCluster( std::ostream &os, const StubCluster * stubCluster, bool addReturn=true ){
-  os << "stub cluster ";
+  os << "stub: ";
   //   os << "addr=" << stub << " "; 
-  os << "layerId=" << stubCluster->layerId() << " ";
-  os << "endcapRing=" << stubCluster->endcapRing() << " ";
-  os << "# of stubs= " << stubCluster->nStubs() << " ";
+  os << "layer=" << stubCluster->layerId() << " ";
+  os << "ring=" << stubCluster->endcapRing() << " ";
   os << "r=" << stubCluster->r() << " ";
   os << "phi=" << stubCluster->phi() << " ";
   os << "z=" << stubCluster->z() << " ";
   os << "sigmaX=" << stubCluster->sigmaX() << " ";
   os << "sigmaZ=" << stubCluster->sigmaZ() << " ";
   os << "dphi_dr=" << stubCluster->dphi_dr() << " ";
+  os << "#stubs= " << stubCluster->nStubs() << " ";
   os << "TPids="; 
   std::set<const TP*> tps = stubCluster->assocTPs();
   for( auto tp : tps ) os << tp->index() << ","; 
   if( addReturn ) os << endl;
   else os << " | ";
-
 }
 
 static void printStubClusters( std::ostream &os, std::vector<const StubCluster *> &stubClusters ){
@@ -223,7 +222,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
   //dump flag
   static unsigned nthFit(0);
   nthFit++;
-  if( getSettings()->kalmanDebugLevel() >= 2 && nthFit <= maxNfitForDump_ ){
+  if( getSettings()->kalmanDebugLevel() >= 3 && nthFit <= maxNfitForDump_ ){
     if( tpa ) dump_ = true; 
     else dump_ = false;
   }
@@ -359,12 +358,12 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
   if( getSettings()->kalmanDebugLevel() >= 1 ){
 
     std::cout << "===============================================================================" << endl;
-    std::cout << "Track Finding candidate in [phi_sec, eta_reg] = [" << l1track3D.iPhiSec() << ", " << l1track3D.iEtaReg() << "]";
-    std::cout <<"  HT (M,C) = ("<<l1track3D.getCellLocationHT().first << ", " 
-	                        <<l1track3D.getCellLocationHT().second << ")  q/pt="
-	      <<l1track3D.qOverPt()<<" tanL="<<l1track3D.tanLambda()<< " phi0="<<l1track3D.phi0()
+    std::cout << "Input track cand: [phiSec,etaReg]=[" << l1track3D.iPhiSec() << "," << l1track3D.iEtaReg() << "]";
+    std::cout <<" HT(m,c)=("<<l1track3D.getCellLocationHT().first << "," 
+	                        <<l1track3D.getCellLocationHT().second << ") q/pt="
+	      <<l1track3D.qOverPt()<<" tanL="<<l1track3D.tanLambda()<< " z0="<<l1track3D.z0()<< " phi0="<<l1track3D.phi0()
                                 <<" nStubs="<<l1track3D.getNumStubs()<<std::endl;
-    printTP( cout, tpa );
+    if (not getSettings()->hybrid()) printTP( cout, tpa );
     if( getSettings()->kalmanDebugLevel() >= 2 ){
       printStubLayers( cout, stubs );
       printStubClusters( cout, stubcls );
@@ -387,7 +386,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
     L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
 
-    if( getSettings()->kalmanDebugLevel() >= 2 ){
+    if( getSettings()->kalmanDebugLevel() >= 3 ){
       if (this->isHLS()) {
         // Check if (m,c) corresponding to helix params are correctly calculated by HLS code.
         unsigned int mBinHelixHLS, cBinHelixHLS;
@@ -423,8 +422,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     }
 
     //candidate dump
-    if( getSettings()->kalmanDebugLevel() >= 2 ){
-	
+    if( getSettings()->kalmanDebugLevel() >= 3 ){
       cout << "------------------------------------" << endl;
       if( tpa && tpa->useForAlgEff() ){
 	cout << "TP for eff. addr. index : " << tpa << " " << tpa->index() << endl;
@@ -489,7 +487,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     }
 			
     //dump on the missed TP for efficiency calculation.
-    if( getSettings()->kalmanDebugLevel() >= 2 ){
+    if( getSettings()->kalmanDebugLevel() >= 3 ){
       if( tpa && tpa->useForAlgEff() ){
 	cout << "TP for eff. missed addr. index : " << tpa << " " << tpa->index() << endl;
 	printStubClusters( cout, stubcls );
@@ -655,7 +653,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 
       // If track was not rejected by isGoodState() is previous iteration, failure here usually means the tracker ran out of layers to explore.
       // (Due to "kalmanLayer" not having unique ID for each layer within a given eta sector).
-      if ( getSettings()->kalmanDebugLevel() >= 1 && stubs.size() == 0 && next_stubs.size() == 0) cout<<"Track is lost by start of iteration "<<iteration<<" : #stubs="<<stubs.size()<<" #next_stubs="<<next_stubs.size()<<" layer="<<layer<<" eta="<<l1track3D.iEtaReg()<<endl;
+      if ( getSettings()->kalmanDebugLevel() >= 2 && best_state_by_nstubs.size() == 0 && stubs.size() == 0 && next_stubs.size() == 0) cout<<"State is lost by start of iteration "<<iteration<<" : #stubs="<<stubs.size()<<" #next_stubs="<<next_stubs.size()<<" layer="<<layer<<" eta="<<l1track3D.iEtaReg()<<endl;
 
       // If we skipped over a dead layer, only increment "skipped" after the stubs in next+1 layer have been obtained
       skipped += nSkippedDeadLayers;
@@ -830,9 +828,16 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     const kalmanState* stateFinal = best_state_by_nstubs.begin()->second; // First element has largest number of stubs.
     finished_states.push_back(stateFinal);
     if ( getSettings()->kalmanDebugLevel() >= 1 ) {
-      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" eta="<<l1track3D.iEtaReg()<<"   chosen from states:";
-      for (const auto& p : best_state_by_nstubs) cout<<"   "<<p.second->chi2()<<"/"<<p.second->nStubLayers();
+      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" etaReg="<<l1track3D.iEtaReg();
+      std::map<std::string, double> y = getTrackParams( stateFinal );
+      cout<<" q/pt="<<y["qOverPt"]<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
+      cout<<" chosen from states:";
+      for (const auto& p : best_state_by_nstubs) cout<<" "<<p.second->chi2()<<"/"<<p.second->nStubLayers();
       cout<<endl;
+    }
+  } else {
+    if ( getSettings()->kalmanDebugLevel() >= 1 ) {
+      cout<<"Track lost"<<endl;
     }
   }
 
@@ -845,7 +850,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 
 const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster *stubCluster, const kalmanState &state, const TP *tpa ){
 
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "---------------" << endl;
     cout << "kalmanUpdate" << endl;
     cout << "---------------" << endl;
@@ -858,14 +863,14 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
   std::vector<double> xa     = state.xa();
   TMatrixD            cov_xa = state.pxxa(); 
   if( state.barrel() && !stubCluster->barrel() ){ 
-    if( getSettings()->kalmanDebugLevel() >= 3 ) {
+    if( getSettings()->kalmanDebugLevel() >= 4 ) {
       cout << "STATE BARREL TO ENDCAP BEFORE " << endl;
       cout << "state : " << xa.at(0) << " " << xa.at(1) << " " << xa.at(2) << " " << xa.at(3) << endl;
       cout << "cov(x): " << endl; 
       cov_xa.Print();
     }
     barrelToEndcap( state.r(), stubCluster, xa, cov_xa );
-    if( getSettings()->kalmanDebugLevel() >= 3 ){
+    if( getSettings()->kalmanDebugLevel() >= 4 ){
       cout << "STATE BARREL TO ENDCAP AFTER " << endl;
       cout << "state : " << xa.at(0) << " " << xa.at(1) << " " << xa.at(2) << " " << xa.at(3) << endl;
       cout << "cov(x): " << endl; 
@@ -875,7 +880,7 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
   // Matrix to propagate helix params from one layer to next (=identity matrix).
   TMatrixD f = F(stubCluster, &state );
   TMatrixD ft(TMatrixD::kTransposed, f );
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "f" << endl;
     f.Print();
     cout << "ft" << endl;
@@ -883,50 +888,50 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
   }
 
   std::vector<double> fx = Fx( f, xa ); // Multiply matrices to get helix params at next layer.
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "fx = ["; 
     for( unsigned i = 0; i < nPar_; i++ ) cout << fx.at(i) << ", ";
     cout << "]" << endl;
   }
 
   std::vector<double> delta = residual(stubCluster, fx, state.candidate().qOverPt() );
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "delta = " << delta[0] << ", " << delta[1] << endl;
   }
 
   // Derivative of predicted (phi,z) intercept with layer w.r.t. helix params.
   TMatrixD h = H(stubCluster);
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "h" << endl;
     h.Print();
   }
 
 
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "previous state covariance" << endl;
     cov_xa.Print();
   }
   // Get contribution to helix parameter covariance from scattering (NOT USED).
   TMatrixD pxxm = PxxModel( &state, stubCluster );
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "model xcov" << endl;
     pxxm.Print();
   }
   // Get covariance on helix parameters.
   TMatrixD pxcov = f * cov_xa * ft + pxxm;
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "forcast xcov + model xcov" << endl;
     pxcov.Print();
   }
   // Get hit position covariance matrix.
   TMatrixD dcov = PddMeas( stubCluster, &state );
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "dcov" << endl;
     dcov.Print();
   }
   // Calculate Kalman Gain matrix.
   TMatrixD k = GetKalmanMatrix( h, pxcov, dcov );  
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "k" << endl;
     k.Print();
   }
@@ -934,7 +939,7 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
   std::vector<double> new_xa(nPar_);
   TMatrixD new_pxxa;
   GetAdjustedState( k, pxcov, fx, stubCluster, delta, new_xa, new_pxxa );
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     if( nPar_ == 4 )
       cout << "adjusted x = " << new_xa[0] << ", " << new_xa[1] << ", " << new_xa[2] << ", " << new_xa[3] << endl;
     else if( nPar_ == 5 )
@@ -944,7 +949,7 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
   }
 
   const kalmanState *new_state = mkState( state.candidate(), skipped, layer, stubCluster->layerId(), &state, new_xa, new_pxxa, k, dcov, stubCluster, 0 );
-  if( getSettings()->kalmanDebugLevel() >= 3 ){
+  if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "new state" << endl;
     new_state->dump( cout, tpa  );
   }

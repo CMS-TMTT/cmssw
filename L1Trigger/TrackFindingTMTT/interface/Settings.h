@@ -414,6 +414,8 @@ public:
   double               psStripPitch()            const {return psStripPitch_;}
   double               psNStrips()               const {return psNStrips_;}
   double               psPixelLength()           const {return psPixelLength_;}
+  // max z at which non-tilted modules are found in inner 3 barrel layers. (Element 0 not used).
+  void                 get_zMaxNonTilted(double (&zMax)[4]) const {zMax[1] = zMaxNonTilted_[1]; zMax[2] = zMaxNonTilted_[2]; zMax[3] = zMaxNonTilted_[3];} 
 
 private:
 
@@ -672,6 +674,8 @@ private:
   double               ssStripPitch_;
   double               ssNStrips_;
   double               ssStripLength_;
+
+  double               zMaxNonTilted_[4];
 };
 
 }

@@ -31,7 +31,11 @@ Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModu
   phi_(phi), r_(r), z_(z), bend_(bend), iphi_(iphi), alpha_(alpha), psModule_(psModule), layerId_(layerid), barrel_(barrel), 
   digitalStub_(settings), stubWindowSuggest_(settings)
 { //work in progress on better constructor for new hybrid
-  if (psModule && barrel) {tiltedBarrel_ = true;}
+  if (psModule && barrel) {
+    double zMax[4];
+    settings->get_zMaxNonTilted(zMax);
+    tiltedBarrel_ = (fabs(z) > zMax[layerid]);
+  }
   if (!psModule) {
     stripPitch_ = settings->ssStripPitch(); nStrips_=settings->ssNStrips(); sigmaPar_=settings->ssStripLength()/std::sqrt(12.0);
   } else {
