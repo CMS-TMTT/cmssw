@@ -299,10 +299,28 @@ namespace TMTT {
    std::cout << "N. Tracklet Seeds " << trackletSeeds.size() << std::endl; 
 
    for (const TrackletSeed* seed: trackletSeeds){
-
+    
+    Sector& sector = mSectors(seed->iPhiSec(), 0);//no eta regions in tracklet-tmtt
+    sector.init(settings_, seed->iPhiSec(), 0); //no eta regions in tracklet-tmtt
+    
+    TracletMatched trackletMatched(seed, settings_);
+    
+    for (const Stub* stub: vStubs) {
+     if(sector.inside (stub) ){
+      
+      if(stub->isBarrel()){
+       trackletMatched.MatchLayerStub(stub, &trackletWindows);
+      }else{
+       trackletMatched.MatchDiskStub(stub, &trackletWindows);
+      }
+     }
+     
+    }
+    if(trackletMatched.stublist().size() > 1 ){
+     trackletsMatched3D.pushback(&trackletMatched.return3Dtrack());
+    }
+    
    }
-
-  } 
 
   //=== Make 3D tracks, optionally running r-z track filters (such as Seed Filter) & duplicate track removal. 
 
