@@ -286,11 +286,12 @@ TMTrackProducer_params = cms.PSet(
      # & SimpleLR is a linear regression fit that neglects the hit uncertainties. 
      # The number 4 or 5 in the name indicates if 4 or 5 helix parameters are fitted.
      # Options KF4ParamsComb, KF5ParamsComb or SimpleLR are the best ones.
-     # KF4ParamsCombHLS is the HLS version of the code, which only works if linked with Vivado libraries.
+     # KF*ParamsCombHLS is the HLS version of the code, which only works if linked with Vivado libraries.
      TrackFitters = cms.vstring(
                                 # "ChiSquared4ParamsApprox",
                                 # "SimpleLR",
                                 # "KF4ParamsCombHLS",
+                                # "KF5ParamsCombHLS",
                                 "KF5ParamsComb",
                                 "KF4ParamsComb"
                                 ),
