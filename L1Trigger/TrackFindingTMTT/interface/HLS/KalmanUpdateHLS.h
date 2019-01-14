@@ -43,6 +43,11 @@ void kalmanUpdateHLS(const StubHLS& stub, const KFstateHLS<NPAR>& stateIn, KFsta
 template <unsigned int NPAR>
 TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv);
 
+// Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.
+// (Relevant only to 5-param helix fit)
+template <unsigned int NPAR>
+void setOutputsD0(const VectorX<NPAR>& x_new, const MatrixC<NPAR>& C_new, const AP_UINT(3)& nStubs, KFstateHLS<NPAR>& stateOut, ExtraOutHLS<NPAR>& extraOut);
+
 // Fully specialized function templates must also be declared to ensure they are found.
 
 #ifdef CMSSW_GIT_HASH

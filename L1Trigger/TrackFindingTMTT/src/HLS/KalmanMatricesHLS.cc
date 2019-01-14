@@ -143,7 +143,7 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
 #ifdef PRINT
   std::cout<<"2S="<<_2Smodule<<" ENDCAP="<<(absZ > zBarrel)<<" (r,z)=("<<r<<", "<<z<<")"<<std::endl;
   std::cout<<"SIGMA RPHI="<<sqrt(double(_00))/double(phiMult)<<" SIGMA_RZ="<<sqrt(double(_11))/double(rMult)<<" EXTRA="<<double(sigmaPhiExtra)/double(phiMult)<<" SCAT="<<sqrt(double(sigmaPhiScat2))/double(phiMult)<<std::endl;
-  std::cout<<"SCAT CHECK: "<<mBin<<" "<<double(inv2R)/double(inv2R_digi_cut)<<" RESULT: DIGI="<<double(sigmaPhiScat2)<<" FLOAT="<<pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2)<<std::endl;
+  std::cout<<"SCAT CHECK: "<<mBin<<" "<<double(inv2R)/double(inv2Rcut)<<" RESULT: DIGI="<<double(sigmaPhiScat2)<<" FLOAT="<<pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2)<<std::endl;
   std::cout<<"  V00="<<_00<<"   V11="<<_11<<std::endl;
 #endif
 
@@ -228,11 +228,24 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
   // Calculate max & min values that SHIFT can take over all events.
   enum {MAX_LSB = (BDW - 1) - BDET + 1, MAX_SHIFT = MAX_LSB - (BDW - BDI),
 	MIN_LSB = iMIN      - BDET + 1, MIN_SHIFT = MIN_LSB - (BDW - BDI)};
+  // If ap_fixed<N,I> is shifted right by SHIFT, which can be signed, no truncation occurs if it is 
+  // first cast to AP<N+|S|, I+Max(0,-S)>
+  // If SHIFT can take any value between MIN_SHIFT & MAX_SHIFT, it must instead be cast to <N+nr,I+ir>
+  // where ir = Max(0, -MIN_SHIFT), so nr = Max(MAX_SHIFT + ir, -MIN_SHIFT ) = MAX_SHIFT + Max(0, -MIN_SHIFT).
+  // If ap_fixed<N,I> is shifted left by SHIFT, one replaces SHIFT --> -SHIFT and 
+  // MAX_SHIFT <--> -MIN_SHIFT in previous formula, so no 
+  // truncation occurs if it is first cast to <N+nl,I+il>
+  // where il = Max(0, MAX_SHIFT) and nr = -MIN_SHIFT + Max(0, MAX_SHIFT).
+  enum {NR_EXTRA =  MAX_SHIFT + MAX2(0, -MIN_SHIFT), IR_EXTRA = MAX2(0, -MIN_SHIFT),
+        NL_EXTRA = -MIN_SHIFT + MAX2(0,  MAX_SHIFT), IL_EXTRA = MAX2(0,  MAX_SHIFT)};
 
   // Invert matrix.
-  _00 =  SW_UFIXED(B34-MIN_SHIFT+MAX_SHIFT, BIR11+MAX_SHIFT) (invDet_short*R._11) >> SHIFT;
-  _11 =  SW_UFIXED(B34-MIN_SHIFT+MAX_SHIFT, BIR00+MAX_SHIFT) (invDet_short*R._00) >> SHIFT;
-  _01 =  SW_FIXED(BCORR-MIN_SHIFT+MAX_SHIFT, BIR01-B34+BCORR+MAX_SHIFT) (-(invDet_short*R._10)) >> SHIFT;
+  //  _00 =  SW_UFIXED(B34-MIN_SHIFT+MAX_SHIFT, BIR11+MAX_SHIFT) (invDet_short*R._11) >> SHIFT;
+  //  _11 =  SW_UFIXED(B34-MIN_SHIFT+MAX_SHIFT, BIR00+MAX_SHIFT) (invDet_short*R._00) >> SHIFT;
+  //  _01 =  SW_FIXED(BCORR-MIN_SHIFT+MAX_SHIFT, BIR01-B34+BCORR+MAX_SHIFT) (-(invDet_short*R._10)) >> SHIFT;
+  _00 =  SW_UFIXED(B34+NL_EXTRA, BIR11+IL_EXTRA) (invDet_short*R._11) >> SHIFT;
+  _11 =  SW_UFIXED(B34+NL_EXTRA, BIR00+IL_EXTRA) (invDet_short*R._00) >> SHIFT;
+  _01 =  SW_FIXED(BCORR+NL_EXTRA, BIR01+IL_EXTRA) (-(invDet_short*R._10)) >> SHIFT;
 
 #ifdef PRINT
   std::cout<<"MatrixInverseR: Det="<<det<<" det_veryshort="<<det_veryshort<<" invDet_veryshort="<<invDet_veryshort<<" det_range2="<<det_range2<<" invDet_short="<<invDet_short<<" det*invDet_short="<<double(det)*double(invDet_short)/double(1 << SHIFT)<<std::endl;
@@ -248,11 +261,14 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
   double true_ri00 =  double(R._11)*trueInvDet;
   double true_ri11 =  double(R._00)*trueInvDet;
   double true_ri01 = -double(R._10)*trueInvDet;
-  double invDet = double(invDet_short)*double(AP_UFIXED(1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT)(1) >>  SHIFT);
+  //  double invDet = double(invDet_short)*double(AP_UFIXED(1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT)(1) >>  SHIFT);
+  double invDet = double(invDet_short)*double(AP_UFIXED(1+NR_EXTRA, 1+IR_EXTRA)(1) >>  SHIFT);
   CHECK_AP::checkCalc("DET", det, trueDet, 0.00001);
   // Precision of this (controlled by BDET) is critical.
+  //  CHECK_AP::checkCalc("INVDET", invDet_short,
+  //                  trueInvDet/double(AP_UFIXED(1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT)(1) >>  SHIFT), 0.0001);
   CHECK_AP::checkCalc("INVDET", invDet_short,
-                      trueInvDet/double(AP_UFIXED(1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT)(1) >>  SHIFT), 0.0001);
+                      trueInvDet/double(AP_UFIXED(1+NR_EXTRA, 1+IR_EXTRA)(1) >>  SHIFT), 0.0001);
   CHECK_AP::checkCalc("INVR00", _00, true_ri00, 0.001);
   CHECK_AP::checkCalc("INVR01", _01, true_ri01, 0.001);
   CHECK_AP::checkCalc("INVR11", _11, true_ri11, 0.001);

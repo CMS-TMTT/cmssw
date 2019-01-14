@@ -66,6 +66,13 @@ public:
   TP phiS;
   // IRT: Maxeller transmits stub layerId (not reducedLayerId). I assume this can't be used for anything, so don't do it here.
   AP_UINT(1)       valid; // Used by external code to indicate if input data is valid.
+
+#ifdef PRINT_HLSARGS
+public:
+  void print(const char* text) const {
+    std::cout<<text<<" r="<<r<<" phiS="<<phiS<<" z="<<z/2<<std::endl;
+  }
+#endif
 };
 
 #ifdef CMSSW_GIT_HASH

@@ -79,7 +79,6 @@ bool checkCalc(std::string varName, SW_FLOAT res_fix, double res_float, double r
       apCheckMap_[varName] = INFO(cName, intBitsCfg, intHighOld, intBitsSeen); 
     }
   }
-
   return true;
 }
 
@@ -124,12 +123,29 @@ bool checkIntRange(std::string varName, int intCfgHigh, int intCfgLow, int intVa
 // Check covariance matrix determinants are positive.
 
 bool checkDet(std::string matrixName, double m00, double m11, double m01) {
-  bool OK = (m00 * m11 - m01 * m01 > 0);
+  const double& m10 = m01; 
+  bool OK = (m00 * m11 - m01 * m10 > 0);
 #ifdef PRINT_SUMMARY
   static unsigned int detErrCount = 0;
   if ((not OK) && detErrCount < 100) {
     detErrCount++;
     std::cout<<"checkCalc NEGATIVE DETERMINANT "<<matrixName<<" "<<m00<<" "<<m11<<" "<<m01<<std::endl;
+  }
+#endif
+  return OK;
+}
+
+bool checkDet(std::string matrixName, double m00, double m11, double m22, double m01, double m02, double m12) {
+  const double& m10 = m01; 
+  const double& m20 = m02; 
+  const double& m21 = m12; 
+  // det = epislion_ijk * m0i * m1j * m2k;
+  bool OK = ((m00*m11*m22 + m01*m12*m20 + m02*m10*m21) - (m02*m11*m20 + m00*m12*m21 + m01*m10*m22) > 0);
+#ifdef PRINT_SUMMARY
+  static unsigned int detErrCount = 0;
+  if ((not OK) && detErrCount < 100) {
+    detErrCount++;
+    std::cout<<"checkCalc NEGATIVE DETERMINANT "<<matrixName<<" "<<m00<<" "<<m11<<" "<<m22<<" "<<m01<<" "<<m02<<" "<<m12<<std::endl;
   }
 #endif
   return OK;

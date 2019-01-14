@@ -388,16 +388,16 @@ bool KFParamsCombCallHLS::isGoodState( const kalmanState &state ) const
   if (goodState && not goodState_HLS) {
     // Errors caused by small precision errors in chi2 cut value.
     if (nPar_ == 4) {
-      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<extraOut4_.z0Cut<<" "<<extraOut4_.ptCut<<" "<<extraOut4_.chiSquaredCut<<" "<<extraOut4_.sufficientPScut<<endl;
+      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<extraOut4_.z0Cut<<" "<<extraOut4_.ptCut<<" "<<extraOut4_.chiSquaredCut<<" "<<extraOut4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
     } else {
-      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<extraOut5_.z0Cut<<" "<<extraOut5_.ptCut<<" "<<extraOut5_.chiSquaredCut<<" "<<extraOut5_.sufficientPScut<<endl;
+      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<extraOut5_.z0Cut<<" "<<extraOut5_.ptCut<<" "<<extraOut5_.chiSquaredCut<<" "<<extraOut5_.sufficientPScut<<" "<<extraOut5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
     }
-    cout<<"chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<endl;
   } else if (not goodState && goodState_HLS) {
+    // Failures here usually caused by failing chi2 cut by miniscule amount.
     if (nPar_ == 4) {
-      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<extraOut4_.z0Cut<<" "<<extraOut4_.ptCut<<" "<<extraOut4_.chiSquaredCut<<" "<<extraOut4_.sufficientPScut<<endl;
+      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<extraOut4_.z0Cut<<" "<<extraOut4_.ptCut<<" "<<extraOut4_.chiSquaredCut<<" "<<extraOut4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
     } else {
-      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<extraOut5_.z0Cut<<" "<<extraOut5_.ptCut<<" "<<extraOut5_.chiSquaredCut<<" "<<extraOut5_.sufficientPScut<<endl;
+      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<extraOut5_.z0Cut<<" "<<extraOut5_.ptCut<<" "<<extraOut5_.chiSquaredCut<<" "<<extraOut5_.sufficientPScut<<" "<<extraOut5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
     }
 #ifdef IRT_DEBUG
   } else {

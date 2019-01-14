@@ -250,7 +250,7 @@ void DigitalStub::makeSForTFinput(string SForTF) {
     r_            = (iDigi_R_ + 0.5)/rtMult_;  
     rt_           = r_ - chosenRofPhi_;
 
-    if (SForTF == "KF4ParamsComb" || SForTF == "KF5ParamsComb" || SForTF == "KF4ParamsCombHLS") {
+    if (SForTF.find("KF") != string::npos) { 
       // Digitize variables that are exclusive to Kalman filter.
       if (numPhiOctants_ == 8) {
 	// Data format for octants redigitizes z to give it same multiplier as r.

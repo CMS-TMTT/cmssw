@@ -439,9 +439,10 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
        (getSettings()->kalmanDebugLevel() >= 2 && getSettings()->hybrid()) ) {
     if (not goodState) cout<<"State veto: nlay="<<nStubLayers;
     if (goodState)     cout<<"State kept: nlay="<<nStubLayers; 
-    cout<<" chi2="<<state.chi2()<<" pt="<<pt;
-    if (tpa_ != nullptr) cout<<" pt(mc)="<<tpa_->pt();
-    cout<<" q/pt="<<qOverPt<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"]<<endl;
+    cout<<" chi2="<<state.chi2()<<" pt="<<pt<<" pt(mc)="<<tpa_->pt();
+    cout<<" tanL="<<state.xa()[T]<<" z0="<<z0<<" phi0="<<state.xa()[PHI0];
+    if (nPar_ == 5) cout<<" d0="<<state.xa()[D0];
+    cout<<endl;
   }
 
   return goodState;

@@ -139,11 +139,11 @@ VectorX<4>::VectorX(const VectorX<4>& x, const MatrixK<4>& K, const VectorRes<4>
   typedef MatrixK<4>::TK10_short TK10_short;
   typedef MatrixK<4>::TK21_short TK21_short;
   typedef MatrixK<4>::TK31_short TK31_short;
-  typedef MatrixK<4>::TK         TK;
-  _0 = x._0 + KFstateHLS<4>::TR(TK00_short(K._00) * res._0 + TK        (K._01) * res._1);
-  _1 = x._1 + KFstateHLS<4>::TP(TK10_short(K._10) * res._0 + TK        (K._11) * res._1);
-  _2 = x._2 + KFstateHLS<4>::TT(TK        (K._20) * res._0 + TK21_short(K._21) * res._1);
-  _3 = x._3 + KFstateHLS<4>::TZ(TK        (K._30) * res._0 + TK31_short(K._31) * res._1);
+  typedef MatrixK<4>::T0         T0;
+  _0 = x._0 + KFstateHLS<4>::TR(TK00_short(K._00) * res._0 + T0        (K._01) * res._1);
+  _1 = x._1 + KFstateHLS<4>::TP(TK10_short(K._10) * res._0 + T0        (K._11) * res._1);
+  _2 = x._2 + KFstateHLS<4>::TT(T0        (K._20) * res._0 + TK21_short(K._21) * res._1);
+  _3 = x._3 + KFstateHLS<4>::TZ(T0        (K._30) * res._0 + TK31_short(K._31) * res._1);
 #else
   _0 = x._0 + KFstateHLS<4>::TR(K._00 * SW_FLOAT(res._0) + K._01 * SW_FLOAT(res._1)); 
   _1 = x._1 + KFstateHLS<4>::TP(K._10 * SW_FLOAT(res._0) + K._11 * SW_FLOAT(res._1)); 

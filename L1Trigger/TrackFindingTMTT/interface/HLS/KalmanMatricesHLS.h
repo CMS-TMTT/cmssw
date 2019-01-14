@@ -48,11 +48,6 @@ template<unsigned int NPAR> class MatrixC;
 // based on variable ranges observed in CMSSW. So they should be checked if the code is changed.
 // (The dependence of one bodge on another is chosen to ensure that changing each affects the declaration
 // of only one variable).
-//enum BIT_ADJUST {BODGE_V=5, BODGE_S=2+1, BODGE_R=5-BODGE_S, BODGE_IR=10+BODGE_R+BODGE_S, BODGE_DET=14-2*BODGE_R-2*BODGE_S, BODGE_K=24-BODGE_IR+BODGE_R, BODGE_RES=2, BODGE_CHI2=12};
-// Change to allow increased seed uncertainty in tanL.
-//enum BIT_ADJUST {BODGE_V=5, BODGE_S=2+1, BODGE_R=5-BODGE_S, BODGE_IR=10+BODGE_R+BODGE_S, BODGE_DET=14-2*BODGE_R-2*BODGE_S, BODGE_K=23-BODGE_IR+BODGE_R, BODGE_RES=2, BODGE_CHI2=12};
-// Change to avoid MSB=0 error during matrix inversion.
-//enum BIT_ADJUST {BODGE_V=5, BODGE_S=2+1, BODGE_R=5-BODGE_S, BODGE_IR=10+BODGE_R+BODGE_S, BODGE_DET=15-2*BODGE_R-2*BODGE_S, BODGE_K=23-BODGE_IR+BODGE_R, BODGE_RES=2, BODGE_CHI2=12};
 
 enum BIT_ADJUST_PLAY {BODGE_V=5, BODGE_CHI2=12};
 
@@ -65,7 +60,7 @@ public:
 template<>
 class BODGE<5> {
 public:
-  enum BIT_ADJUST {V=BODGE_V, S=2+1, R=5-S, IR=10+R+S, DET=15-2*R-2*S, K=23-IR+R, RES=2, CHI2=BODGE_CHI2};
+  enum BIT_ADJUST {V=BODGE_V, S=2+2, R=5-S+2, IR=10+R+S-3, DET=15-2*R-2*S+2, K=23-IR+R-2, RES=2, CHI2=BODGE_CHI2};
 };
 
 // Allow some bits for correlation in helix params between r-phi and r-z planes.
@@ -196,14 +191,14 @@ public:
   enum {BIR00=B34 - MatrixR<NPAR>::BR00 - BODGE<NPAR>::IR,
         BIR11=B34 - MatrixR<NPAR>::BR11 - BODGE<NPAR>::IR,
         BIR01=0};   // correlation between r-phi & r-z planes not used.
-  typedef SW_UFIXED(B34,BIR00)  TRI00;
-  typedef SW_UFIXED(B34,BIR11)  TRI11;
-  typedef SW_UFIXED(B34,BIR01)  TRI01;
+  typedef SW_UFIXED(B34,   BIR00)  TRI00;
+  typedef SW_UFIXED(B34,   BIR11)  TRI11;
+  typedef SW_UFIXED(BCORR, BIR01)  TRI01;
 
   // Additional types used to cast this matrix to a lower precision one for use in chi2 calculation.
-  typedef SW_UFIXED(B25, BIR00) TRI00_short;
-  typedef SW_UFIXED(B25, BIR11) TRI11_short;
-  typedef SW_UFIXED(B25, BIR01) TRI01_short;
+  typedef SW_UFIXED(B26,   BIR00) TRI00_short;
+  typedef SW_UFIXED(B26,   BIR11) TRI11_short;
+  typedef SW_UFIXED(BCORR, BIR01) TRI01_short;
 
   enum {BDET=OneOverInt::BDET}; // Number of significant bits used to calculate 1/determinant. Keep small to save resources.
 

@@ -197,7 +197,7 @@ void kalmanState::dump( ostream &os, const TP *tp, bool all )const
     std::vector<const Stub *> stub_list = stubs();
     for( auto &stub : stub_list ){
 	os << "              stub ";
-	os << "[" << stub << "] "; 
+	//	os << "[" << stub << "] "; 
 	os << "index : " << stub->index() << " ";
 	os << "layerId : " << stub->layerId() << " ";
 	os  << "[r,phi,z] = ";

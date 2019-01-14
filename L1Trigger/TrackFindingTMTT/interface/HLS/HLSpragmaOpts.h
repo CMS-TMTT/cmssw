@@ -17,8 +17,7 @@
 
 // OPTION 2:
 // If defined, set optimum numbers of bits for Ultrascale instead of Virtex7 FPGAs. 
-// Would require KF VHDL change too, so not used for now.
 
-//#define ULTRASCALE
+#define ULTRASCALE
 
 #endif

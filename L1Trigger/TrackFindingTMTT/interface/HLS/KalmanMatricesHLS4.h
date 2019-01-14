@@ -61,13 +61,13 @@ public:
         BS00=MAX2(BH+BHC00, BHC01) - BODGE<4>::S,  // H00*C00 + H01*C10 + (H02*C20 + H03*C30 = zero).
         BS01=MAX2(BH+BHC01, BHC11) - BODGE<4>::S,  // H00*C01 + H01*C11 + (H02*C21 + H03*C31 = zero).
         BS12=MAX2(BH+BHC22, BHC23) - BODGE<4>::S,  // (H00*C02 + H01*C12 = zero) + H02*C22 + H03*C32.
-	BS13=MAX2(BH+BHC23, BHC33) - BODGE<4>::S,  // (H00*C03 + H01*C13 = zero) + H02*C23 + H03*C33.
-        BS=0}; // Neglect correlation between r-phi & r-z planes for now.
-  typedef AP_FIXED(B25,BS00)  TS00;
-  typedef AP_FIXED(B25,BS01)  TS01;
-  typedef AP_FIXED(B25,BS12)  TS12;
-  typedef AP_FIXED(B25,BS13)  TS13;
-  typedef AP_FIXED(BCORR,BS)  TS; 
+	BS13=MAX2(BH+BHC23, BHC33) - BODGE<4>::S   // (H00*C03 + H01*C13 = zero) + H02*C23 + H03*C33.
+       }; 
+  typedef AP_FIXED(B27,BS00)  TS00;
+  typedef AP_FIXED(B27,BS01)  TS01;
+  typedef AP_FIXED(B27,BS12)  TS12;
+  typedef AP_FIXED(B27,BS13)  TS13;
+  typedef AP_FIXED(BCORR,0)   T0;     // Neglect correlation between r-phi & r-z planes for now. 
 
 public:
 
@@ -79,7 +79,7 @@ public:
   TS01 _01;
   TS12 _12;
   TS13 _13;
-  TS            _02, _03,
+  T0            _02, _03,
       _10, _11          ;
 };
 
@@ -92,7 +92,8 @@ public:
 
   // Determine input helix coviaraiance matrix.
   MatrixC(const KFstateHLS<4>& stateIn) :
-             _00(stateIn.cov_00), _11(stateIn.cov_11), _22(stateIn.cov_22), _33(stateIn.cov_33), _01(stateIn.cov_01), _23(stateIn.cov_23), 
+             _00(stateIn.cov_00), _11(stateIn.cov_11), _22(stateIn.cov_22), _33(stateIn.cov_33), 
+	     _01(stateIn.cov_01), _23(stateIn.cov_23), 
              _02(0), _03(0), _12(0), _13(0),
              _10(_01), _32(_23), _20(_02), _30(_03), _21(_12), _31(_13) {}
 
@@ -101,11 +102,7 @@ public:
 
 public:
   // Elements that are finite
-// Maxeller wierdly uses signed 25 bits for these, so use unsigned 24 instead to match the DSP abilities.
-//  KFstateHLS<4>::TC00 _00;
-//  KFstateHLS<4>::TC11 _11;
-//  KFstateHLS<4>::TC22 _22;
-//  KFstateHLS<4>::TC33 _33;
+  // VHDL interface wierdly uses signed 25 bits for these, but makes more sense to use unsigned 24 instead.
   AP_UFIXED(B24,BHC00-1) _00; // One less integer bit as no sign required.
   AP_UFIXED(B24,BHC11-1) _11;
   AP_UFIXED(B24,BHC22-1) _22;
@@ -129,7 +126,7 @@ public:
   typedef MatrixS<4>::TS01  TS01;
   typedef MatrixS<4>::TS12  TS12;
   typedef MatrixS<4>::TS13  TS13;
-  typedef MatrixS<4>::TS    TS;
+  typedef MatrixS<4>::T0    T0;
   MatrixS_transpose(const MatrixS<4>& S) : _00(S._00), _10(S._01), _21(S._12), _31(S._13),
 					   _01(S._10), _11(S._11), _20(S._02), _30(S._03) {}
 public:
@@ -137,7 +134,7 @@ public:
   const TS01&  _10;
   const TS12&  _21;
   const TS13&  _31;
-  const TS&       _01,
+  const T0&       _01,
                   _11,
              _20,
              _30     ;
@@ -153,15 +150,14 @@ public:
 	BS01=MatrixS<4>::BS01,
 	BS12=MatrixS<4>::BS12,
 	BS13=MatrixS<4>::BS13,
-	BS  =MatrixS<4>::BS,
         // Calculate number of integer bits required for elements of R.
         BR00 = MAX2(MatrixV::BVPP, MAX2(BH+BS00, BS01)) - BODGE<4>::R, // H00*St00 + H01*St10 + (H02*St20 + H03*St30 = zero)
 	BR11 = MAX2(MatrixV::BVZZ, MAX2(BH+BS12, BS13)) - BODGE<4>::R, // (H10*St01 + H11*St11 = zero) + H12*St21 + H13*St31
-	BR01 = MAX2(BH+BS, BS)                                     // H00*St01 + H01*St11 + (H02*St21 + H03*St31 = zero)
+	BR01 = 0                                                       // (H00*St01 + H01*St11 + H02*St21 + H03*St31 = zero)
        };  
-  typedef SW_UFIXED(B34,BR00) TR00;
-  typedef SW_UFIXED(B34,BR11) TR11;
-  typedef SW_UFIXED(B34,BR01) TR01;
+  typedef SW_UFIXED(B34,BR00)   TR00;
+  typedef SW_UFIXED(B34,BR11)   TR11;
+  typedef SW_UFIXED(BCORR,BR01) TR01;
 
 public:
   MatrixR(const MatrixV& V, const MatrixH<4>& H, const MatrixS_transpose<4>& St);
@@ -193,20 +189,20 @@ public:
   typedef SW_FIXED(B35,BK10)  TK10;
   typedef SW_FIXED(B35,BK21)  TK21;
   typedef SW_FIXED(B35,BK31)  TK31;
-  typedef SW_FIXED(BCORR,0)   TK; // Neglect correlation between r-phi & r-z
+  typedef SW_FIXED(BCORR,0)   T0; // Neglect correlation between r-phi & r-z
   MatrixK(const MatrixS_transpose<4>& St, const MatrixInverseR<4>& RmatInv);
 public:
   // Additional types used to cast this matrix to a lower precision one for updated helix param calculation.
-  typedef SW_FIXED(B25,BK00)  TK00_short;
-  typedef SW_FIXED(B25,BK10)  TK10_short;
-  typedef SW_FIXED(B25,BK21)  TK21_short;
-  typedef SW_FIXED(B25,BK31)  TK31_short;
+  typedef SW_FIXED(B27,BK00)  TK00_short;
+  typedef SW_FIXED(B27,BK10)  TK10_short;
+  typedef SW_FIXED(B27,BK21)  TK21_short;
+  typedef SW_FIXED(B27,BK31)  TK31_short;
 public:
   TK00  _00;
   TK10  _10;
   TK21      _21;
   TK31      _31;
-  TK        _01,
+  T0        _01,
             _11,
         _20,
         _30    ;
@@ -238,7 +234,7 @@ template <>
 class VectorX<4> {
 public:
   // Determine input helix params.
-  VectorX(const KFstateHLS<4>::TR& inv2R, const KFstateHLS<4>::TP& phi0, const KFstateHLS<4>::TT& tanL, const KFstateHLS<4>::TZ& z0) : _0(inv2R), _1(phi0), _2(tanL), _3(z0) {} 
+  VectorX(const KFstateHLS<4>& stateIn) : _0(stateIn.inv2R), _1(stateIn.phi0), _2(stateIn.tanL), _3(stateIn.z0) {} 
 
   // Calculate output helix params: x' = x + K*res
   VectorX(const VectorX<4>& x, const MatrixK<4>& K, const VectorRes<4>& res);

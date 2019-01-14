@@ -18,7 +18,11 @@
 #endif
 
 #ifdef PRINT
-#define PRINT_SUMMARY
+#define PRINT_SUMMARY // Print checkCalc summary of bits used per variable.
+#endif
+
+#ifdef PRINT_SUMMARY
+//#define PRINT_HLSARGS // Print all input & outputs stubs & states from KF HLS code.
 #endif
 
 #ifdef PRINT_SUMMARY
@@ -229,6 +233,7 @@ bool checkIntRange(std::string varName, int intCfgHigh, int intCfgLow, int intVa
 
 // Check covariance matrix determinants are positive.
 bool checkDet(std::string matrixName, double m00, double m11, double m01);
+bool checkDet(std::string matrixName, double m00, double m11, double m22, double m01, double m02, double m12);
 
 }
 #endif

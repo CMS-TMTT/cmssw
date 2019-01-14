@@ -425,7 +425,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     if( getSettings()->kalmanDebugLevel() >= 3 ){
       cout << "------------------------------------" << endl;
       if( tpa && tpa->useForAlgEff() ){
-	cout << "TP for eff. addr. index : " << tpa << " " << tpa->index() << endl;
+	cout << "TP for eff. : index " << tpa->index() << endl;
       }
       cout << "Candidate : " << endl; 
       if( tpa && tpa->useForAlgEff() && returnTrk.getPurity() != 1 ){
