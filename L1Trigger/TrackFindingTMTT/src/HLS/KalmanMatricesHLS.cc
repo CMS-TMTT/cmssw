@@ -72,8 +72,7 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
   std::cout<<"p/r check "<<pitchPSoverR_2<<" vs "<<double(pitchPS*pitchPS)/double(r*r)<<std::endl;
 #endif
 
-  StubHLS::TZ absZ = z;   // HLS has no abs() function.
-  if (z < 0) {absZ = -z;};
+  StubHLS::TZ absZ = hls::abs(z);  
 
   // Use same granularity for resolution as for residuals.
   // (Define as signed, so dont have to worry if tanL or inv2R are -ve).

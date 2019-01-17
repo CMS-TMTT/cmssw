@@ -167,9 +167,16 @@ void kalmanUpdateHLS(const StubHLS& stub, const KFstateHLS<NPAR>& stateIn, KFsta
   //x_new._2 = float(4285)/float(1 << (B18 - BH2));
   //x_new._3 = float(-7652)/float(1 << (B18 - BH3));
 
-  extraOut.z0Cut = (x_new._3 >= (-z0Cut[nStubs]) && x_new._3 <= z0Cut[nStubs]);
-  extraOut.ptCut = (x_new._0 >= (-inv2Rcut[nStubs]) && x_new._0 <= inv2Rcut[nStubs]);
-  extraOut.chiSquaredCut = (chi2 <= chi2Cut[nStubs]);
+  KFstateHLS<5>::TZ   cut_z0          = z0Cut[nStubs];
+  KFstateHLS<5>::TZ   cut_z0_minus    = z0CutMinus[nStubs];
+  KFstateHLS<5>::TR   cut_inv2R       = inv2Rcut[nStubs];
+  KFstateHLS<5>::TR   cut_inv2R_minus = inv2RcutMinus[nStubs];
+  KFstateHLS<5>::TCHI cut_chi2        = chi2Cut[nStubs];
+  // Don't do "hls::abs(x_new._3) <= cut_z0)" as this wastes 2 clk cycles.
+  // Also, don't do "cut_z0_minus = - cut_z0" or this fails Vivado implementation with timing errors.
+  extraOut.z0Cut = ((x_new._3 >= cut_z0_minus    && x_new._3 <= cut_z0)    || (cut_z0 == 0));  // cut = 0 means cut not applied.
+  extraOut.ptCut = ((x_new._0 >= cut_inv2R_minus && x_new._0 <= cut_inv2R) || (cut_inv2R == 0)); 
+  extraOut.chiSquaredCut = ((chi2 <= cut_chi2)        || (cut_chi2 == 0));
   extraOut.sufficientPScut = not (nStubs <= 2 && V._2Smodule);
   // IRT -- very useful whilst optimising variable bit ranges, to skip all but first iteration.
   //extraOut.ptCut = false;
@@ -288,7 +295,9 @@ void setOutputsD0(const VectorX<5>& x_new, const MatrixC<5>& C_new, const AP_UIN
   stateOut.cov_44 = C_new._44;
   stateOut.cov_04 = C_new._04;
   stateOut.cov_14 = C_new._14;
-  extraOut.d0Cut = (x_new._4 >= (-d0Cut[nStubs]) && x_new._4 <= d0Cut[nStubs]);
+  KFstateHLS<5>::TD cut_d0        = d0Cut[nStubs];
+  KFstateHLS<5>::TD cut_d0_minus  = d0CutMinus[nStubs];
+  extraOut.d0Cut = ((x_new._4 >= cut_d0_minus && x_new._4 <= cut_d0) || (cut_d0 == 0));
 }
 
 #ifdef CMSSW_GIT_HASH

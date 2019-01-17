@@ -9,6 +9,7 @@
 #include "HLSutilities.h"
 #include "StubHLS.h"
 #include "KFstateHLS.h"
+#include "hls_math.h" // Provides hls::exp(), hls::pow(), hls::abs()
 #endif
 
 #ifdef CMSSW_GIT_HASH
@@ -30,6 +31,7 @@ static const float rMult = pow(2.,BSR-1)/103.1103;
 static const float phiMult = pow(2.,BSP)/0.698131700;
 static const float rphiMult = rMult*phiMult;
 static const float inv2R_Mult = (phiMult/rMult);
+static const float chi2_Mult = 1.;
 
 // Beam spot length & reference radii w.r.t. beamline.
 static const float beamSpotLength= 15.0;
@@ -97,6 +99,7 @@ public:
 
 //--- Cuts to select acceptable fitted track states.
 //--- (Array vs #stubs on track, where element 0 is never used).
+//--- N.B. If cut value is zero, this indicates cut is not applied. (Trick to avoid Vivado timing failure).
 
 // Pt or 1/2R cut.
 static const float ptCut_flt_tight = 2.95; // Smaller than HT cut to allow for resolution during KF fit.
@@ -105,25 +108,24 @@ static const float inv2Rcut_flt_tight = 0.5*invPtToInvR*(1./ptCut_flt_tight);
 static const float inv2Rcut_flt_loose = 0.5*invPtToInvR*(1./ptCut_flt_loose);
 static const KFstateHLS<5>::TR inv2Rcut_tight = inv2R_Mult*inv2Rcut_flt_tight;
 static const KFstateHLS<5>::TR inv2Rcut_loose = inv2R_Mult*inv2Rcut_flt_loose;
-static const KFstateHLS<5>::TR inv2Rcut_none = (1 << (BH0 - 1)) - 1;
-static const KFstateHLS<5>::TR inv2Rcut[] = {inv2Rcut_none, inv2Rcut_none, inv2Rcut_loose, inv2Rcut_loose, inv2Rcut_tight, inv2Rcut_tight, inv2Rcut_tight};
+static const KFstateHLS<5>::TR inv2Rcut[]      = {0, 0,  inv2Rcut_loose,  inv2Rcut_loose,  inv2Rcut_tight,  inv2Rcut_tight,  inv2Rcut_tight};
+static const KFstateHLS<5>::TR inv2RcutMinus[] = {0, 0, -inv2Rcut_loose, -inv2Rcut_loose, -inv2Rcut_tight, -inv2Rcut_tight, -inv2Rcut_tight};
 
 // z0 cut
 static const KFstateHLS<5>::TZ z0Cut_tight = rMult*beamSpotLength; // r multiplier used for z in KF. 
-static const KFstateHLS<5>::TZ z0Cut_none = (1 << (BH3-1)) - 1; 
-static const KFstateHLS<5>::TZ z0Cut[] = {z0Cut_none, z0Cut_none,  z0Cut_tight, z0Cut_tight, z0Cut_tight, z0Cut_tight, z0Cut_tight}; 
+static const KFstateHLS<5>::TZ z0Cut[]      = {0, 0,  z0Cut_tight,  z0Cut_tight,  z0Cut_tight,  z0Cut_tight,  z0Cut_tight}; 
+static const KFstateHLS<5>::TZ z0CutMinus[] = {0, 0, -z0Cut_tight, -z0Cut_tight, -z0Cut_tight, -z0Cut_tight, -z0Cut_tight}; 
 
 // d0 cut
 static const float d0Cut_flt_tight = 5.;
 static const float d0Cut_flt_loose = 10.;
 static const KFstateHLS<5>::TD d0Cut_tight = rphiMult*d0Cut_flt_tight;
 static const KFstateHLS<5>::TD d0Cut_loose = rphiMult*d0Cut_flt_loose;
-static const KFstateHLS<5>::TD d0Cut_none = (1 << (BH4-1)) - 1;
-static const KFstateHLS<5>::TD d0Cut[] = {d0Cut_none, d0Cut_none, d0Cut_none, d0Cut_loose, d0Cut_tight, d0Cut_tight, d0Cut_tight};
+static const KFstateHLS<5>::TD d0Cut[]      = {0, 0, 0,  d0Cut_loose,  d0Cut_tight,  d0Cut_tight,  d0Cut_tight};
+static const KFstateHLS<5>::TD d0CutMinus[] = {0, 0, 0, -d0Cut_loose, -d0Cut_tight, -d0Cut_tight, -d0Cut_tight};
 
-// Chi2 cut (assuming digitisation multiplier of unity).
-static const KFstateHLS<5>::TCHI chi2Cut_none = (1 << BCHI) - 1;
-static const KFstateHLS<5>::TCHI chi2Cut[] = {chi2Cut_none, chi2Cut_none, 10, 30, 80, 120, 160}; 
+// Chi2 cut
+static const KFstateHLS<5>::TCHI chi2Cut[] = {0, 0, chi2_Mult*10, chi2_Mult*30, chi2_Mult*80, chi2_Mult*120, chi2_Mult*160}; 
 
 #ifdef CMSSW_GIT_HASH
 }

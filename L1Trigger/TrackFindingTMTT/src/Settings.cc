@@ -24,7 +24,8 @@ Settings::Settings() {
   kalmanRemove2PScut_=true;
   killScenario_=0;
   kalmanMaxSkipLayers_=2;
-  kalmanDebugLevel_=2;
+  kalmanDebugLevel_=1;
+  //  kalmanDebugLevel_=2; // Good for debugging
   enableDigitize_=false;
   houghMinPt_=2.0;
   chosenRofPhi_=55.0;
