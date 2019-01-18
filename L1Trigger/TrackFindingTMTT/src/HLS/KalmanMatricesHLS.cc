@@ -72,7 +72,11 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
   std::cout<<"p/r check "<<pitchPSoverR_2<<" vs "<<double(pitchPS*pitchPS)/double(r*r)<<std::endl;
 #endif
 
+#ifdef CMSSW_GIT_HASH
+  StubHLS::TZ absZ = fabs(float(z));  
+#else
   StubHLS::TZ absZ = hls::abs(z);  
+#endif
 
   // Use same granularity for resolution as for residuals.
   // (Define as signed, so dont have to worry if tanL or inv2R are -ve).
