@@ -20,7 +20,7 @@ namespace KalmanHLS {
 
 //--- Number of helix parameters for track fit.
 
-static const unsigned int N_HELIX_PAR = 5;
+static const unsigned int N_HELIX_PAR = 4;
 
 //-- Copied from Maxeller code Constants.maxj
 

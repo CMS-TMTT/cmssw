@@ -43,7 +43,7 @@ public:
 
   // Determine number of optical links used to output tracks from each phi octant
   // (where "link" refers to a pair of links in the hardware).
-  unsigned int numLinksPerOctant() const {return numPhiSecPerOct_ * numEtaRegions_ * busySectorMbinRanges_.size() / this->muxFactor();}
+  unsigned int numLinksPerOctant() const {unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0; return numPhiSecPerOct_ * numEtaRegions_ * (busySectorMbinRanges_.size() - iCorr)/ this->muxFactor();}
 
 private:
 

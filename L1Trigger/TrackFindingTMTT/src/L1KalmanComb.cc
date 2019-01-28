@@ -386,21 +386,25 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
     L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
 
-    if( getSettings()->kalmanDebugLevel() >= 3 ){
-      if (this->isHLS()) {
+    bool consistentHLS = false;
+    if (this->isHLS()) {
+      unsigned int mBinHelixHLS, cBinHelixHLS;
+      cand->getHLSextra(mBinHelixHLS, cBinHelixHLS, consistentHLS);
+      if( getSettings()->kalmanDebugLevel() >= 3 ){
         // Check if (m,c) corresponding to helix params are correctly calculated by HLS code.
-        unsigned int mBinHelixHLS, cBinHelixHLS;
-        bool consistentHLS;
-        cand->getHLSextra(mBinHelixHLS, cBinHelixHLS, consistentHLS);
         bool HLS_OK = ((mBinHelixHLS == returnTrk.getCellLocationFit().first) && (cBinHelixHLS == returnTrk.getCellLocationFit().second));
-        if (not HLS_OK) std::cout<<"CHECK BinHelix: OK = "<<HLS_OK
+        if (not HLS_OK) std::cout<<"WARNING HLS mBinHelix disagrees with C++:"
                                  <<" (HLS,C++) m=("<<mBinHelixHLS<<","<<returnTrk.getCellLocationFit().first <<")"
                                  <<" c=("<<cBinHelixHLS<<","<<returnTrk.getCellLocationFit().second<<")"<<endl;
       }
     }
 
     // Store supplementary info, specific to KF fitter.
-    returnTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
+    if(this->isHLS() && nPar_ == 4) {
+      returnTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_, consistentHLS );
+    } else {
+      returnTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
+    }
 
     // If doing 5 parameter fit, optionally also calculate helix params & chi2 with beam-spot constraint applied,
     // and store inside L1fittedTrack object.
@@ -416,7 +420,11 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     if (! getSettings()->hybrid() ) { // consistentSector() function not yet working for Hybrid.
       if (! returnTrk.consistentSector()) {
         L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
-        failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
+        if(this->isHLS() && nPar_ == 4) {
+          failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_, consistentHLS );
+        } else {
+          failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
+        }
         return failedTrk;
       }
     }

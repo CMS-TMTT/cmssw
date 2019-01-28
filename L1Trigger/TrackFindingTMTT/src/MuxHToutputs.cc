@@ -124,8 +124,16 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, 
       //--- This is the Mux for the transverse HT readout organised by m-bin. (Each phi sector & m bin range go to a different link).
 
       link = 0;          
-      link += iSecInOct;     
-      link += numPhiSecPerOct_ * mBinRange; 
+      //link += iSecInOct;     
+      //link += numPhiSecPerOct_ * mBinRange; 
+
+      // IRT - match firmware, taking into account that fw uses mBin = -mBin relative to sw.
+      // NOT NEEDED ANYMORE, AS NOW FW USES MBIN SAME SIGN AS Q/PT.
+      unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0;
+      // Sign flip for FW using opposite 
+      //link += (busySectorMbinRanges_.size() - iCorr) - mBinRange - 1; 
+      link += mBinRange; 
+      link += iSecInOct * (busySectorMbinRanges_.size() - 1);
 
     } else { 
 
@@ -145,7 +153,9 @@ void MuxHToutputs::sanityCheck() {
   vector<unsigned int> nObsElementsPerLink ( this->numLinksPerOctant(), 0 );
   for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerOct_; iSecInOct++) {
     for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-      for (unsigned int mBinRange = 0; mBinRange < busySectorMbinRanges_.size(); mBinRange++) {
+      // IRT
+      unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0;
+      for (unsigned int mBinRange = 0; mBinRange < busySectorMbinRanges_.size() - iCorr; mBinRange++) {
 	unsigned int link = this->linkID(iSecInOct, iEtaReg, mBinRange);
 	nObsElementsPerLink[ link ] += 1;
       }
@@ -153,7 +163,8 @@ void MuxHToutputs::sanityCheck() {
   }
   for (const unsigned int& n : nObsElementsPerLink) {
     // Assume good algorithms will distribute sectors & m-bin ranges equally across links.
-    if (n != this->muxFactor()) throw cms::Exception("MuxHToutputs: MUX algorithm is not assigning equal numbers of elements per link! ")<<n<<" "<<this->muxFactor()<<endl;
+    // IRT
+    //    if (n != this->muxFactor()) throw cms::Exception("MuxHToutputs: MUX algorithm is not assigning equal numbers of elements per link! ")<<n<<" "<<this->muxFactor()<<endl;
   }
 }
 

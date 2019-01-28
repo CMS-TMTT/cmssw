@@ -41,6 +41,19 @@ void Get3Dtracks::makeUnfilteredTrks(const vector<L1track2D>& vecTracksRphi) {
   for (const L1track2D& trkRphi : vecTracksRphi) {
     const vector<const Stub*>& stubsOnTrkRphi = trkRphi.getStubs(); // stubs assigned to track 
 
+    float qOverPt = trkRphi.getHelix2D().first;
+    float phi0    = trkRphi.getHelix2D().second;
+
+    if (settings_->enableDigitize()) {
+      // Centre of HT bin lies on boundary of two fitted track digi bins, so nudge slightly +ve (like FW)
+      // to remove ambiguity.
+      const float small = 0.1;
+      qOverPt += (2./settings_->invPtToInvR()) *
+                 small*settings_->kf_oneOver2rRange()/pow(2.,settings_->kf_oneOver2rBits());
+      phi0    += small*settings_->kf_phi0Range()     /pow(2.,settings_->kf_phi0Bits());
+    }    
+    pair<float, float> helixRphi(qOverPt, phi0);
+
     // Estimate r-z track helix parameters from centre of eta sector.
     float z0 = 0.;
     float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector_))) + 1/tan(2*atan(exp(-etaMaxSector_))));
@@ -53,8 +66,11 @@ void Get3Dtracks::makeUnfilteredTrks(const vector<L1track2D>& vecTracksRphi) {
 
     // Create 3D track, by adding r-z helix params to 2D track
     L1track3D trk3D(settings_, stubsOnTrkRphi, 
-		    trkRphi.getCellLocationHT(), trkRphi.getHelix2D(), helixRz,
+		    trkRphi.getCellLocationHT(), helixRphi, helixRz,
 		    iPhiSec_                   , iEtaReg_            , trkRphi.optoLinkID(), trkRphi.mergedHTcell());
+    //    L1track3D trk3D(settings_, stubsOnTrkRphi, 
+    //		    trkRphi.getCellLocationHT(), trkRphi.getHelix2D(), helixRz,
+    //		    iPhiSec_                   , iEtaReg_            , trkRphi.optoLinkID(), trkRphi.mergedHTcell());
 
     // Optionally use MC truth to eliminate all fake tracks & all incorrect stubs assigned to tracks 
     // before doing fit (for debugging).

@@ -58,6 +58,7 @@ public:
       secTmp_.init(settings, iPhiSec_, iEtaReg_); //Sector class used to check if fitted track trajectory is in expected sector.
       htRphiTmp_.init(settings, iPhiSec_, iEtaReg_, secTmp_.etaMin(), secTmp_.etaMax(), secTmp_.phiCentre()); // HT class used to identify HT cell that corresponds to fitted helix parameters.
     }
+    this->setConsistentHTcell(); 
   }
 
   L1fittedTrack() : L1trackBase() {}; // Creates track object, but doesn't set any variables.
@@ -75,6 +76,10 @@ public:
   void setInfoKF( unsigned int nSkippedLayers, unsigned int numUpdateCalls ) {
     nSkippedLayers_ = nSkippedLayers;
     numUpdateCalls_ = numUpdateCalls;
+  }
+  void setInfoKF( unsigned int nSkippedLayers, unsigned int numUpdateCalls, bool consistentHLS ) {
+    this->setInfoKF(nSkippedLayers_, numUpdateCalls_);
+    consistentCell_ = consistentHLS; // Take HT cell consistency from KF HLS code.
   }
   void setInfoLR( int numIterations, std::string lostMatchingState, std::unordered_map< std::string, int > stateCalls ) {
     numIterations_ = numIterations; lostMatchingState_ = lostMatchingState; stateCalls_ = stateCalls;
@@ -213,7 +218,10 @@ public:
   //--- Functions to help eliminate duplicate tracks.
 
   // Is the fitted track trajectory should lie within the same HT cell in which the track was originally found?
-  bool consistentHTcell() const {
+  bool consistentHTcell() const {return consistentCell_;}
+
+  // Determine if the fitted track trajectory should lie within the same HT cell in which the track was originally found?
+  void setConsistentHTcell() {
     //return (max(fabs(this->deltaM()), fabs(this->deltaC())) < 0.5);
     // Use helix params with beam-spot constaint if done in case of 5 param fit.
 
@@ -230,7 +238,7 @@ public:
       if (htCell11 == this->getCellLocationFit()) consistent = true; 
     }
 
-    return consistent;
+    consistentCell_ = consistent;
   }
 
   // Is the fitted track trajectory within the same (eta,phi) sector of the HT used to find it?
@@ -305,6 +313,8 @@ private:
 
   bool digitizedTrack_;
   DigitalTrack                          digitalTrack_; // Class used to digitize track if required.
+
+  bool consistentCell_;
 };
 
 }
