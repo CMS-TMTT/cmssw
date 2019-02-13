@@ -142,10 +142,13 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
 #ifdef PRINT_SUMMARY
   CHECK_AP::checkCalc("sigmaPhiScat2", sigmaPhiScat2,
     pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2), 0.2, pow(0.0002*phiMult,2));
+  CHECK_AP::checkCalc("V00", _00,
+		      double(sigmaPhi2) + double(sigmaPhiExtra2) + pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2), 0.4, 30.); // Very inaccurate as mBin not identical to fitted inv2R?
+  CHECK_AP::checkCalc("V11", _11, pow(double(sigmaZ), 2));
 #endif
 #ifdef PRINT
   std::cout<<"2S="<<_2Smodule<<" ENDCAP="<<(absZ > zBarrel)<<" (r,z)=("<<r<<", "<<z<<")"<<std::endl;
-  std::cout<<"SIGMA RPHI="<<sqrt(double(_00))/double(phiMult)<<" SIGMA_RZ="<<sqrt(double(_11))/double(rMult)<<" EXTRA="<<double(sigmaPhiExtra)/double(phiMult)<<" SCAT="<<sqrt(double(sigmaPhiScat2))/double(phiMult)<<std::endl;
+  std::cout<<"SIGMA RPHI="<<sqrt(double(_00))/double(phiMult)<<" SIGMA_RZ="<<sqrt(double(_11))/double(rMult)<<" EXTRA="<<sqrt(double(sigmaPhiExtra2))/double(phiMult)<<" SCAT="<<sqrt(double(sigmaPhiScat2))/double(phiMult)<<std::endl;
   std::cout<<"SCAT CHECK: "<<mBin<<" "<<double(inv2R)/double(inv2Rcut)<<" RESULT: DIGI="<<double(sigmaPhiScat2)<<" FLOAT="<<pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2)<<std::endl;
   std::cout<<"  V00="<<_00<<"   V11="<<_11<<std::endl;
 #endif

@@ -23,7 +23,9 @@ Settings::Settings() {
   numPhiSectors_=9;
   kalmanRemove2PScut_=true;
   killScenario_=0;
-  kalmanMaxSkipLayers_=2;
+  kalmanMaxSkipLayersHard_=2; // On "hard" input tracks
+  kalmanMaxSkipLayersEasy_=2; // On "easy" input tracks 
+  kalmanMaxStubsEasy_=10;  // Max. #stubs an input track can have to be defined "easy"
   kalmanDebugLevel_=1;
   //  kalmanDebugLevel_=2; // Good for debugging
   enableDigitize_=false;
@@ -169,6 +171,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   miniHoughMinPt_         ( htArraySpecRphi_.getParameter<double>             ( "MiniHoughMinPt"         ) ),
   miniHoughDontKill_      ( htArraySpecRphi_.getParameter<bool>               ( "MiniHoughDontKill"      ) ),
   miniHoughDontKillMinPt_ ( htArraySpecRphi_.getParameter<double>             ( "MiniHoughDontKillMinPt" ) ),
+  miniHoughLoadBalance_   ( htArraySpecRphi_.getParameter<unsigned int>       ( "MiniHoughLoadBalance"   ) ),
                                 
   //=== Rules governing how stubs are filled into the r-phi Hough Transform array.
   handleStripsRphiHT_     ( htFillingRphi_.getParameter<bool>                 ( "HandleStripsRphiHT"     ) ),
@@ -263,7 +266,10 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   kalmanMaxNumStubs_       ( trackFitSettings_.getParameter<unsigned int>     ( "KalmanMaxNumStubs"      ) ),
   kalmanAddBeamConstr_     ( trackFitSettings_.getParameter<bool>             ( "KalmanAddBeamConstr"    ) ),
   kalmanRemove2PScut_      ( trackFitSettings_.getParameter<bool>             ( "KalmanRemove2PScut"     ) ),
-  kalmanMaxSkipLayers_     ( trackFitSettings_.getParameter<unsigned>         ( "KalmanMaxSkipLayers"    ) ),
+  kalmanMaxSkipLayersHard_ ( trackFitSettings_.getParameter<unsigned>         ( "KalmanMaxSkipLayersHard") ),
+  kalmanMaxSkipLayersEasy_ ( trackFitSettings_.getParameter<unsigned>         ( "KalmanMaxSkipLayersEasy") ),
+  kalmanMaxStubsEasy_      ( trackFitSettings_.getParameter<unsigned>         ( "KalmanMaxStubsEasy"     ) ),
+  kalmanMaxStubsPerLayer_  ( trackFitSettings_.getParameter<unsigned>         ( "KalmanMaxStubsPerLayer" ) ),
   kalmanMultiScattTerm_    ( trackFitSettings_.getParameter<double>           ( "KalmanMultiScattTerm"   ) ),
   kalmanMultiScattFactor_  ( trackFitSettings_.getParameter<double>           ( "KalmanMultiScattFactor" ) ),
   kalmanHOtilted_          ( trackFitSettings_.getParameter<bool>             ( "KalmanHOtilted"         ) ),

@@ -141,7 +141,8 @@ TMTrackProducer_params = cms.PSet(
      MiniHoughNbinsPhi = cms.uint32(2),   # Number of mini cells along phi axis inside each normal HT cell.
      MiniHoughMinPt    = cms.double(3.0), # Below this Pt threshold, the mini HT will not be used, to reduce sensitivity to scattering, with instead tracks found by 1st stage coarse HT sent to output. (HT cell numbering remains as if mini HT were in use everywhere).
      MiniHoughDontKill = cms.bool(False), # If true, allows tracks found by 1st stage coarse HT to be output if 2nd stage mini HT finds no tracks.
-     MiniHoughDontKillMinPt = cms.double(8.0) # If MiniHoughDontKill=True, this option restricts it to keep 1st stage HT tracks only if their Pt is exceeds this cut. (Used to improve electron tracking above this threshold).
+     MiniHoughDontKillMinPt = cms.double(8.0), # If MiniHoughDontKill=True, this option restricts it to keep 1st stage HT tracks only if their Pt is exceeds this cut. (Used to improve electron tracking above this threshold).
+     MiniHoughLoadBalance = cms.uint32(0) # Load balancing disabled = 0; static load balancing of output links = 1; dynamic load balancing of output links = 2.
   ),
 
   #=== Rules governing how stubs are filled into the r-phi Hough Transform array.
@@ -382,7 +383,11 @@ TMTrackProducer_params = cms.PSet(
      # Remove requirement of at least 2 PS layers per track.
      KalmanRemove2PScut      = cms.bool(False),
      # Allow the KF to skip this many layers in total per track.
-     KalmanMaxSkipLayers     = cms.uint32(2),
+     KalmanMaxSkipLayersHard = cms.uint32(1), # For HT tracks with many stubs
+     KalmanMaxSkipLayersEasy = cms.uint32(2), # For HT tracks with few stubs
+     KalmanMaxStubsEasy      = cms.uint32(10), # Max stubs an HT track can have to be "easy".
+     # KF will consider at most this #stubs per layer to save time.
+     KalmanMaxStubsPerLayer  = cms.uint32(4),
      # Multiple scattering term - inflate hit phi errors by this divided by Pt
      # (0.00075 gives best helix resolution & 0.00450 gives best chi2 distribution).
      KalmanMultiScattTerm    = cms.double(0.00075), 

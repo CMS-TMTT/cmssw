@@ -1213,6 +1213,7 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
 
       vector<unsigned int> stubsToLinkCount(nLinks, 0);
       vector<unsigned int> trksToLinkCount(nLinks, 0);
+      vector<vector<unsigned int>> shit(nLinks, vector<unsigned int>());
       for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerOct; iSecInOct++) {
 	unsigned int iPhiSec = iPhiOct * numPhiSecPerOct + iSecInOct;
 	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
@@ -1221,6 +1222,7 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
 	    unsigned int link = trk.optoLinkID();
 	    if (link < nLinks) {
   	      stubsToLinkCount[link] += trk.getNumStubs();
+	      shit[link].push_back(trk.getNumStubs());
 	      trksToLinkCount[link] += 1;
 	    } else {
 	      // Bug -- array too small ...
@@ -1230,11 +1232,25 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
 	}
       }
 
+      //      cout<<"LINKS:";
+      unsigned int fuck = 0;
+      unsigned int lfuck = 0;
       for (unsigned int link = 0; link < nLinks; link++) {
         unsigned int nstbs = stubsToLinkCount[link];
+	if (fuck < nstbs) {
+	  fuck = nstbs;
+	  //lfuck = link;
+	}
+	//cout<<" L"<<link<<"="<<nstbs;
         hisNumStubsPerLink_[tName]->Fill(nstbs);
         hisNumStubsVsLink_[tName]->Fill(link, nstbs);
         profMeanStubsPerLink_[tName]->Fill(link, nstbs);
+      }
+      //cout<<endl;
+      if (fuck > 50) {
+	//cout<<"WIERD L="<<lfuck;
+	//for (unsigned int a : shit[lfuck]) cout<<" "<<a;
+	//cout<<endl;
       }
 
       for (unsigned int link = 0; link < nLinks; link++) {

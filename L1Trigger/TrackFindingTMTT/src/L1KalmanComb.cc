@@ -21,6 +21,9 @@
 // Enable debug printout to pair with that in Histos.cc enabled by recalc_debug.
 //#define RECALC_DEBUG
 
+// Enable merging of nearby stubs.
+//#define MERGE_STUBS
+
 namespace TMTT {
 
 unsigned LayerId[16] = { 1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 21, 22, 23, 24, 25 };
@@ -233,6 +236,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 		
   sort(stubs.begin(), stubs.end(), orderStubsByLayer); // Unnecessary?
 
+#ifdef MERGE_STUBS
   // Eliminate identical duplicate stubs.
   for(unsigned i=0; i < stubs.size(); i++ ){
     const Stub *stub_a = stubs.at(i);
@@ -246,6 +250,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
       }
     }
   }
+#endif
 
   std::vector<const StubCluster *> stubcls;
 
@@ -269,8 +274,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
       std::vector<const Stub *> stubs_for_cls;
       stubs_for_cls.push_back(layer_stubs.at(i));
 
-      // disable clustering - each stub is its own cluster
-      /*
+#ifdef MERGE_STUBS
 	while( layer_stubs.at(i) != layer_stubs.back() ){
 	if( isOverlap( layer_stubs.at(i), layer_stubs.at(i+1), TYPE_NORMAL ) ){
 	stubs_for_cls.push_back( layer_stubs.at(i+1) );
@@ -280,7 +284,8 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 	}
 	else break;
 	}
-      */
+#endif
+
       if( getSettings()->kalmanFillInternalHists() ) {
 
 	if( tpa && tpa->useForAlgEff() ){
@@ -603,8 +608,9 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 			
     }
 		
-    layerStubs[kalmanLayer].push_back( stubCluster );
-
+    if (layerStubs[kalmanLayer].size() < getSettings()->kalmanMaxStubsPerLayer()) {
+      if (kalmanLayer != 7) layerStubs[kalmanLayer].push_back( stubCluster );
+    }
   }
 
   // iterate using state->nextLayer() to determine next Kalman layer(s) to add stubs from
@@ -613,7 +619,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 
     int combinations_per_iteration = 0;
 		
-    unsigned int kalmanMaxSkipLayers = getSettings()->kalmanMaxSkipLayers();
+    bool easy = (l1track3D.getNumStubs() < getSettings()->kalmanMaxStubsEasy());
+    unsigned int kalmanMaxSkipLayers = easy ? getSettings()->kalmanMaxSkipLayersEasy() : getSettings()->kalmanMaxSkipLayersHard();
 		
     // update each state from previous iteration (or seed) using stubs in next Kalman layer
     std::vector<const kalmanState *>::const_iterator i_state = prev_states.begin();
@@ -719,6 +726,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       int i, max_states, max_states_skip;
 			
       // If layer contained several stubs, so several states now exist, select only the best ones.
+      // -- Disable this by setting to large values, as not used in latest KF firmware.
 
       switch ( iteration ) {
       case 0:

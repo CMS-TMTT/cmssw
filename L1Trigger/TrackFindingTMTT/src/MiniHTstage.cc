@@ -74,12 +74,38 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		if ( htCell.trackCandFound() ) {
 		  pair< unsigned int, unsigned int > cellLocation( cell.first + mBin, cell.second + cBin );
 		  pair< float, float > helix2D( qOverPtBin, reco::deltaPhi( phiBin + chosenRofPhi_ * invPtToDphi_ * qOverPtBin + phiCentre, 0. ) );
-		  L1track2D fineTrk( settings_, htCell.stubs(), cellLocation, helix2D, iPhiSec, iEtaReg, roughTrk.optoLinkID(), mergedCell );
+		  unsigned int newLink = link;
+		  // Static load balancing.
+		  const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerOct_;
+		  if (settings_->miniHoughLoadBalance() >= 1) {
+		    //unsigned int iOffset = 2*mBin + cBin; // Send each mini-cell to a different output link. 
+		    //newLink = (newLink + iOffset)%nLinks;
+		    newLink = 2*(unsigned int)(link/2) + mBin;
+		  }
+		  // Dynamic load balancing.
+		  if (settings_->miniHoughLoadBalance() >= 2) {
+                    const unsigned int nMix = 3;
+                    const unsigned int nSep = 6;
+                    //unsigned int newerLinkBest = newLink;
+                    //for (unsigned int j = 0; j < nMix; j++) {
+                    //  unsigned int newerLink = (newLink + j * nSep)%nLinks;
+                    //  if (numStubsPerLink[newerLink] < numStubsPerLink[newerLinkBest]) newerLinkBest = newerLink;  
+		    //}
+		    //newLink = newerLinkBest;
+		    unsigned int linkSharedBest = nSep*(unsigned int)(newLink/nSep) + newLink%2; 
+		    for (unsigned int j = 0; j < nMix; j++) {
+		      //In first 6 links, links 0, 2 & 4 are load balanced together, as are links 1, 3 & 5. etc.
+	  	      unsigned int linkShared = nSep*(unsigned int)(newLink/nSep) + newLink%2 + 2*j;
+                      if (numStubsPerLink[linkShared] < numStubsPerLink[linkSharedBest]) linkSharedBest = linkShared;  
+		    }
+  	  	    newLink = linkSharedBest;
+		  }
+		  L1track2D fineTrk( settings_, htCell.stubs(), cellLocation, helix2D, iPhiSec, iEtaReg, newLink, mergedCell );
 		  // Truncation due to output opto-link bandwidth.
 		  bool keep( true );
 		  if ( settings_->muxOutputsHT() ) {
-		    numStubsPerLink[ link ] += htCell.numStubs();
-		    if ( busySectorKill_ && numStubsPerLink[ link ] > busySectorNumStubs_ ) keep = false;
+		    numStubsPerLink[ newLink ] += htCell.numStubs();
+		    if ( busySectorKill_ && numStubsPerLink[ newLink ] > busySectorNumStubs_ ) keep = false;
 		  }
 		  if ( keep ) {
 		    fineTracks.push_back( fineTrk );

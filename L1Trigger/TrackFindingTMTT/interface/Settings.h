@@ -126,6 +126,8 @@ public:
   bool                 miniHoughDontKill()       const   {return miniHoughDontKill_;} 
   // If MiniHoughDontKill=True, this option restricts it to keep 1st stage HT tracks only if their Pt is exceeds this cut. (Used to improve electron tracking above this threshold).
   float                miniHoughDontKillMinPt()  const   {return miniHoughDontKillMinPt_;} 
+  // load balancing disabled = 0; static load balancing of output links = 1; dynamic load balancing of output links = 2.
+  unsigned int         miniHoughLoadBalance()    const   {return miniHoughLoadBalance_;} 
 
   //=== Rules governing how stubs are filled into the r-phi Hough Transform array.
                                 
@@ -301,8 +303,13 @@ public:
   bool                 kalmanAddBeamConstr()            const { return kalmanAddBeamConstr_;}
   // Remove requirement of at least 2 PS layers per track.
   bool                 kalmanRemove2PScut()             const { return kalmanRemove2PScut_;}
-  // Allow the KF to skip this many layers in total per track.
-  unsigned int         kalmanMaxSkipLayers()            const { return kalmanMaxSkipLayers_;}
+  // Allow the KF to skip this many layers in total per track for "hard" or "easy" input tracks
+  unsigned int         kalmanMaxSkipLayersHard()        const { return kalmanMaxSkipLayersHard_;}
+  unsigned int         kalmanMaxSkipLayersEasy()        const { return kalmanMaxSkipLayersEasy_;}
+  // Max #stubs an input track can have to be defined "easy".
+  unsigned int         kalmanMaxStubsEasy()             const { return kalmanMaxStubsEasy_;}
+  // KF will consider only this no. of stubs per layer.
+  unsigned int         kalmanMaxStubsPerLayer()         const { return kalmanMaxStubsPerLayer_;}
   // Multiple scattering term - inflate hit phi errors by this divided by Pt
   double               kalmanMultiScattTerm()           const { return kalmanMultiScattTerm_;}
   // Multiple scattering factor -- buggy so don't use!
@@ -514,6 +521,7 @@ private:
   double               miniHoughMinPt_;
   bool                 miniHoughDontKill_;
   double               miniHoughDontKillMinPt_;
+  unsigned int         miniHoughLoadBalance_;
                                 
   // Rules governing how stubs are filled into the r-phi Hough Transform array.
   bool                 handleStripsRphiHT_;
@@ -605,7 +613,10 @@ private:
   unsigned int         kalmanMaxNumStubs_;
   bool                 kalmanAddBeamConstr_;
   bool                 kalmanRemove2PScut_;
-  unsigned int         kalmanMaxSkipLayers_;
+  unsigned int         kalmanMaxSkipLayersHard_;
+  unsigned int         kalmanMaxSkipLayersEasy_;
+  unsigned int         kalmanMaxStubsEasy_;
+  unsigned int         kalmanMaxStubsPerLayer_;
   double               kalmanMultiScattTerm_; 
   double               kalmanMultiScattFactor_; 
   bool                 kalmanHOtilted_;
