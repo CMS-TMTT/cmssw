@@ -20,7 +20,7 @@ namespace TMTT {
 namespace KalmanHLS {
 #endif
 
-//--- Number of helix parameters for track fit.
+//--- Number of helix parameters for track fit (ignored if running inside CMSSW).
 
 static const unsigned int N_HELIX_PAR = 4;
 
