@@ -2,10 +2,12 @@
 #define __HLSconstants__
 
 #ifdef CMSSW_GIT_HASH
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSpragmaOpts.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSutilities.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
 #else
+#include "HLSpragmaOpts.h"
 #include "HLSutilities.h"
 #include "StubHLS.h"
 #include "KFstateHLS.h"
@@ -42,7 +44,11 @@ static const StubHLS::TR chosenRofZ = chosenRofZ_flt*rMult;
 
 static const float bField = 3.8112;
 static const float invPtToInvR = bField*(2.9979e8/1.0e11);
+#ifdef PT_2GEV
+static const float minPt_HT = 2.; // Range of Hough transform
+#else
 static const float minPt_HT = 3.; // Range of Hough transform
+#endif
 static const float invRmin_HT = invPtToInvR*(1./minPt_HT);
 
 static const float kalmanMultScatTerm = 0.00075; // Same as cfg param of same name in CMSSW TMTT code.
@@ -59,10 +65,13 @@ static const float phiSectorWidth = TWO_PI / numPhiSectors;
 enum {phiToCbin_bitShift = 7, invRToMbin_bitShift = 4};
 enum {BCH=BH1-phiToCbin_bitShift, BMH=BH0+invRToMbin_bitShift};
 
-// Size of HT cells
-static const int numPhiBins = 64; // Bins in HT
-static const int numPtBins = 36;  // Nonants
-//static const int numPtBins = 32;  // Octants
+// Size of HT array
+static const int numPhiBins = 64; 
+#ifdef PT_2GEV
+static const int numPtBins = 54;  
+#else
+static const int numPtBins = 36;  
+#endif
 static const AP_INT(BCH) minPhiBin = -numPhiBins/2; // BCH & BMH should be larger than BHT_C & BHT_M to monitor overflow.
 static const AP_INT(BCH) maxPhiBin =  numPhiBins/2 - 1;
 static const AP_INT(BMH) minPtBin  = -numPtBins/2;
@@ -102,8 +111,8 @@ public:
 //--- N.B. If cut value is zero, this indicates cut is not applied. (Trick to avoid Vivado timing failure).
 
 // Pt or 1/2R cut.
-static const float ptCut_flt_tight = 2.95; // Smaller than HT cut to allow for resolution during KF fit.
-static const float ptCut_flt_loose = 2.90;
+static const float ptCut_flt_tight = minPt_HT - 0.05; // Smaller than HT cut to allow for resolution during KF fit.
+static const float ptCut_flt_loose = minPt_HT - 0.10;
 static const float inv2Rcut_flt_tight = 0.5*invPtToInvR*(1./ptCut_flt_tight);
 static const float inv2Rcut_flt_loose = 0.5*invPtToInvR*(1./ptCut_flt_loose);
 static const KFstateHLS<5>::TR inv2Rcut_tight = inv2R_Mult*inv2Rcut_flt_tight;

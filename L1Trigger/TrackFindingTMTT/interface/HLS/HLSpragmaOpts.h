@@ -20,4 +20,8 @@
 
 #define ULTRASCALE
 
+// OPTION 3:
+// If defined, HLS KF will cope with tracking down to 2 GeV Pt instead of 3 GeV.
+//#define PT_2GEV
+
 #endif
