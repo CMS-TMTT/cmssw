@@ -264,10 +264,12 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
       }
     }
 
+#ifdef MERGE_STUBS
     if( LayerId[j_layer] < 10 ) 
       sort( layer_stubs.begin(), layer_stubs.end(), orderStubsByZ ); // barrel
     else
       sort( layer_stubs.begin(), layer_stubs.end(), orderStubsByR ); // endcap
+#endif
 
     for(unsigned i=0; i < layer_stubs.size(); i++ ){ // Stubs in single layer, ordered by z or r.
 
@@ -730,28 +732,28 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 
       switch ( iteration ) {
       case 0:
-	max_states = 12;
-	max_states_skip = 12;
+	max_states = 99;
+	max_states_skip = 99;
 	break;
       case 1:
-	max_states = 4;
-	max_states_skip = 4;
+	max_states = 99;
+	max_states_skip = 99;
 	break;
       case 2:
-	max_states = 4;
-	max_states_skip = 4;
+	max_states = 99;
+	max_states_skip = 99;
 	break;
       case 3:
-	max_states = 4;
-	max_states_skip = 4;
+	max_states = 99;
+	max_states_skip = 99;
 	break;
       case 4:
-	max_states = 4;
-	max_states_skip = 4;
+	max_states = 99;
+	max_states_skip = 99;
 	break;
       case 5:
-	max_states = 4;
-	max_states_skip = 4;
+	max_states = 99;
+	max_states_skip = 99;
 	break;
       default:
 	max_states = 999;
