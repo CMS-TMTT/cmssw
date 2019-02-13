@@ -729,35 +729,36 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 			
       // If layer contained several stubs, so several states now exist, select only the best ones.
       // -- Disable this by setting to large values, as not used in latest KF firmware.
+      // (But not too big as this wastes CPU).
 
       switch ( iteration ) {
       case 0:
-	max_states = 99;
-	max_states_skip = 99;
+	max_states = 15;
+	max_states_skip = 15;
 	break;
       case 1:
-	max_states = 99;
-	max_states_skip = 99;
+	max_states = 15;
+	max_states_skip = 15;
 	break;
       case 2:
-	max_states = 99;
-	max_states_skip = 99;
+	max_states = 15;
+	max_states_skip = 15;
 	break;
       case 3:
-	max_states = 99;
-	max_states_skip = 99;
+	max_states = 15;
+	max_states_skip = 15;
 	break;
       case 4:
-	max_states = 99;
-	max_states_skip = 99;
+	max_states = 15;
+	max_states_skip = 15;
 	break;
       case 5:
-	max_states = 99;
-	max_states_skip = 99;
+	max_states = 15;
+	max_states_skip = 15;
 	break;
       default:
-	max_states = 999;
-	max_states_skip = 999;
+	max_states = 15;
+	max_states_skip = 15;
 	break;
       }
 			
