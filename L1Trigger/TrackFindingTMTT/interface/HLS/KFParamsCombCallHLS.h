@@ -29,7 +29,13 @@ class KFParamsCombCallHLS : public KFParamsComb {
 
 public:
 
-  KFParamsCombCallHLS(const Settings* settings, const uint nPar, const string &fitterName ) : KFParamsComb(settings, nPar, fitterName) {}
+  KFParamsCombCallHLS(const Settings* settings, const uint nPar, const string &fitterName ) : KFParamsComb(settings, nPar, fitterName) {
+#ifdef PT_2GEV
+    if (settings->houghMinPt() > 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit HLSpragmaOpts.h to undefine PT_2GEV");
+#else
+    if (settings->houghMinPt() < 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit HLSpragmaOpts.h to define PT_2GEV");
+#endif
+  }
 
   virtual ~KFParamsCombCallHLS(){}
 
