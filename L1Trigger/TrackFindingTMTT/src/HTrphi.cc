@@ -606,6 +606,9 @@ bool HTrphi::mergedCell(unsigned int iQoverPtBin, unsigned int jPhiTrkBin) const
     float fMergeBins = (maxAbsQoverPtAxis_ - minInvPtToMerge2x2_)/(2.*binSizeQoverPtAxis_);
     // Number of unmerged bins this corresponds to, which must be even, since each merged bin comprises two normal q/pt bins.
     unsigned int numQoverPtBinsToMerge = 2 * min( (unsigned int)(std::round(fMergeBins)), (nBinsQoverPtAxis_/4) );
+    // IRT - bug fix
+    const float small = 0.001;
+    if (minInvPtToMerge2x2_ < small && (unsigned int)(std::round(2.*fMergeBins))%2 == 1) numQoverPtBinsToMerge++;  
     unsigned int iB = (nBinsQoverPtAxis_ - 1) - i; // Count backwards across array.
     if (min(i, iB) < numQoverPtBinsToMerge) merge = true;
   }
