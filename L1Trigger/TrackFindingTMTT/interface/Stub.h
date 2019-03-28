@@ -51,7 +51,7 @@ class Stub : public TTStubRef {
 public:
 
   // Store useful info about the stub (for use with HYBRID code), with hard-wired constants to allow use outside CMSSW.
-  Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology);
+  Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology, unsigned int ID);
 
   // Store useful info about stub (for use with TMTT code).
   Stub(const TTStubRef& ttStubRef, unsigned int index_in_vStubs, const Settings* settings, const TrackerGeometry*  trackerGeometry, const TrackerTopology*  trackerTopology);

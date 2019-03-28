@@ -26,17 +26,22 @@ class L1track3D : public L1trackBase {
 public:
 
   L1track3D(const Settings* settings, const vector<const Stub*>& stubs,
-            pair<unsigned int, unsigned int> cellLocationHT, pair<float, float> helixRphi, pair<float, float> helixRz,
-	    unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID, bool mergedHTcell) : 
+            pair<unsigned int, unsigned int> cellLocationHT, pair<float, float> helixRphi, pair<float, float> helixRz, float helixD0,
+      unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID, bool mergedHTcell) : 
     L1trackBase(),
     settings_(settings),
     stubs_(stubs), 
-    cellLocationHT_(cellLocationHT), helixRphi_(helixRphi), helixRz_  (helixRz),
+    cellLocationHT_(cellLocationHT), helixRphi_(helixRphi), helixRz_  (helixRz),  helixD0_(helixD0),
     iPhiSec_(iPhiSec), iEtaReg_(iEtaReg), optoLinkID_(optoLinkID), mergedHTcell_(mergedHTcell)
   {
     nLayers_   = Utility::countLayers(settings, stubs); // Count tracker layers these stubs are in
     matchedTP_ = Utility::matchingTP(settings, stubs, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate info about match.
   }
+
+  L1track3D(const Settings* settings, const vector<const Stub*>& stubs,
+            pair<unsigned int, unsigned int> cellLocationHT, pair<float, float> helixRphi, pair<float, float> helixRz,
+      unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID, bool mergedHTcell) : 
+    L1track3D(settings, stubs, cellLocationHT,  helixRphi,  helixRz,  0.0, iPhiSec,  iEtaReg,  optoLinkID,  mergedHTcell){}
 
   L1track3D() : L1trackBase() {}; // Creates track object, but doesn't set any variables.
 
@@ -103,7 +108,7 @@ public:
   float   charge()     const  {return (this->qOverPt() > 0  ?  1  :  -1);} 
   float   invPt()      const  {return fabs(this->qOverPt());}
   float   pt()         const  {return 1./(1.0e-6 + this->invPt());} // includes protection against 1/pt = 0.
-  float   d0()         const  {return 0.;} // Hough transform assumes d0 = 0.
+  float   d0()         const  {return helixD0_;} // Hough transform assumes d0 = 0.
   float   phi0()       const  {return helixRphi_.second;}
   float   z0()         const  {return helixRz_.first;}
   float   tanLambda()  const  {return helixRz_.second;}
@@ -200,6 +205,7 @@ private:
   pair<unsigned int, unsigned int>   cellLocationHT_; 
   pair<float, float>                 helixRphi_; 
   pair<float, float>                 helixRz_; 
+  float                              helixD0_;
   unsigned int                       iPhiSec_;
   unsigned int                       iEtaReg_; 
   unsigned int                       optoLinkID_;

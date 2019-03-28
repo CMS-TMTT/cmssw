@@ -183,7 +183,7 @@ std::vector<double> KFParamsComb::seedx(const L1track3D& l1track3D)const{
   x[Z0]    = l1track3D.z0();
   x[T]     = l1track3D.tanLambda();
   if (nPar_ == 5) {
-    x[D0]    = 0;
+    x[D0]    = l1track3D.d0();
   }
     
   return x;
@@ -386,11 +386,18 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
   vector<float> z0Cut, ptTolerance, d0Cut, chi2Cut;
   //  Layer   =    0      1      2     3     4      5      6
-  z0Cut       = { 999.,  999.,   15.,  15.,  15.,   15.,   15.};
   ptTolerance = { 999.,  999.,   0.1,  0.1,  0.05, 0.05,  0.05};
-  d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,    5.};  // Only used for 5 param helix fit
-  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
-
+  d0Cut       = { 999.,  999.,     999.,      10.,      10.,      10.,       10.}; // Only used for 5 param fit.
+  if (nPar_ == 5) { // specific cuts for displaced tracking case.
+    //  Layer   =    0      1        2         3         4         5           6
+    z0Cut       = { 999.,  999.,  1.8*15.,  1.8*15.,  1.8*15.,  1.8*15.,   1.8*15.};
+    chi2Cut     = { 999.,  999.,      10.,      30.,      80.,     120.,      160.}; // Maybe loosen for high d0 ?
+  } else {         // specific cuts for prompt tracking case.
+    //  Layer   =    0      1      2     3     4      5      6
+    z0Cut       = { 999.,  999.,   15.,  15.,  15.,   15.,   15.};
+    chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};
+  }
+  
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );
 
@@ -437,14 +444,15 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
   const bool countUpdateCalls = false; // Print statement to count calls to Updator.
 
-  if ( countUpdateCalls ||
+  if ( countUpdateCalls || 
        (getSettings()->kalmanDebugLevel() >= 2 && tpa_ != nullptr) ||
        (getSettings()->kalmanDebugLevel() >= 2 && getSettings()->hybrid()) ) {
-    if (not goodState) cout<<"State veto:"; 
-    if (goodState)     cout<<"State kept:";
+    if (not goodState) cout<<"State veto:";
+    if (goodState)     cout<<"State kept:"; 
     cout<<" nlay="<<nStubLayers<<" nskip="<<state.nSkippedLayers()<<" chi2="<<state.chi2();
+    if (tpa_ != nullptr) cout<<" pt(mc)="<<tpa_->pt();
     cout<<" pt="<<pt<<" q/pt="<<qOverPt<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
-    if (nPar_ == 5) cout<<" d0="<<y["D0"];
+    if (nPar_ == 5) cout<<" d0="<<y["d0"];
     cout<<" fake"<<(tpa_ == nullptr);
     if (tpa_ != nullptr) cout<<" pt(mc)="<<tpa_->pt();
     cout<<endl;

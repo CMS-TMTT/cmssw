@@ -27,7 +27,7 @@ StubKiller Stub::stubKiller_;
 
 //=== Store useful info about the stub (for use with HYBRID code), with hard-wired constants to allow use outside CMSSW.
 
-Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology) : 
+Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology, unsigned int ID) : 
   phi_(phi), r_(r), z_(z), bend_(bend), iphi_(iphi), alpha_(alpha), psModule_(psModule), layerId_(layerid), barrel_(barrel), 
   digitalStub_(settings), stubWindowSuggest_(settings)
 { //work in progress on better constructor for new hybrid
@@ -42,6 +42,7 @@ Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModu
     stripPitch_ = settings->psStripPitch(); nStrips_=settings->psNStrips(); sigmaPar_=settings->psPixelLength()/std::sqrt(12.0);
   }
   sigmaPerp_ = stripPitch_/std::sqrt(12.0);
+  index_in_vStubs_ = ID; // A unique ID to label the stub.
 }
 
 //=== Store useful info about stub (for use with TMTT code).
