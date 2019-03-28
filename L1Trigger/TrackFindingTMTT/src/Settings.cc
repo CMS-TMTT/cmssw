@@ -7,6 +7,9 @@ namespace TMTT {
 // Set config params for HYBRID TRACKING via hard-wired consts to allow use outside CMSSW.
 
 Settings::Settings() {
+  //
+  // Meaning of these parameters explained in TrackFindingTMTT/python/TMTrackProducer_Defaults_cfi.py
+  //
   reduceLayerID_=true;
   useLayerID_=true;
   minFracMatchStubsOnReco_=-99;
@@ -23,9 +26,10 @@ Settings::Settings() {
   numPhiSectors_=9;
   kalmanRemove2PScut_=true;
   killScenario_=0;
-  kalmanMaxSkipLayersHard_=2; // On "hard" input tracks
+  kalmanMaxSkipLayersHard_=1; // On "hard" input tracks
   kalmanMaxSkipLayersEasy_=2; // On "easy" input tracks 
   kalmanMaxStubsEasy_=10;  // Max. #stubs an input track can have to be defined "easy"
+  kalmanMaxStubsPerLayer_=4; // To save resources, consider at most this many stubs per layer per track.
   kalmanDebugLevel_=1;
   //  kalmanDebugLevel_=2; // Good for debugging
   enableDigitize_=false;
