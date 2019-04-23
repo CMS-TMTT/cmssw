@@ -21,7 +21,7 @@
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
-#include "Demonstrator/Producer/interface/DigiConverter.hpp"
+#include "L1Trigger/TrackFindingTMTT/interfaceDemo/DigiConverter.h"
 
 #include "boost/numeric/ublas/matrix.hpp"
 #include <iostream>
