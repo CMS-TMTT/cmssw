@@ -166,7 +166,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 #endif
 
     map<unsigned int, set<const TMTT::Stub*> > stubsInNonant;
-    uint numPhiSecPerOct = settings_->numPhiSectors() / settings_->numPhiOctants();
+    uint numPhiSecPerNon = settings_->numPhiSectors() / settings_->numPhiNonants();
     // Fill Hough-Transform arrays with stubs.
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
         for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
@@ -182,8 +182,8 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
             if (settings_->isHTRPhiEtaRegWhitelisted(iEtaReg)) {
 
                 for (const TMTT::Stub* stub : vStubs) {
-                    // Digitize stub as would be at input to GP. This doesn't need the octant number, since we assumed an integer number of
-                    // phi digitisation  bins inside an octant. N.B. This changes the coordinates & bend stored in the stub.
+                    // Digitize stub as would be at input to GP. This doesn't need the nonant number, since we assumed an integer number of
+                    // phi digitisation  bins inside an nonant. N.B. This changes the coordinates & bend stored in the stub.
                     // The cast allows us to ignore the "const".
 
                     const_cast<TMTT::Stub*>(stub)->digitizeForGPinput(iPhiSec);
@@ -200,8 +200,8 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                         // Store stub in Hough transform array for this sector, indicating its compatibility with eta subsectors with sector.
                         htRphi.store( stub, inEtaSubSecs );
 
-		        unsigned int iPhiNonant = std::floor(iPhiSec / numPhiSecPerOct);
-                        unsigned int digiPhiSec = iPhiSec % numPhiSecPerOct; 
+		        unsigned int iPhiNonant = std::floor(iPhiSec / numPhiSecPerNon);
+                        unsigned int digiPhiSec = iPhiSec % numPhiSecPerNon; 
 
 			set<const TMTT::Stub*>& stubsInThisNonant = stubsInNonant[iPhiNonant];
 			if (std::count(stubsInThisNonant.begin(), stubsInThisNonant.end(), stub) == 0) {
@@ -284,7 +284,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 		//mBin = -int(mBin) - 1;
 		bool mSel = (mBin >= 0);
 
-		//cout<<"Thomas check: mBin="<<int(mBin)<<" mSel="<<mSel<<" link="<<trk.optoLinkID()<<" nonant="<<int(iPhiSec / numPhiSecPerOct)<<endl;
+		//cout<<"Thomas check: mBin="<<int(mBin)<<" mSel="<<mSel<<" link="<<trk.optoLinkID()<<" nonant="<<int(iPhiSec / numPhiSecPerNon)<<endl;
 
                 // Loop over the stub collection
                 // for (const auto* stub : trk.getStubs()) {
@@ -299,7 +299,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                                                 mSel
                                             );
 
-                    digiHTStub.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerOct), (uint16_t)trk.optoLinkID(), DigiRouteId::kNullTimeIndex});
+                    digiHTStub.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), (uint16_t)trk.optoLinkID(), DigiRouteId::kNullTimeIndex});
                     allDigiHTStubs->push_back(digiHTStub);
                 }
             }
@@ -346,7 +346,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                                                         cBin,
                                                         mBin
                                                     );
-                    digiHTMiniStub.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerOct), (uint16_t)iLink, DigiRouteId::kNullTimeIndex});
+                    digiHTMiniStub.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), (uint16_t)iLink, DigiRouteId::kNullTimeIndex});
                     allDigiHTMiniStubs->push_back(digiHTMiniStub);
                 }
             }
@@ -422,7 +422,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 		    if (passDiffCut) {
                       DigiKF4Track digiTrack = digiConverter.makeDigiKF4Track(fitTrk);
 
-                      digiTrack.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerOct), (uint16_t)fitTrk.optoLinkID(), DigiRouteId::kNullTimeIndex});
+                      digiTrack.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), (uint16_t)fitTrk.optoLinkID(), DigiRouteId::kNullTimeIndex});
                       allDigiKF4TracksWithDups->push_back(digiTrack);
 		    }
                 }
@@ -442,7 +442,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                     // Save digi tracks without duplicates
                     DigiKF4Track digiTrack = digiConverter.makeDigiKF4Track(fitTrk);
 
-                    digiTrack.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerOct), DigiRouteId::kNullChannel, DigiRouteId::kNullTimeIndex});
+                    digiTrack.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), DigiRouteId::kNullChannel, DigiRouteId::kNullTimeIndex});
                     allDigiKF4Tracks->push_back(digiTrack);
                 }
             }
