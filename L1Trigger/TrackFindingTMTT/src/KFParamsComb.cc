@@ -4,7 +4,8 @@
 #include "L1Trigger/TrackFindingTMTT/interface/KFParamsComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/kalmanState.h"
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
-#define CKF_DEBUG
+#include "DataFormats/Math/interface/deltaPhi.h"
+//#define CKF_DEBUG
 
 namespace TMTT {
 
@@ -33,19 +34,6 @@ static double matx_inner[25] = {
 0.35, 0.40, 0.40, 0.6, 0.6
 };
 */
-
-static double wrapRadian( double t ){
-
-  if( t > 0 ){
-    while( t > M_PI ) t-= 2*M_PI; 
-  }
-  else{
-    while( t < - M_PI ) t+= 2*M_PI; 
-  }
-  return t;
-}
-
-
 
 KFParamsComb::KFParamsComb(const Settings* settings, const uint nPar, const string &fitterName ) : L1KalmanComb(settings, nPar, fitterName ){
 
@@ -104,7 +92,7 @@ std::map<std::string, double> KFParamsComb::getTrackParams(const kalmanState *st
   std::vector<double> x = state->xa();
   std::map<std::string, double> y;
   y["qOverPt"] = 2. * x.at(INV2R) / getSettings()->invPtToInvR(); 
-  y["phi0"] = wrapRadian( x.at(PHI0) + sectorPhi() );
+  y["phi0"] = reco::deltaPhi( x.at(PHI0) + sectorPhi(), 0. );
   y["z0"] = x.at(Z0);
   y["t"] = x.at(T);
   if (nPar_ == 5) {
@@ -127,7 +115,7 @@ std::map<std::string, double> KFParamsComb::getTrackParams_BeamConstr( const kal
     x[PHI0 ] -= x.at(D0) * (cov_xa[PHI0 ][D0] / cov_xa[D0][D0]); 
     x[D0   ]  = 0.0;
     y["qOverPt"] = 2. * x.at(INV2R) / getSettings()->invPtToInvR(); 
-    y["phi0"]    = wrapRadian( x.at(PHI0) + sectorPhi() );
+    y["phi0"]    = reco::deltaPhi( x.at(PHI0) + sectorPhi(), 0. );
     y["z0"]      = x.at(Z0);
     y["t"]       = x.at(T);
     y["d0"]      = x.at(D0);
@@ -179,7 +167,7 @@ std::vector<double> KFParamsComb::seedx(const L1track3D& l1track3D)const{
 
   std::vector<double> x(nPar_);
   x[INV2R] = getSettings()->invPtToInvR() * l1track3D.qOverPt()/2;
-  x[PHI0]  = wrapRadian( l1track3D.phi0() - sectorPhi() );
+  x[PHI0]  = reco::deltaPhi( l1track3D.phi0() - sectorPhi(), 0. );
   x[Z0]    = l1track3D.z0();
   x[T]     = l1track3D.tanLambda();
   if (nPar_ == 5) {
@@ -242,7 +230,7 @@ TMatrixD KFParamsComb::F(const StubCluster* stubCluster, const kalmanState *stat
 std::vector<double> KFParamsComb::d(const StubCluster* stubCluster )const{
   std::vector<double> meas;
   meas.resize(2);
-  meas[PHI] = wrapRadian( stubCluster->phi() - sectorPhi() );
+  meas[PHI] = reco::deltaPhi( stubCluster->phi(), sectorPhi() );
   meas[Z] = stubCluster->z();
   return meas;
 }

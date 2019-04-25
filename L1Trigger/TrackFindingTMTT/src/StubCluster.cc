@@ -1,19 +1,10 @@
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Stub.h"
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
 
 namespace TMTT {
 
-static double wrapRadian( double t ){
-
-    if( t > 0 ){
-	while( t > M_PI ) t-= 2*M_PI; 
-    }
-    else{
-	while( t < - M_PI ) t+= 2*M_PI; 
-    }
-    return t;
-}
 StubCluster::StubCluster( std::vector<const Stub *> stubs, double SectorPhi, int lres_dr ) 
 {
     r_=0; phi_=0; z_=0; eta_=0;
@@ -45,14 +36,14 @@ StubCluster::StubCluster( std::vector<const Stub *> stubs, double SectorPhi, int
         r_ += stub->r();
         z_ += stub->z();
 	eta_ += stub->eta();
-	phi_ += wrapRadian( stub->phi() - SectorPhi );
+	phi_ += reco::deltaPhi( stub->phi(),  SectorPhi );
 	std::set<const TP *> assocTPs = stub->assocTPs();
 	if( assocTPs.size() ){
 	    assocTPs_.insert( assocTPs.begin(), assocTPs.end() );
 	}
 	sum_z2    += ( stub->z() * stub->z() ); 
 	sum_r2    += ( stub->r() * stub->r() );
-	sum_phi2 += ( wrapRadian( stub->phi() - SectorPhi ) * wrapRadian( stub->phi() - SectorPhi ) );
+	sum_phi2 += ( reco::deltaPhi( stub->phi(), SectorPhi ) * reco::deltaPhi( stub->phi(), SectorPhi ) );
 
 	double dphi_dl = stub->sigmaX() / stub->r();
 	sum_dphi2_dl += ( dphi_dl * dphi_dl );
@@ -123,7 +114,7 @@ StubCluster::StubCluster( std::vector<const Stub *> stubs, double SectorPhi, int
         sigmaZ_ = sqrt( vZ * vZ + sum_sigmaZ2 / nstubs_ ); 
     }
 
-    phi_ = wrapRadian( phi_ + SectorPhi );
+    phi_ = reco::deltaPhi( phi_ + SectorPhi, 0. );
 
     alpha_ /= nstubs_;
 }

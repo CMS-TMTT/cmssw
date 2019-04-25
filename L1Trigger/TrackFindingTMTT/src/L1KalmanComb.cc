@@ -11,6 +11,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
 
 #include <algorithm>
 #include <functional>
@@ -27,18 +28,6 @@
 namespace TMTT {
 
 unsigned LayerId[16] = { 1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 21, 22, 23, 24, 25 };
-
-
-static double wrapRadian( double t ){
-	
-  if( t > 0 ){
-    while( t > M_PI ) t-= 2*M_PI; 
-  }
-  else{
-    while( t < - M_PI ) t+= 2*M_PI; 
-  }
-  return t;
-}
 
 static bool orderStubsByLayer(const Stub* a, const Stub* b){
   return (a->layerId() < b->layerId());
@@ -302,7 +291,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 	      const Stub *sa = stubs_for_cls.front();
 	      const Stub *sb = stubs_for_cls.back();
 
-	      double drphi = fabs( sa->r() * wrapRadian( sa->phi() - sectorPhi() ) - sb->r() * wrapRadian( sb->phi() - sectorPhi() ) ); 
+	      double drphi = fabs( sa->r() * reco::deltaPhi( sa->phi(),  sectorPhi() ) - sb->r() * reco::deltaPhi( sb->phi(), sectorPhi() ) ); 
 	      double dz    = fabs( sa->z() - sb->z() );
 	      double dr    = fabs( sa->r() - sb->r() );
 	      TString hname;
@@ -1299,7 +1288,7 @@ std::vector<double> L1KalmanComb::residual(const StubCluster* stubCluster, const
     delta[1] += correction[1];
   }
 
-  delta.at(0) = wrapRadian(delta.at(0));
+  delta.at(0) = reco::deltaPhi(delta.at(0), 0.);
 
   return delta;
 }
@@ -1563,22 +1552,22 @@ bool L1KalmanComb::isOverlap( const Stub* a, const Stub*b, OVERLAP_TYPE type ){
     if( a->layerId() != b->layerId() ) return false;
 
     if( a->layerId() < 7 ){
-      if( fabs( b->z() - a->z() ) > 0.5 * b->stripLength() || fabs( wrapRadian( b->phi() - sectorPhi() ) * b->r() - wrapRadian( a->phi() - sectorPhi() ) * a->r() ) > 0.5 * b->stripPitch() ) return false;
+      if( fabs( b->z() - a->z() ) > 0.5 * b->stripLength() || fabs( reco::deltaPhi( b->phi(), sectorPhi() ) * b->r() - reco::deltaPhi( a->phi(), sectorPhi() ) * a->r() ) > 0.5 * b->stripPitch() ) return false;
     }
     else{
       dr = DeltaRForClustering( a->endcapRing() ); 
-      if( fabs( b->r() - a->r() ) > 0.5 * b->stripLength() || fabs( wrapRadian( b->phi() - sectorPhi() ) * b->r() - wrapRadian( a->phi() - sectorPhi() ) * a->r() ) > 0.5 * b->stripPitch() ) return false;
+      if( fabs( b->r() - a->r() ) > 0.5 * b->stripLength() || fabs( reco::deltaPhi( b->phi(), sectorPhi() ) * b->r() - reco::deltaPhi( a->phi(), sectorPhi() ) * a->r() ) > 0.5 * b->stripPitch() ) return false;
     }
     return true;
   case TYPE_V2:
     if( a->layerId() != b->layerId() ) return false;
 
     if( a->layerId() < 7 ){
-      if( fabs( b->z() - a->z() ) > 0.5 * b->stripLength() || fabs( wrapRadian( b->phi() - sectorPhi() ) * b->r() - wrapRadian( a->phi() - sectorPhi() ) * a->r() ) > drphi ) return false;
+      if( fabs( b->z() - a->z() ) > 0.5 * b->stripLength() || fabs( reco::deltaPhi( b->phi(), sectorPhi() ) * b->r() - reco::deltaPhi( a->phi(), sectorPhi() ) * a->r() ) > drphi ) return false;
     }
     else{
       dr = DeltaRForClustering( a->endcapRing() ); 
-      if( fabs( b->r() - a->r() ) > dr || fabs( wrapRadian( b->phi() - sectorPhi() ) * b->r() - wrapRadian( a->phi() - sectorPhi() ) * a->r() ) > drphi ) return false;
+      if( fabs( b->r() - a->r() ) > dr || fabs( reco::deltaPhi( b->phi(), sectorPhi() ) * b->r() - reco::deltaPhi( a->phi(), sectorPhi() ) * a->r() ) > drphi ) return false;
     }
     return true;
 
