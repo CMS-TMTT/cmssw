@@ -22,7 +22,7 @@ Settings::Settings() {
   deadReduceLayers_=false;
   kalmanMinNumStubs_=4;
   kalmanMaxNumStubs_=6;
-  numPhiOctants_=9;
+  numPhiNonants_=9;
   numPhiSectors_=9;
   kalmanRemove2PScut_=true;
   killScenario_=0;
@@ -144,7 +144,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   bApprox_intercept_      ( geometricProc_.getParameter<double>               ( "BApprox_intercept"      ) ),
 
   //=== Division of Tracker into phi sectors.
-  numPhiOctants_          ( phiSectors_.getParameter<unsigned int>            ( "NumPhiOctants"          ) ),
+  numPhiNonants_          ( phiSectors_.getParameter<unsigned int>            ( "NumPhiNonants"          ) ),
   numPhiSectors_          ( phiSectors_.getParameter<unsigned int>            ( "NumPhiSectors"          ) ),
   chosenRofPhi_           ( phiSectors_.getParameter<double>                  ( "ChosenRofPhi"           ) ),
   useStubPhi_             ( phiSectors_.getParameter<bool>                    ( "UseStubPhi"             ) ), 

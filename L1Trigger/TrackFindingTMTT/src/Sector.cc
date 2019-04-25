@@ -260,8 +260,8 @@ vector<bool> Sector::subEtaFwCalc(const int rT, const int z) const {
   // Hard-wired constants from Kristian (from GP firmware) - no longer used in C++.
   // HACK BEGIN
   /*
-  float numPhiSecPerOct = 2.;
-  float numPhiSec = 8* numPhiSecPerOct;
+  float numPhiSecPerNon = 2.;
+  float numPhiSec = 8* numPhiSecPerNon;
   float cBins = 64.;
   float cBinBase = 2.0 * M_PI / numPhiSec / cBins; // 6.13592315e-3
   float Bfield = 3.8112;

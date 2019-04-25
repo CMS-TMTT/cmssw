@@ -41,9 +41,9 @@ public:
   // This function replaces the 2D track collection in the r-phi HT with the subset surviving the TM cut.
   void exec(matrix<HTrphi>& mHtRphis) const;
 
-  // Determine number of optical links used to output tracks from each phi octant
+  // Determine number of optical links used to output tracks from each phi nonant
   // (where "link" refers to a pair of links in the hardware).
-  unsigned int numLinksPerOctant() const {unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0; return numPhiSecPerOct_ * numEtaRegions_ * (busySectorMbinRanges_.size() - iCorr)/ this->muxFactor();}
+  unsigned int numLinksPerNonant() const {unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0; return numPhiSecPerNon_ * numEtaRegions_ * (busySectorMbinRanges_.size() - iCorr)/ this->muxFactor();}
 
 private:
 
@@ -51,7 +51,7 @@ private:
   unsigned int muxFactor() const;
 
   // Define the MUX algorithm by which tracks from the specified m-bin range in the HT for a given (phi,eta)
-  // sector within a phi octant are multiplexed onto a single output optical link.
+  // sector within a phi nonant are multiplexed onto a single output optical link.
   unsigned int linkID(unsigned int iSecInOct, unsigned int iEtaReg, unsigned int mBinRange) const;
 
   // Do sanity check of the MUX algorithm implemented in linkID().
@@ -63,9 +63,9 @@ private:
 
   // Configuration parameters
   unsigned int         muxOutputsHT_;
-  unsigned int         numPhiOctants_;
+  unsigned int         numPhiNonants_;
   unsigned int         numPhiSectors_;
-  unsigned int         numPhiSecPerOct_;
+  unsigned int         numPhiSecPerNon_;
   unsigned int         numEtaRegions_;
   bool                 busySectorKill_;
   unsigned int         busySectorNumStubs_;

@@ -155,12 +155,3 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 #--- Switch on FPGA-friendly approximation to B parameter in GP - will be used in future GP firmware.
 #--- (used to relate track angle dphi to stub bend) 
 #TMTrackProducer.GeometricProc.UseApproxB           = cms.bool(True)
-
-#--- Use octants instead of nonants. 
-
-#TMTrackProducer.PhiSectors.NumPhiOctants      = cms.uint32(8)   
-#TMTrackProducer.PhiSectors.NumPhiSectors      = cms.uint32(16)   
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt  = cms.uint32(32)   
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi = cms.uint32(16)  
-#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2)
-#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder  = cms.vuint32(0,8, 1,9, 2,10, 3,11, 4,12, 5,13, 6,14, 7,15)

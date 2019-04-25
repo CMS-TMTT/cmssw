@@ -18,12 +18,12 @@ DigitalTrack::DigitalTrack(const Settings* settings) :
   // Digitization configuration parameters
   settings_(settings),
 
-  // Number of phi sectors and phi octants.
+  // Number of phi sectors and phi nonants.
   numPhiSectors_ (settings->numPhiSectors()),
-  numPhiOctants_ (settings->numPhiOctants()),
-  // Phi sector and phi octant width (radians)
+  numPhiNonants_ (settings->numPhiNonants()),
+  // Phi sector and phi nonant width (radians)
   phiSectorWidth_(2.*M_PI / float(numPhiSectors_)), 
-  phiOctantWidth_(2.*M_PI / float(numPhiOctants_)), 
+  phiNonantWidth_(2.*M_PI / float(numPhiNonants_)), 
   // Radius from beamline with respect to which stub r coord. is measured.
   chosenRofPhi_  (settings->chosenRofPhi()),
 

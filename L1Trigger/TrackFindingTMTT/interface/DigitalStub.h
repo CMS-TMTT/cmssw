@@ -35,7 +35,7 @@ public:
       unsigned int layerID, unsigned int layerIDreduced, float bend_orig,
       float pitch, float sep, float rErr, float zErr, bool barrel, bool tiltedBarrel, bool psModule);
 
-  // Digitize stub for input to Geographic Processor, with stub phi coord. measured relative to phi octant that contains specified phi sector.
+  // Digitize stub for input to Geographic Processor, with stub phi coord. measured relative to phi nonant that contains specified phi sector.
   void makeGPinput(unsigned int iPhiSec);
 
   // Digitize stub for input to Hough transform, with stub phi coord. measured relative to specified phi sector.
@@ -65,8 +65,8 @@ public:
   int          iDigi_PhiS()    const {this->okHT(); return iDigi_PhiS_;}   // phi coord. relative to sector
   // %%% Those exclusively input to GP.
   unsigned int moduleType()    const {this->okin(); return moduleType_;}   // module type ID (gives pitch/spacing)
-  unsigned int iDigi_Octant()  const {this->okGP(); return iDigi_Octant_;} // phi octant number
-  int          iDigi_PhiO()    const {this->okGP(); return iDigi_PhiO_;}   // phi coord. relative to octant
+  unsigned int iDigi_Nonant()  const {this->okGP(); return iDigi_Nonant_;} // phi nonant number
+  int          iDigi_PhiO()    const {this->okGP(); return iDigi_PhiO_;}   // phi coord. relative to nonant
   int          iDigi_Bend()    const {this->okGP(); return iDigi_Bend_;}   // stub bend
   // %%% Those exclusively input to seed filter.
   unsigned int iDigi_rErr()    const {this->okSForTF(); return iDigi_rErr_;}   // Stub uncertainty in r, assumed equal to half strip length.
@@ -106,8 +106,8 @@ public:
   float        orig_rErr()     const {this->okin(); return rErr_orig_;}
   float        orig_zErr()     const {this->okin(); return zErr_orig_;}
 
-  //--- Utility: return phi octant number corresponding to given phi sector number.
-  unsigned int iGetOctant(unsigned int iPhiSec) const {return floor(iPhiSec*numPhiOctants_/numPhiSectors_);}
+  //--- Utility: return phi nonant number corresponding to given phi sector number.
+  unsigned int iGetNonant(unsigned int iPhiSec) const {return floor(iPhiSec*numPhiNonants_/numPhiSectors_);}
 
   unsigned int StubId()        const {this->okDR(); return stubId_;}
 
@@ -170,12 +170,12 @@ private:
   // Are we using reduced layer ID, so layer can be packed into 3 bits?
   bool                 reduceLayerID_;
 
-  // Number of phi sectors and phi octants.
+  // Number of phi sectors and phi nonants.
   unsigned int         numPhiSectors_;
-  unsigned int         numPhiOctants_;   // (=8)
-  // Phi sector and phi octant width (radians)
+  unsigned int         numPhiNonants_;   // (=8)
+  // Phi sector and phi nonant width (radians)
   double               phiSectorWidth_;
-  double               phiOctantWidth_;
+  double               phiNonantWidth_;
   // Radius from beamline with respect to which stub r coord. is measured.
   float                chosenRofPhi_;
 
@@ -208,7 +208,7 @@ private:
   int          m_min_; // Range in q/Pt bins in HT array compatible with stub bend. (range centred on zero)
   int          m_max_;
   unsigned int moduleType_;
-  unsigned int iDigi_Octant_;
+  unsigned int iDigi_Nonant_;
   int          iDigi_PhiO_;
   int          iDigi_Bend_;
   unsigned int iDigi_rErr_;

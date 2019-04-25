@@ -986,16 +986,16 @@ void Histos::bookTrackCands(bool withRZfilter) {
   hisNumTracksVsQoverPt_[tName] = inputDir.make<TH1F>(addn("NumTracksVsQoverPt"),"; Q/Pt; No. of tracks in tracker",100, -maxAbsQoverPt, maxAbsQoverPt);
 
   hisNumTrksPerSect_[tName] = inputDir.make<TH1F>(addn("NumTrksPerSect"),"; No. tracks per sector;",100,-0.5,99.5);
-  hisNumTrksPerOct_[tName]  = inputDir.make<TH1F>(addn("NumTrksPerOct"), "; No. tracks per octant;",200,-0.5,199.5);
+  hisNumTrksPerNon_[tName]  = inputDir.make<TH1F>(addn("NumTrksPerNon"), "; No. tracks per nonant;",200,-0.5,199.5);
 
   // Count stubs per event assigned to tracks (determines HT data output rate)
 
   profStubsOnTracks_[tName] = inputDir.make<TProfile>(addn("StubsOnTracks"),"; ; No. of stubs on tracks per event",1,0.5,1.5);
   profStubsOnTracksVsEta_[tName] = inputDir.make<TProfile>(addn("StubsOnTracksVsEta"),"; #eta region; No. of stubs on tracks per event", nEta, -0.5, nEta - 0.5); 
   hisStubsOnTracksPerSect_[tName] = inputDir.make<TH1F>(addn("StubsOnTracksPerSect"),"; No. of stubs on tracks per sector", 500,-0.5,499.5); 
-  hisStubsOnTracksPerOct_[tName]  = inputDir.make<TH1F>(addn("StubsOnTracksPerOct"),"; No. of stubs on tracks per octant", 1000,-0.5,999.5); 
+  hisStubsOnTracksPerNon_[tName]  = inputDir.make<TH1F>(addn("StubsOnTracksPerNon"),"; No. of stubs on tracks per nonant", 1000,-0.5,999.5); 
   hisUniqueStubsOnTrksPerSect_[tName] = inputDir.make<TH1F>(addn("UniqueStubsOnTrksPerSect"),"; No. of unique stubs on tracks per sector", 500,-0.5,499.5); 
-  hisUniqueStubsOnTrksPerOct_[tName]  = inputDir.make<TH1F>(addn("UniqueStubsOnTrksPerOct"),"; No. of unique stubs on tracks per octant", 500,-0.5,499.5); 
+  hisUniqueStubsOnTrksPerNon_[tName]  = inputDir.make<TH1F>(addn("UniqueStubsOnTrksPerNon"),"; No. of unique stubs on tracks per nonant", 500,-0.5,499.5); 
 
   hisStubsPerTrack_[tName] = inputDir.make<TH1F>(addn("StubsPerTrack"),";No. of stubs per track;",50,-0.5,49.5);
   hisLayersPerTrack_[tName] = inputDir.make<TH1F>(addn("LayersPerTrack"),";No. of layers with stubs per track;",20,-0.5,19.5);
@@ -1140,16 +1140,16 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
   //=== Count track candidates found in the tracker. 
 
   unsigned int nTracks = 0;
-  const unsigned int numPhiOctants = settings_->numPhiOctants();;
-  vector<unsigned int> nTracksInOctant(numPhiOctants, 0);
+  const unsigned int numPhiNonants = settings_->numPhiNonants();;
+  vector<unsigned int> nTracksInNonant(numPhiNonants, 0);
   for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
     unsigned int nTracksInEtaReg = 0;
     for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
       const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 
       hisNumTrksPerSect_[tName]->Fill(get3Dtrk.trackCands3D(withRZfilter).size()); 
-      unsigned int iOctant = floor(iPhiSec*numPhiOctants/(numPhiSectors_)); // phi octant number
-      nTracksInOctant[iOctant] += get3Dtrk.trackCands3D(withRZfilter).size();
+      unsigned int iNonant = floor(iPhiSec*numPhiNonants/(numPhiSectors_)); // phi nonant number
+      nTracksInNonant[iNonant] += get3Dtrk.trackCands3D(withRZfilter).size();
       // Note number of tracks in this eta region (summed over all phi).
       nTracksInEtaReg += get3Dtrk.trackCands3D(withRZfilter).size();
       if (settings_->debug() == 2 && get3Dtrk.trackCands3D(withRZfilter).size() > 0) cout<<"Sector ("<<iPhiSec<<","<<iEtaReg<<") has ntracks = "<<get3Dtrk.trackCands3D(withRZfilter).size()<<endl;
@@ -1158,19 +1158,19 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     profNumTracksVsEta_[tName]->Fill(iEtaReg, nTracksInEtaReg);
   }
   profNumTrackCands_[tName]->Fill(1.0, nTracks); // Plot mean number of tracks/event.
-  for (unsigned int k = 0; k < numPhiOctants; k++) {
-    hisNumTrksPerOct_[tName]->Fill(nTracksInOctant[k]); // Plots tracks in each phi octant.
+  for (unsigned int k = 0; k < numPhiNonants; k++) {
+    hisNumTrksPerNon_[tName]->Fill(nTracksInNonant[k]); // Plots tracks in each phi nonant.
   }
 
   //=== Count stubs per event assigned to track candidates in the Tracker
 
   unsigned int nStubsOnTracks = 0;
-  vector<unsigned int> nStubsOnTracksInOctant(numPhiOctants, 0);
-  map< unsigned int, set<const Stub*> > uniqueStubsOnTracksInOctant;
+  vector<unsigned int> nStubsOnTracksInNonant(numPhiNonants, 0);
+  map< unsigned int, set<const Stub*> > uniqueStubsOnTracksInNonant;
   for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
     unsigned int nStubsOnTracksInEtaReg = 0;
     for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-      unsigned int iOctant = floor(iPhiSec*numPhiOctants/(numPhiSectors_)); // phi octant number
+      unsigned int iNonant = floor(iPhiSec*numPhiNonants/(numPhiSectors_)); // phi nonant number
       const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 
       // Count stubs on all tracks in this sector.
@@ -1180,14 +1180,14 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
       }
 
       hisStubsOnTracksPerSect_[tName]->Fill(nStubsOnTrksInSec); // Number of stubs assigned to tracks in this sector.
-      nStubsOnTracksInOctant[iOctant] += nStubsOnTrksInSec; // Number of stubs assigned to tracks in this octant.
+      nStubsOnTracksInNonant[iNonant] += nStubsOnTrksInSec; // Number of stubs assigned to tracks in this nonant.
       nStubsOnTracksInEtaReg += nStubsOnTrksInSec;
       set<const Stub*> uniqueStubsOnTracksInSector;
       // Loop over all stubs on all tracks in this sector, and add to std::set(), so each individual stub recorded at most once.
       for (const L1track3D& trk : get3Dtrk.trackCands3D(withRZfilter) ) {
 	const vector<const Stub*>& stubs = trk.getStubs();
 	uniqueStubsOnTracksInSector.insert(stubs.begin(), stubs.end());
-	uniqueStubsOnTracksInOctant[iOctant].insert(stubs.begin(), stubs.end());
+	uniqueStubsOnTracksInNonant[iNonant].insert(stubs.begin(), stubs.end());
       }
       // Plot number of stubs assigned to tracks per sector, never counting each individual stub more than once.
       hisUniqueStubsOnTrksPerSect_[tName]->Fill(uniqueStubsOnTracksInSector.size());
@@ -1196,25 +1196,25 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     profStubsOnTracksVsEta_[tName]->Fill(iEtaReg, nStubsOnTracksInEtaReg);
   }
   profStubsOnTracks_[tName]->Fill(1.0, nStubsOnTracks);
-  for (unsigned int k = 0; k < numPhiOctants; k++) {
-    hisStubsOnTracksPerOct_[tName]->Fill(nStubsOnTracksInOctant[k]); // Plots stubs on tracks in each phi octant.
-    hisUniqueStubsOnTrksPerOct_[tName]->Fill(uniqueStubsOnTracksInOctant[k].size());
+  for (unsigned int k = 0; k < numPhiNonants; k++) {
+    hisStubsOnTracksPerNon_[tName]->Fill(nStubsOnTracksInNonant[k]); // Plots stubs on tracks in each phi nonant.
+    hisUniqueStubsOnTrksPerNon_[tName]->Fill(uniqueStubsOnTracksInNonant[k].size());
   }
 
   // Plot number of tracks & number of stubs per output HT opto-link.
 
   if (not withRZfilter) {
-    const unsigned int numPhiSecPerOct = numPhiSectors_/numPhiOctants;
+    const unsigned int numPhiSecPerNon = numPhiSectors_/numPhiNonants;
     // Hard-wired bodge
-    const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerOct;
+    const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon;
 
-    for (unsigned int iPhiOct = 0; iPhiOct < numPhiOctants; iPhiOct++) {
-      // Each octant has a separate set of links.
+    for (unsigned int iPhiOct = 0; iPhiOct < numPhiNonants; iPhiOct++) {
+      // Each nonant has a separate set of links.
 
       vector<unsigned int> stubsToLinkCount(nLinks, 0);
       vector<unsigned int> trksToLinkCount(nLinks, 0);
-      for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerOct; iSecInOct++) {
-	unsigned int iPhiSec = iPhiOct * numPhiSecPerOct + iSecInOct;
+      for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon; iSecInOct++) {
+	unsigned int iPhiSec = iPhiOct * numPhiSecPerNon + iSecInOct;
 	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
 	  const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 	  for (const L1track3D& trk : get3Dtrk.trackCands3D(false)) {
@@ -2029,7 +2029,7 @@ void Histos::bookTrackFitting() {
     profNumFitTracks_[fitName]->LabelsOption("d");
 
     hisNumFitTrks_[fitName]  = inputDir.make<TH1F>(addn("NumFitTrks"), "; No. fitted tracks in tracker;",200,-0.5,399.5);
-    hisNumFitTrksPerOct_[fitName]   = inputDir.make<TH1F>(addn("NumFitTrksPerOct"), "; No. fitted tracks per octant;",200,-0.5,199.5);
+    hisNumFitTrksPerNon_[fitName]   = inputDir.make<TH1F>(addn("NumFitTrksPerNon"), "; No. fitted tracks per nonant;",200,-0.5,199.5);
     hisNumFitTrksPerSect_[fitName]  = inputDir.make<TH1F>(addn("NumFitTrksPerSect"), "; No. fitted tracks per sector;",100,-0.5,99.5);
 
     hisStubsPerFitTrack_[fitName]  = inputDir.make<TH1F>(addn("StubsPerFitTrack"), "; No. of stubs per fitted track",20,-0.5,19.5);
@@ -2235,8 +2235,8 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
     unsigned int nFitTracks = 0;
     unsigned int nFitsMatchingTP = 0;
 
-    const unsigned int numPhiOctants = settings_->numPhiOctants();
-    vector<unsigned int> nFitTracksPerOctant(numPhiOctants,0);
+    const unsigned int numPhiNonants = settings_->numPhiNonants();
+    vector<unsigned int> nFitTracksPerNonant(numPhiNonants,0);
     map<pair<unsigned int, unsigned int>, unsigned int> nFitTracksPerSector;
 
     for (const L1fittedTrack& fitTrk : fittedTracks) {
@@ -2244,9 +2244,9 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
       // Get matched truth particle, if any.
       const TP* tp = fitTrk.getMatchedTP();
       if (tp != nullptr) nFitsMatchingTP++;
-      // Count fitted tracks per octant.
-      unsigned int iOctant = floor(fitTrk.iPhiSec()*numPhiOctants/(numPhiSectors_)); // phi octant number
-      nFitTracksPerOctant[iOctant]++;
+      // Count fitted tracks per nonant.
+      unsigned int iNonant = floor(fitTrk.iPhiSec()*numPhiNonants/(numPhiSectors_)); // phi nonant number
+      nFitTracksPerNonant[iNonant]++;
       nFitTracksPerSector[pair<unsigned int, unsigned int>(fitTrk.iPhiSec(), fitTrk.iEtaReg())]++;
     }
 
@@ -2254,8 +2254,8 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
     profNumFitTracks_[fitName]->Fill(2, nFitsMatchingTP);
 
     hisNumFitTrks_[fitName]->Fill(nFitTracks);
-    for (const unsigned int& num : nFitTracksPerOctant) {
-      hisNumFitTrksPerOct_[fitName]->Fill(num);
+    for (const unsigned int& num : nFitTracksPerNonant) {
+      hisNumFitTrksPerNon_[fitName]->Fill(num);
     }
     for (const auto& p : nFitTracksPerSector) {
       hisNumFitTrksPerSect_[fitName]->Fill(p.second);

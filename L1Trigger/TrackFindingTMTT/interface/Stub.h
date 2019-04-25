@@ -68,8 +68,8 @@ public:
   void calcQoverPtrange();
 
   // Digitize stub for input to Geographic Processor, with digitized phi coord. measured relative to closest phi sector.
-  // (This approximation is valid if their are an integer number of digitisation bins inside each phi octant).
-  // However, you should also call digitizeForHTinput() before accessing digitized stub data, even if you only care about that going into GP! Otherwise, you will not identify stubs assigned to more than one octant.
+  // (This approximation is valid if their are an integer number of digitisation bins inside each phi nonant).
+  // However, you should also call digitizeForHTinput() before accessing digitized stub data, even if you only care about that going into GP! Otherwise, you will not identify stubs assigned to more than one nonant.
   void digitizeForGPinput(unsigned int iPhiSec);
 
   // Digitize stub for input to Hough transform, with digitized phi coord. measured relative to specified phi sector.

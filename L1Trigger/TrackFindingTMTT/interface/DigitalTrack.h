@@ -109,8 +109,8 @@ public:
   float        tp_useForEff()             const {this->okin(); return tp_useForEff_;}
   float        tp_pdgId()                 const {this->okin(); return tp_pdgId_;}
 
-  //--- Utility: return phi octant number corresponding to given phi sector number.
-  unsigned int iGetOctant(unsigned int iPhiSec) const {return floor(iPhiSec*numPhiOctants_/numPhiSectors_);}
+  //--- Utility: return phi nonant number corresponding to given phi sector number.
+  unsigned int iGetNonant(unsigned int iPhiSec) const {return floor(iPhiSec*numPhiNonants_/numPhiSectors_);}
 
 private:
 
@@ -183,11 +183,11 @@ private:
   double               tanLambdaMult_;
   double               chisquaredMult_;
 
-  // Number of phi sectors and phi octants.
+  // Number of phi sectors and phi nonants.
   unsigned int         numPhiSectors_;
-  unsigned int         numPhiOctants_;   
+  unsigned int         numPhiNonants_;   
   double               phiSectorWidth_;
-  double               phiOctantWidth_;
+  double               phiNonantWidth_;
   double               phiSectorCentre_;
   float                chosenRofPhi_;
   unsigned int         nbinsPt_;

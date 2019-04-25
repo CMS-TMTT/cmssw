@@ -14,17 +14,17 @@ namespace TMTT {
 MuxHToutputs::MuxHToutputs(const Settings* settings) : 
   settings_(settings),
   muxOutputsHT_( settings_->muxOutputsHT() ),
-  numPhiOctants_( settings_->numPhiOctants() ),
+  numPhiNonants_( settings_->numPhiNonants() ),
   numPhiSectors_( settings_->numPhiSectors() ),
-  numPhiSecPerOct_( numPhiSectors_ / numPhiOctants_ ),
+  numPhiSecPerNon_( numPhiSectors_ / numPhiNonants_ ),
   numEtaRegions_( settings_->numEtaRegions() ),
   busySectorKill_( settings_->busySectorKill() ),              // Kill excess tracks flowing out of HT?
   busySectorNumStubs_( settings_->busySectorNumStubs()),       // Max. num. of stubs that can be sent within TM period
   busySectorMbinRanges_( settings_->busySectorMbinRanges() ),  // Individual m bin (=q/Pt) ranges to be output to opto-links. 
   busySectorUseMbinRanges_( busySectorMbinRanges_.size() > 0)  // m bin ranges option disabled if vector empty. 
 {
-  // Implemented MUX algorithm relies on same number of sectors per octant.
-  if (numPhiSectors_%numPhiOctants_ != 0) throw cms::Exception("MuxHToutputs: Number of phi sectors is not a multiple of number of octants!");
+  // Implemented MUX algorithm relies on same number of sectors per nonant.
+  if (numPhiSectors_%numPhiNonants_ != 0) throw cms::Exception("MuxHToutputs: Number of phi sectors is not a multiple of number of nonants!");
 
   if ( ! busySectorUseMbinRanges_) throw cms::Exception("MuxHToutputs: The implemented MUX algorithm requires you to be using the busySectorMbinRanges cfg option!");
 
@@ -34,7 +34,7 @@ MuxHToutputs::MuxHToutputs(const Settings* settings) :
   bool static first = true;
   if (first) {
     first = false;
-    cout<<"=== The R-PHI HT output is multiplexed onto "<<this->numLinksPerOctant()<<" pairs of opto-links per octant."<<endl;
+    cout<<"=== The R-PHI HT output is multiplexed onto "<<this->numLinksPerNonant()<<" pairs of opto-links per nonant."<<endl;
   }
 }
 
@@ -51,11 +51,11 @@ void MuxHToutputs::exec(matrix<HTrphi>& mHtRphis) const {
   // be transmitted down the same link, as if this happens, it does not predict the order in which they will be 
   // transmitted.
 
-  for (unsigned int iPhiOct = 0; iPhiOct < numPhiOctants_; iPhiOct++) {
-    vector<unsigned int> numStubsPerLink( this->numLinksPerOctant(), 0 );
+  for (unsigned int iPhiOct = 0; iPhiOct < numPhiNonants_; iPhiOct++) {
+    vector<unsigned int> numStubsPerLink( this->numLinksPerNonant(), 0 );
 
-    for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerOct_; iSecInOct++) {
-      unsigned int iPhiSec = iPhiOct * numPhiSecPerOct_ + iSecInOct;
+    for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon_; iSecInOct++) {
+      unsigned int iPhiSec = iPhiOct * numPhiSecPerNon_ + iSecInOct;
 
       for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
 
@@ -96,7 +96,7 @@ unsigned int MuxHToutputs::muxFactor() const {
 }
 
 //=== Define the MUX algorithm by which tracks from the specified m-bin range in the HT for a given (phi,eta)
-//=== sector within a phi octant are multiplexed onto a single output optical link.
+//=== sector within a phi nonant are multiplexed onto a single output optical link.
 
 unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, unsigned int mBinRange) const {
   unsigned int link;
@@ -113,8 +113,8 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, 
 
     if (numEtaRegions_ == 18) {
       link = iEtaReg%3;          // In range 0 to 2
-      link += 3*iSecInOct;       // In range 0 to (3*numPhiSecPerOct - 1)
-      link += 3*numPhiSecPerOct_ * mBinRange; // In range 0 to (3*numPhiSecsPerOct*numMbinRanges - 1)
+      link += 3*iSecInOct;       // In range 0 to (3*numPhiSecPerNon - 1)
+      link += 3*numPhiSecPerNon_ * mBinRange; // In range 0 to (3*numPhiSecsPerNon*numMbinRanges - 1)
     } else {
       throw cms::Exception("MuxHToutputs: MUX algorithm only implemented for 18 eta sectors!");
     }
@@ -125,7 +125,7 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, 
 
       link = 0;          
       //link += iSecInOct;     
-      //link += numPhiSecPerOct_ * mBinRange; 
+      //link += numPhiSecPerNon_ * mBinRange; 
 
       // IRT - match firmware, taking into account that fw uses mBin = -mBin relative to sw.
       // NOT NEEDED ANYMORE, AS NOW FW USES MBIN SAME SIGN AS Q/PT.
@@ -141,17 +141,17 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, 
 
   }
 
-  if (link >= this->numLinksPerOctant() ) throw cms::Exception("MuxHToutputs: Calculated link ID exceeded expected number of links! ")<<link<<" "<<this->numLinksPerOctant()<<endl;
+  if (link >= this->numLinksPerNonant() ) throw cms::Exception("MuxHToutputs: Calculated link ID exceeded expected number of links! ")<<link<<" "<<this->numLinksPerNonant()<<endl;
   return link;
 }
 
 //=== Do sanity check of the MUX algorithm implemented in linkID().
 
 void MuxHToutputs::sanityCheck() {
-  if ( numPhiSecPerOct_ * numEtaRegions_ % this->muxFactor() != 0) throw cms::Exception("MuxHToutputs: Number of sectors per phi octant is not a multiple of muxFactor().");
+  if ( numPhiSecPerNon_ * numEtaRegions_ % this->muxFactor() != 0) throw cms::Exception("MuxHToutputs: Number of sectors per phi nonant is not a multiple of muxFactor().");
 
-  vector<unsigned int> nObsElementsPerLink ( this->numLinksPerOctant(), 0 );
-  for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerOct_; iSecInOct++) {
+  vector<unsigned int> nObsElementsPerLink ( this->numLinksPerNonant(), 0 );
+  for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon_; iSecInOct++) {
     for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
       // IRT
       unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0;

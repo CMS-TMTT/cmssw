@@ -126,8 +126,8 @@ private:
 
   // Calculate output opto-link ID from HT, assuming there is no MUX stage.
   virtual unsigned int calcOptoLinkID() const {
-    unsigned int numPhiSecPerOct =  settings_->numPhiSectors() / settings_->numPhiOctants();
-    return (iEtaReg_ * numPhiSecPerOct + iPhiSec_);
+    unsigned int numPhiSecPerNon =  settings_->numPhiSectors() / settings_->numPhiNonants();
+    return (iEtaReg_ * numPhiSecPerNon + iPhiSec_);
   }
 
 protected:

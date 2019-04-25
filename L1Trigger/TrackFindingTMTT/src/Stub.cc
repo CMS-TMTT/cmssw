@@ -251,14 +251,14 @@ void Stub::calcQoverPtrange() {
 }
 
 //=== Digitize stub for input to Geographic Processor, with digitized phi coord. measured relative to closest phi sector.
-//=== (This approximation is valid if their are an integer number of digitisation bins inside each phi octant).
-//=== However, you should also call digitizeForHTinput() before accessing digitized stub data, even if you only care about that going into GP! Otherwise, you will not identify stubs assigned to more than one octant.
+//=== (This approximation is valid if their are an integer number of digitisation bins inside each phi nonant).
+//=== However, you should also call digitizeForHTinput() before accessing digitized stub data, even if you only care about that going into GP! Otherwise, you will not identify stubs assigned to more than one nonant.
 
 void Stub::digitizeForGPinput(unsigned int iPhiSec) {
   if (settings_->enableDigitize()) {
 
     // Save CPU by not redoing digitization if stub was already digitized for this phi sector.
-    if ( ! (digitizedForGPinput_ && digitalStub_.iGetOctant(iPhiSec) == digitalStub_.iDigi_Octant()) ) {
+    if ( ! (digitizedForGPinput_ && digitalStub_.iGetNonant(iPhiSec) == digitalStub_.iDigi_Nonant()) ) {
 
       // Digitize
       digitalStub_.makeGPinput(iPhiSec);

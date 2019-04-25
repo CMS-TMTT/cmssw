@@ -15,8 +15,8 @@ MiniHTstage::MiniHTstage( const Settings* settings ) :
         miniHoughDontKill_( settings_->miniHoughDontKill() ),
         miniHoughDontKillMinPt_( settings_->miniHoughDontKillMinPt() ),
         numSubSecsEta_( settings_->numSubSecsEta() ),
-        numPhiOctants_( settings_->numPhiOctants() ),
-        numPhiSecPerOct_( settings_->numPhiSectors() / numPhiOctants_ ),
+        numPhiNonants_( settings_->numPhiNonants() ),
+        numPhiSecPerNon_( settings_->numPhiSectors() / numPhiNonants_ ),
         numEtaRegions_( settings_->numEtaRegions() ),
         busySectorKill_( settings_->busySectorKill() ),
         busySectorNumStubs_( settings_->busySectorNumStubs()),
@@ -29,10 +29,10 @@ MiniHTstage::MiniHTstage( const Settings* settings ) :
 
 void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 
-  for ( unsigned int iPhiOct = 0; iPhiOct < numPhiOctants_; iPhiOct++ ) {
+  for ( unsigned int iPhiOct = 0; iPhiOct < numPhiNonants_; iPhiOct++ ) {
     map< unsigned int, unsigned int> numStubsPerLink; // Indices are (link ID, #stubs).
-    for ( unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerOct_; iSecInOct++ ) {
-      unsigned int iPhiSec = iPhiOct * numPhiSecPerOct_ + iSecInOct;
+    for ( unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon_; iSecInOct++ ) {
+      unsigned int iPhiSec = iPhiOct * numPhiSecPerNon_ + iSecInOct;
       for ( unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++ ) {
 
         Sector sector;
@@ -76,7 +76,7 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		  pair< float, float > helix2D( qOverPtBin, reco::deltaPhi( phiBin + chosenRofPhi_ * invPtToDphi_ * qOverPtBin + phiCentre, 0. ) );
 		  unsigned int newLink = link;
 		  // Static load balancing.
-		  const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerOct_;
+		  const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon_;
 		  if (settings_->miniHoughLoadBalance() >= 1) {
 		    //unsigned int iOffset = 2*mBin + cBin; // Send each mini-cell to a different output link. 
 		    //newLink = (newLink + iOffset)%nLinks;

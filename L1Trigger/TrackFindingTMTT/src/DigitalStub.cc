@@ -33,12 +33,12 @@ DigitalStub::DigitalStub(const Settings* settings) :
   // Note if using reduced layer ID, so tracker layer can be encoded in 3 bits.
   reduceLayerID_ (settings->reduceLayerID()),
 
-  // Number of phi sectors and phi octants.
+  // Number of phi sectors and phi nonants.
   numPhiSectors_ (settings->numPhiSectors()),
-  numPhiOctants_ (settings->numPhiOctants()),
-  // Phi sector and phi octant width (radians)
+  numPhiNonants_ (settings->numPhiNonants()),
+  // Phi sector and phi nonant width (radians)
   phiSectorWidth_(2.*M_PI / float(numPhiSectors_)), 
-  phiOctantWidth_(2.*M_PI / float(numPhiOctants_)), 
+  phiNonantWidth_(2.*M_PI / float(numPhiNonants_)), 
   // Radius from beamline with respect to which stub r coord. is measured.
   chosenRofPhi_  (settings->chosenRofPhi()),
 
@@ -99,17 +99,17 @@ void DigitalStub::init(float phi_orig, float r_orig, float z_orig,
   if (moduleType_ == 999) throw cms::Exception("DigitalStub: unknown module type")<<"pitch="<<pitch<<" separation="<<sep<<" barrel="<<barrel<<" tilted="<<tiltedBarrel<<" PS="<<psModule<<endl;
 }
 
-//=== Digitize stub for input to Geographic Processor, with stub phi coord. measured relative to phi octant that contains specified phi sector.
+//=== Digitize stub for input to Geographic Processor, with stub phi coord. measured relative to phi nonant that contains specified phi sector.
 
 void DigitalStub::makeGPinput(unsigned int iPhiSec) {
 
   if (! ranInit_) throw cms::Exception("DigitalStub: You forgot to call init() before makeGPinput()!");
 
-  unsigned int iPhiOct = floor(iPhiSec*numPhiOctants_/numPhiSectors_); // Find octant corresponding to this sector.
+  unsigned int iPhiOct = floor(iPhiSec*numPhiNonants_/numPhiSectors_); // Find nonant corresponding to this sector.
 
   // If this stub was already digitized, we don't have to redo all the work again. Save CPU.
   if (ranMakeGPinput_) {
-    if (iPhiOct == iDigi_Octant_) {
+    if (iPhiOct == iDigi_Nonant_) {
       return; // Work already done.
     } else {
       this->quickMakeGPinput(iPhiSec);
@@ -124,12 +124,12 @@ void DigitalStub::makeGPinput(unsigned int iPhiSec) {
   // r coordinate relative to specified point.
   rt_orig_ = r_orig_ - chosenRofPhi_;
 
-  // Phi coord. of stub relative to centre of octant.
-  double phiOctantCentre = phiOctantWidth_ * (0.5 + double(iPhiOct)) - M_PI;
-  phiO_orig_ = reco::deltaPhi(phi_orig_, phiOctantCentre);
+  // Phi coord. of stub relative to centre of nonant.
+  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiOct)) - M_PI;
+  phiO_orig_ = reco::deltaPhi(phi_orig_, phiNonantCentre);
 
   //--- Digitize variables used exclusively in GP.
-  iDigi_Octant_ = iPhiOct;
+  iDigi_Nonant_ = iPhiOct;
   iDigi_PhiO_   = floor(phiO_orig_*phiOMult_);
   iDigi_Bend_   = round(bend_orig_*bendMult_);   // discrete values, so digitisation different 
   //--- Digitize variables used in both GP & HT.
@@ -140,7 +140,7 @@ void DigitalStub::makeGPinput(unsigned int iPhiSec) {
   //--- First for variables used exclusively in GP.
   phiO_      = (iDigi_PhiO_ + 0.5)/phiOMult_;
   bend_      = iDigi_Bend_/bendMult_;  // discrete values, so digitisation different
-  phi_       = reco::deltaPhi(phiO_, -phiOctantCentre);
+  phi_       = reco::deltaPhi(phiO_, -phiNonantCentre);
   //--- Then for variables used in both GP & HT.
   rt_        = (iDigi_Rt_ + 0.5)/rtMult_;  
   r_         = rt_ + chosenRofPhi_;
@@ -190,10 +190,10 @@ void DigitalStub::makeHTinput(unsigned int iPhiSec) {
   //--- Determine floating point stub coords. from digitized numbers (so with degraded resolution).
   //--- First for variables used exclusively by HT
   phiS_      = (iDigi_PhiS_ + 0.5)/phiSMult_;
-  phi_       = reco::deltaPhi(phiS_, -phiSectorRef); // N.B. phi_ measured w.r.t sector here, but w.r.t. octant in makeGPinput()
+  phi_       = reco::deltaPhi(phiS_, -phiSectorRef); // N.B. phi_ measured w.r.t sector here, but w.r.t. nonant in makeGPinput()
   // Don't bother with  variables used by both GP & HT, as makeGPinput() will already have already calculated them.
 
-  //--- Do next two checks here rather than in makeGPinput(), as the latter may be called for stubs in the wrong octant, so out of range.
+  //--- Do next two checks here rather than in makeGPinput(), as the latter may be called for stubs in the wrong nonant, so out of range.
 
   // Check that stub coords. are within assumed digitization range.
   this->checkInRange();
@@ -252,8 +252,8 @@ void DigitalStub::makeSForTFinput(string SForTF) {
 
     if (SForTF.find("KF") != string::npos) { 
       // Digitize variables that are exclusive to Kalman filter.
-      if (numPhiOctants_ == 8) {
-	// Data format for octants redigitizes z to give it same multiplier as r.
+      if (numPhiNonants_ == 8) {
+	// Data format for nonants redigitizes z to give it same multiplier as r.
         iDigi_Z_KF_ = std::round(float(iDigi_Z_) * (rtMult_/zMult_));
         // Determine floating point variable from digitized one, now using r multiplier.
         z_          = (iDigi_Z_KF_ + 0.5)/rtMult_;
@@ -300,19 +300,19 @@ void DigitalStub::quickMakeGPinput(int iPhiSec) {
 
   //--- Shift axes of coords. if required.
 
-  // Phi coord. of stub relative to centre of octant.
-  unsigned int iPhiOct = floor(iPhiSec*numPhiOctants_/numPhiSectors_);
-  double phiOctantCentre = phiOctantWidth_ * (0.5 + double(iPhiOct)) - M_PI;
-  phiO_orig_ = reco::deltaPhi(phi_orig_, phiOctantCentre);
+  // Phi coord. of stub relative to centre of nonant.
+  unsigned int iPhiOct = floor(iPhiSec*numPhiNonants_/numPhiSectors_);
+  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiOct)) - M_PI;
+  phiO_orig_ = reco::deltaPhi(phi_orig_, phiNonantCentre);
 
   //--- Digitize variables used exclusively in GP.
-  iDigi_Octant_ = iPhiOct;
+  iDigi_Nonant_ = iPhiOct;
   iDigi_PhiO_   = floor(phiO_orig_*phiOMult_);
   
   //--- Determine floating point stub coords. from digitized numbers (so with degraded resolution).
   //--- Variables used exclusively in GP.
   phiO_      = (iDigi_PhiO_)/phiOMult_;
-  phi_       = reco::deltaPhi(phiO_, -phiOctantCentre);
+  phi_       = reco::deltaPhi(phiO_, -phiNonantCentre);
 }
 
 //=== Redigitize stub for input to Hough transform, if it was previously digitized for a different phi sector.

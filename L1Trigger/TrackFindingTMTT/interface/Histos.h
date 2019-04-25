@@ -255,13 +255,13 @@ private:
   map<string, TProfile*> profNumTracksVsEta_;
   map<string, TH1F*>     hisNumTracksVsQoverPt_;
   map<string, TH1F*>     hisNumTrksPerSect_;
-  map<string, TH1F*>     hisNumTrksPerOct_;
+  map<string, TH1F*>     hisNumTrksPerNon_;
   map<string, TProfile*> profStubsOnTracks_;
   map<string, TProfile*> profStubsOnTracksVsEta_;
   map<string, TH1F*>     hisStubsOnTracksPerSect_;
-  map<string, TH1F*>     hisStubsOnTracksPerOct_;
+  map<string, TH1F*>     hisStubsOnTracksPerNon_;
   map<string, TH1F*>     hisUniqueStubsOnTrksPerSect_;
-  map<string, TH1F*>     hisUniqueStubsOnTrksPerOct_;
+  map<string, TH1F*>     hisUniqueStubsOnTrksPerNon_;
   map<string, TH1F*>     hisStubsPerTrack_;
   map<string, TH1F*>     hisLayersPerTrack_;
   map<string, TH1F*>     hisPSLayersPerTrack_;
@@ -364,7 +364,7 @@ private:
 
   map<string, TProfile*> profNumFitTracks_;
   map<string, TH1F*> hisNumFitTrks_;
-  map<string, TH1F*> hisNumFitTrksPerOct_;
+  map<string, TH1F*> hisNumFitTrksPerNon_;
   map<string, TH1F*> hisNumFitTrksPerSect_;
 
   map<string, TH1F*>     hisStubsPerFitTrack_;

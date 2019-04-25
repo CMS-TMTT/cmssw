@@ -171,8 +171,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       if (settings_->isHTRPhiEtaRegWhitelisted(iEtaReg)) {
 
 	for (const Stub* stub: vStubs) {
-	  // Digitize stub as would be at input to GP. This doesn't need the octant number, since we assumed an integer number of
-	  // phi digitisation  bins inside an octant. N.B. This changes the coordinates & bend stored in the stub.
+	  // Digitize stub as would be at input to GP. This doesn't need the nonant number, since we assumed an integer number of
+	  // phi digitisation  bins inside an nonant. N.B. This changes the coordinates & bend stored in the stub.
 	  // The cast allows us to ignore the "const".
 	  if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForGPinput(iPhiSec);
 

@@ -31,8 +31,8 @@ private:
   bool miniHoughDontKill_;
   float miniHoughDontKillMinPt_;
   unsigned int numSubSecsEta_;
-  unsigned int numPhiOctants_;
-  unsigned int numPhiSecPerOct_;
+  unsigned int numPhiNonants_;
+  unsigned int numPhiSecPerNon_;
   unsigned int numEtaRegions_;
   bool busySectorKill_;
   unsigned int busySectorNumStubs_;

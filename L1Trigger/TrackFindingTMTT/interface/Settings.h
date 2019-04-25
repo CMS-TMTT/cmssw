@@ -87,7 +87,7 @@ public:
 
   //=== Definition of phi sectors.
 
-  unsigned int         numPhiOctants()           const   {return numPhiOctants_;}
+  unsigned int         numPhiNonants()           const   {return numPhiNonants_;}
   unsigned int         numPhiSectors()           const   {return numPhiSectors_;}
   double               chosenRofPhi()            const   {return chosenRofPhi_;} // Use phi of track at this radius for assignment of stubs to phi sectors & also for one of the axes of the r-phi HT. If ChosenRofPhi=0, then use track phi0.
   bool                 useStubPhi()              const   {return useStubPhi_;} // Require stub phi to be consistent with track of Pt > HTArraySpec.HoughMinPt that crosses HT phi axis?
@@ -490,7 +490,7 @@ private:
   double               bApprox_intercept_;
 
   // Definition of phi sectors.
-  unsigned int         numPhiOctants_;
+  unsigned int         numPhiNonants_;
   unsigned int         numPhiSectors_;
   double               chosenRofPhi_;  
   bool                 useStubPhi_;
