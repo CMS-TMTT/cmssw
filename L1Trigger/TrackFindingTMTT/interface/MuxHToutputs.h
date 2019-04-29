@@ -52,7 +52,7 @@ private:
 
   // Define the MUX algorithm by which tracks from the specified m-bin range in the HT for a given (phi,eta)
   // sector within a phi nonant are multiplexed onto a single output optical link.
-  unsigned int linkID(unsigned int iSecInOct, unsigned int iEtaReg, unsigned int mBinRange) const;
+  unsigned int linkID(unsigned int iSecInNon, unsigned int iEtaReg, unsigned int mBinRange) const;
 
   // Do sanity check of the MUX algorithm implemented in linkID().
   void sanityCheck();

@@ -105,11 +105,11 @@ void DigitalStub::makeGPinput(unsigned int iPhiSec) {
 
   if (! ranInit_) throw cms::Exception("DigitalStub: You forgot to call init() before makeGPinput()!");
 
-  unsigned int iPhiOct = floor(iPhiSec*numPhiNonants_/numPhiSectors_); // Find nonant corresponding to this sector.
+  unsigned int iPhiNon = floor(iPhiSec*numPhiNonants_/numPhiSectors_); // Find nonant corresponding to this sector.
 
   // If this stub was already digitized, we don't have to redo all the work again. Save CPU.
   if (ranMakeGPinput_) {
-    if (iPhiOct == iDigi_Nonant_) {
+    if (iPhiNon == iDigi_Nonant_) {
       return; // Work already done.
     } else {
       this->quickMakeGPinput(iPhiSec);
@@ -125,11 +125,11 @@ void DigitalStub::makeGPinput(unsigned int iPhiSec) {
   rt_orig_ = r_orig_ - chosenRofPhi_;
 
   // Phi coord. of stub relative to centre of nonant.
-  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiOct)) - M_PI;
+  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiNon)) - M_PI;
   phiO_orig_ = reco::deltaPhi(phi_orig_, phiNonantCentre);
 
   //--- Digitize variables used exclusively in GP.
-  iDigi_Nonant_ = iPhiOct;
+  iDigi_Nonant_ = iPhiNon;
   iDigi_PhiO_   = floor(phiO_orig_*phiOMult_);
   iDigi_Bend_   = round(bend_orig_*bendMult_);   // discrete values, so digitisation different 
   //--- Digitize variables used in both GP & HT.
@@ -301,12 +301,12 @@ void DigitalStub::quickMakeGPinput(int iPhiSec) {
   //--- Shift axes of coords. if required.
 
   // Phi coord. of stub relative to centre of nonant.
-  unsigned int iPhiOct = floor(iPhiSec*numPhiNonants_/numPhiSectors_);
-  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiOct)) - M_PI;
+  unsigned int iPhiNon = floor(iPhiSec*numPhiNonants_/numPhiSectors_);
+  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiNon)) - M_PI;
   phiO_orig_ = reco::deltaPhi(phi_orig_, phiNonantCentre);
 
   //--- Digitize variables used exclusively in GP.
-  iDigi_Nonant_ = iPhiOct;
+  iDigi_Nonant_ = iPhiNon;
   iDigi_PhiO_   = floor(phiO_orig_*phiOMult_);
   
   //--- Determine floating point stub coords. from digitized numbers (so with degraded resolution).

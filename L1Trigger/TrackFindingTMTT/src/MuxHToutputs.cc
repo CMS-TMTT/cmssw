@@ -51,11 +51,11 @@ void MuxHToutputs::exec(matrix<HTrphi>& mHtRphis) const {
   // be transmitted down the same link, as if this happens, it does not predict the order in which they will be 
   // transmitted.
 
-  for (unsigned int iPhiOct = 0; iPhiOct < numPhiNonants_; iPhiOct++) {
+  for (unsigned int iPhiNon = 0; iPhiNon < numPhiNonants_; iPhiNon++) {
     vector<unsigned int> numStubsPerLink( this->numLinksPerNonant(), 0 );
 
-    for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon_; iSecInOct++) {
-      unsigned int iPhiSec = iPhiOct * numPhiSecPerNon_ + iSecInOct;
+    for (unsigned int iSecInNon = 0; iSecInNon < numPhiSecPerNon_; iSecInNon++) {
+      unsigned int iPhiSec = iPhiNon * numPhiSecPerNon_ + iSecInNon;
 
       for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
 
@@ -68,7 +68,7 @@ void MuxHToutputs::exec(matrix<HTrphi>& mHtRphis) const {
 	  unsigned int nStubs = trk.getNumStubs(); // #stubs on this track.
 	  unsigned int mBinRange = htRphi.getMbinRange(trk); // Which m bin range is this track in?
 	  // Get the output optical link corresponding to this sector & m-bin range.
-	  unsigned int link = this->linkID(iSecInOct, iEtaReg, mBinRange);
+	  unsigned int link = this->linkID(iSecInNon, iEtaReg, mBinRange);
 	  // Make a note of opto-link number inside track object.
 	  trk.setOptoLinkID(link);
 
@@ -98,7 +98,7 @@ unsigned int MuxHToutputs::muxFactor() const {
 //=== Define the MUX algorithm by which tracks from the specified m-bin range in the HT for a given (phi,eta)
 //=== sector within a phi nonant are multiplexed onto a single output optical link.
 
-unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, unsigned int mBinRange) const {
+unsigned int MuxHToutputs::linkID(unsigned int iSecInNon, unsigned int iEtaReg, unsigned int mBinRange) const {
   unsigned int link;
 
   // This algorithm multiplexes tracks from different eta sectors onto the a single optical link.
@@ -113,7 +113,7 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, 
 
     if (numEtaRegions_ == 18) {
       link = iEtaReg%3;          // In range 0 to 2
-      link += 3*iSecInOct;       // In range 0 to (3*numPhiSecPerNon - 1)
+      link += 3*iSecInNon;       // In range 0 to (3*numPhiSecPerNon - 1)
       link += 3*numPhiSecPerNon_ * mBinRange; // In range 0 to (3*numPhiSecsPerNon*numMbinRanges - 1)
     } else {
       throw cms::Exception("MuxHToutputs: MUX algorithm only implemented for 18 eta sectors!");
@@ -124,7 +124,7 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, 
       //--- This is the Mux for the transverse HT readout organised by m-bin. (Each phi sector & m bin range go to a different link).
 
       link = 0;          
-      //link += iSecInOct;     
+      //link += iSecInNon;     
       //link += numPhiSecPerNon_ * mBinRange; 
 
       // IRT - match firmware, taking into account that fw uses mBin = -mBin relative to sw.
@@ -133,7 +133,7 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInOct, unsigned int iEtaReg, 
       // Sign flip for FW using opposite 
       //link += (busySectorMbinRanges_.size() - iCorr) - mBinRange - 1; 
       link += mBinRange; 
-      link += iSecInOct * (busySectorMbinRanges_.size() - 1);
+      link += iSecInNon * (busySectorMbinRanges_.size() - 1);
 
     } else { 
 
@@ -151,12 +151,12 @@ void MuxHToutputs::sanityCheck() {
   if ( numPhiSecPerNon_ * numEtaRegions_ % this->muxFactor() != 0) throw cms::Exception("MuxHToutputs: Number of sectors per phi nonant is not a multiple of muxFactor().");
 
   vector<unsigned int> nObsElementsPerLink ( this->numLinksPerNonant(), 0 );
-  for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon_; iSecInOct++) {
+  for (unsigned int iSecInNon = 0; iSecInNon < numPhiSecPerNon_; iSecInNon++) {
     for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
       // IRT
       unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0;
       for (unsigned int mBinRange = 0; mBinRange < busySectorMbinRanges_.size() - iCorr; mBinRange++) {
-	unsigned int link = this->linkID(iSecInOct, iEtaReg, mBinRange);
+	unsigned int link = this->linkID(iSecInNon, iEtaReg, mBinRange);
 	nObsElementsPerLink[ link ] += 1;
       }
     }

@@ -1208,13 +1208,13 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     // Hard-wired bodge
     const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon;
 
-    for (unsigned int iPhiOct = 0; iPhiOct < numPhiNonants; iPhiOct++) {
+    for (unsigned int iPhiNon = 0; iPhiNon < numPhiNonants; iPhiNon++) {
       // Each nonant has a separate set of links.
 
       vector<unsigned int> stubsToLinkCount(nLinks, 0);
       vector<unsigned int> trksToLinkCount(nLinks, 0);
-      for (unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon; iSecInOct++) {
-	unsigned int iPhiSec = iPhiOct * numPhiSecPerNon + iSecInOct;
+      for (unsigned int iSecInNon = 0; iSecInNon < numPhiSecPerNon; iSecInNon++) {
+	unsigned int iPhiSec = iPhiNon * numPhiSecPerNon + iSecInNon;
 	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
 	  const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 	  for (const L1track3D& trk : get3Dtrk.trackCands3D(false)) {

@@ -29,10 +29,10 @@ MiniHTstage::MiniHTstage( const Settings* settings ) :
 
 void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 
-  for ( unsigned int iPhiOct = 0; iPhiOct < numPhiNonants_; iPhiOct++ ) {
+  for ( unsigned int iPhiNon = 0; iPhiNon < numPhiNonants_; iPhiNon++ ) {
     map< unsigned int, unsigned int> numStubsPerLink; // Indices are (link ID, #stubs).
-    for ( unsigned int iSecInOct = 0; iSecInOct < numPhiSecPerNon_; iSecInOct++ ) {
-      unsigned int iPhiSec = iPhiOct * numPhiSecPerNon_ + iSecInOct;
+    for ( unsigned int iSecInNon = 0; iSecInNon < numPhiSecPerNon_; iSecInNon++ ) {
+      unsigned int iPhiSec = iPhiNon * numPhiSecPerNon_ + iSecInNon;
       for ( unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++ ) {
 
         Sector sector;
