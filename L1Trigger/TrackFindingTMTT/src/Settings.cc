@@ -30,7 +30,7 @@ Settings::Settings() {
   kalmanMaxSkipLayersEasy_=2; // On "easy" input tracks 
   kalmanMaxStubsEasy_=10;  // Max. #stubs an input track can have to be defined "easy"
   kalmanMaxStubsPerLayer_=4; // To save resources, consider at most this many stubs per layer per track.
-  kalmanDebugLevel_=1;
+  kalmanDebugLevel_=0;
   //  kalmanDebugLevel_=2; // Good for debugging
   enableDigitize_=false;
   houghMinPt_=2.0;
