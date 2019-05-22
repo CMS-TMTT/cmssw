@@ -61,13 +61,13 @@ void Histos::book() {
   // Book histograms checking filling of r-phi HT array.
   this->bookRphiHT();
   // Book histograms about r-z track filters.
-  this->bookRZfilters();
+  if (ranRZfilter_) this->bookRZfilters();
   // Book histograms for studying freak, extra large events at HT.
   this->bookStudyBusyEvents();
   // Book histograms studying 3D track candidates found after HT.
-  this->bookTrackCands(false);
+  this->bookTrackCands("HT");
   // Book histograms studying 3D track candidates found after r-z track filter.
-  if (ranRZfilter_) this->bookTrackCands(true);
+  if (ranRZfilter_) this->bookTrackCands("RZ");
   // Book histograms studying track fitting performance
   this->bookTrackFitting();
 }
@@ -87,20 +87,36 @@ void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors, co
   // Fill histograms checking filling of r-phi HT array.
   this->fillRphiHT(mHtRphis);
   // Fill histograms about r-z track filters.
-  this->fillRZfilters(mGet3Dtrks);
+  if (ranRZfilter_) this->fillRZfilters(mGet3Dtrks);
   // Fill histograms for studying freak, extra large events at HT.
   this->fillStudyBusyEvents(inputData, mSectors, mHtRphis, mGet3Dtrks);
   // Fill histograms studying 3D track candidates found after HT.
-  this->fillTrackCands(inputData, mGet3Dtrks, false);
+  vector<L1track3D> tracksHT;
+  bool withRZfilter = false; 
+  for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+    const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+    const std::vector< L1track3D >& tracks = get3Dtrk.trackCands3D(withRZfilter);
+    tracksHT.insert(tracksHT.end(), tracks.begin(), tracks.end());
+  }
+  this->fillTrackCands(inputData, tracksHT, "HT");
   // Fill histograms studying 3D track candidates found after r-z track filter.
-  if (ranRZfilter_) this->fillTrackCands(inputData, mGet3Dtrks, true);
+  if (ranRZfilter_) {
+    vector<L1track3D> tracksRZ;
+    bool withRZfilter = true; 
+    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+      const std::vector< L1track3D >& tracks = get3Dtrk.trackCands3D(withRZfilter);
+      tracksRZ.insert(tracksRZ.end(), tracks.begin(), tracks.end());
+    }
+    this->fillTrackCands(inputData, tracksRZ, "RZ");
+  }
   // Fill histograms studying track fitting performance
   this->fillTrackFitting(inputData, fittedTracks);
 }
 
 //=== Book histograms using input stubs and tracking particles.
 
-void Histos::bookInputData() {
+TFileDirectory Histos::bookInputData() {
   TFileDirectory inputDir = fs_->mkdir("InputData");
 
   // N.B. Histograms of the kinematics and production vertex of tracking particles
@@ -154,7 +170,6 @@ void Histos::bookInputData() {
   hisNumPSLayersPerTP_pions_    = inputDir.make<TH1F>("NumPSLayersPerTP_pions","; Number of PS layers per TP for alg. eff.",50,-0.5,49.5);
   hisNum2SLayersPerTP_pions_    = inputDir.make<TH1F>("Num2SLayersPerTP_pions","; Number of 2S layers per TP for alg. eff.",50,-0.5,49.5);
 
-
   hisNumLayersPerTP_lowPt_    = inputDir.make<TH1F>("NumLayersPerTP_lowPt","; Number of layers per TP for alg. eff.",50,-0.5,49.5);
   hisNumPSLayersPerTP_lowPt_    = inputDir.make<TH1F>("NumPSLayersPerTP_lowPt","; Number of PS layers per TP for alg. eff.",50,-0.5,49.5);
   hisNum2SLayersPerTP_lowPt_    = inputDir.make<TH1F>("Num2SLayersPerTP_lowPt","; Number of 2S layers per TP for alg. eff.",50,-0.5,49.5);
@@ -167,8 +182,8 @@ void Histos::bookInputData() {
   hisNumPSLayersPerTP_highPt_    = inputDir.make<TH1F>("NumPSLayersPerTP_highPt","; Number of PS layers per TP for alg. eff.",50,-0.5,49.5);
   hisNum2SLayersPerTP_highPt_    = inputDir.make<TH1F>("Num2SLayersPerTP_highPt","; Number of 2S layers per TP for alg. eff.",50,-0.5,49.5);
 
-
   // Study efficiency of tightened front end-electronics cuts.
+
   hisStubKillFE_          = inputDir.make<TProfile>("StubKillFE","; barrelLayer or 10+endcapRing; Stub fraction rejected by readout chip",30,-0.5,29.5);
   hisStubIneffiVsInvPt_   = inputDir.make<TProfile>("StubIneffiVsPt","; 1/Pt; Inefficiency of readout chip for good stubs",30,0.0,1.0);
   hisStubIneffiVsEta_     = inputDir.make<TProfile>("StubIneffiVsEta","; |#eta|; Inefficiency of readout chip for good stubs",30,0.0,3.0);
@@ -212,6 +227,33 @@ void Histos::bookInputData() {
 
   hisStubB_ = inputDir.make<TH1F>("StubB","Variable B for all stubs on TP",100,0.9,10);
   hisStubBApproxDiff_tilted_ = inputDir.make<TH1F>("StubBApproxDiff_tilted_","Difference between exact and approximate values for B",100,-1,1);
+
+  // Histos for denominator of tracking efficiency 
+  float maxAbsQoverPt = 1. / houghMinPt_; // Max. |q/Pt| covered by  HT array.
+  unsigned int nPhi   = numPhiSectors_;
+  unsigned int nEta   = numEtaRegions_;
+  hisTPinvptForEff_ = inputDir.make<TH1F>("TPinvptForEff", "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
+  hisTPptForEff_    = inputDir.make<TH1F>("TPptForEff", "; Pt of TP (used for effi. measurement);",25,0.0,100.0);
+  hisTPetaForEff_   = inputDir.make<TH1F>("TPetaForEff","; #eta of TP (used for effi. measurement);",20,-3.,3.);
+  hisTPphiForEff_   = inputDir.make<TH1F>("TPphiForEff","; #phi of TP (used for effi. measurement);",20,-M_PI,M_PI);
+  hisTPd0ForEff_    = inputDir.make<TH1F>("TPd0ForEff", "; d0 of TP (used for effi. measurement);",40,0.,4.);
+  hisTPz0ForEff_    = inputDir.make<TH1F>("TPz0ForEff", "; z0 of TP (used for effi. measurement);",50,0.,25.);
+  //
+  hisTPinvptForAlgEff_   = inputDir.make<TH1F>("TPinvptForAlgEff", "; 1/Pt of TP (used for alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
+  hisTPptForAlgEff_      = inputDir.make<TH1F>("TPptForAlgEff", "; Pt of TP (used for alg. effi. measurement);",25,0.0,100.0);
+  hisTPetaForAlgEff_     = inputDir.make<TH1F>("TPetaForAlgEff","; #eta of TP (used for alg. effi. measurement);",20,-3.,3.);
+  hisTPphiForAlgEff_     = inputDir.make<TH1F>("TPphiForAlgEff","; #phi of TP (used for alg. effi. measurement);",20,-M_PI,M_PI);
+  hisTPd0ForAlgEff_      = inputDir.make<TH1F>("TPd0ForAlgEff", "; d0 of TP (used for alg. effi. measurement);",40,0.,4.);
+  hisTPz0ForAlgEff_      = inputDir.make<TH1F>("TPz0ForAlgEff", "; z0 of TP (used for alg. effi. measurement);",50,0.,25.);
+  //
+  hisTPphisecForAlgEff_  = inputDir.make<TH1F>("TPphisecForAlgEff", "; #phi sectorof TP (used for alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
+  hisTPetasecForAlgEff_  = inputDir.make<TH1F>("TPetasecForAlgEff", "; #eta sector of TP (used for alg. effi. measurement);",nEta,-0.5,nEta-0.5);
+  //
+  hisTPinvptForAlgEff_inJetPtG30_ = inputDir.make<TH1F>("TPinvptForAlgEff_inJetPtG30", "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
+  hisTPinvptForAlgEff_inJetPtG100_ = inputDir.make<TH1F>("TPinvptForAlgEff_inJetPtG100", "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
+  hisTPinvptForAlgEff_inJetPtG200_ = inputDir.make<TH1F>("TPinvptForAlgEff_inJetPtG200", "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
+
+  return inputDir;
 }
 
 //=== Fill histograms using input stubs and tracking particles.
@@ -558,11 +600,65 @@ void Histos::fillInputData(const InputData& inputData) {
       }
     }
   }
+
+  //=== Make denominator of tracking efficiency plots
+
+  for (const TP& tp: vTPs) {
+
+    if (tp.useForEff()) { // Check TP is good for efficiency measurement.
+
+      // Check which eta and phi sectors this TP is in.
+      int iPhiSec_TP = -1;
+      int iEtaReg_TP = -1;
+      Sector sectorTmp;
+      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+	sectorTmp.init(settings_, iPhiSec, 0);
+	if (sectorTmp.insidePhiSec(tp)) iPhiSec_TP = iPhiSec;
+      }
+      for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
+	sectorTmp.init(settings_, 0, iEtaReg);
+	if (sectorTmp.insideEtaReg(tp)) iEtaReg_TP = iEtaReg;
+      }
+
+      // Plot kinematics of all good TP.
+      hisTPinvptForEff_->Fill(1./tp.pt());
+      hisTPptForEff_->Fill(tp.pt());
+      hisTPetaForEff_->Fill(tp.eta());
+      hisTPphiForEff_->Fill(tp.phi0());
+      // Plot also production point of all good TP.
+      hisTPd0ForEff_->Fill(fabs(tp.d0()));
+      hisTPz0ForEff_->Fill(fabs(tp.z0()));
+
+      if (tp.useForAlgEff()) { // Check TP is good for algorithmic efficiency measurement.
+        hisTPinvptForAlgEff_->Fill(1./tp.pt());
+        hisTPptForAlgEff_->Fill(tp.pt());
+        hisTPetaForAlgEff_->Fill(tp.eta());
+        hisTPphiForAlgEff_->Fill(tp.phi0());
+	// Plot also production point of all good TP.
+        hisTPd0ForAlgEff_->Fill(fabs(tp.d0()));
+        hisTPz0ForAlgEff_->Fill(fabs(tp.z0()));
+	// Plot sector nunber.
+        hisTPphisecForAlgEff_->Fill(iPhiSec_TP);
+        hisTPetasecForAlgEff_->Fill(iEtaReg_TP);
+
+        // Plot 1/pt for TPs inside a jet
+        if ( tp.tpInJet() ) {
+          hisTPinvptForAlgEff_inJetPtG30_->Fill(1./tp.pt());
+        }
+        if ( tp.tpInHighPtJet() ) {
+          hisTPinvptForAlgEff_inJetPtG100_->Fill(1./tp.pt());           
+        }
+        if ( tp.tpInVeryHighPtJet() ) {
+          hisTPinvptForAlgEff_inJetPtG200_->Fill(1./tp.pt());           
+        }
+      }
+    }
+  }
 }
 
 //=== Book histograms checking if (eta,phi) sector defis(nition choices are good.
 
-void Histos::bookEtaPhiSectors() {
+TFileDirectory Histos::bookEtaPhiSectors() {
   TFileDirectory inputDir = fs_->mkdir("CheckSectors");
 
   // Check if TP lose stubs because not all in same sector.
@@ -586,6 +682,8 @@ void Histos::bookEtaPhiSectors() {
   // Check which tracker layers are present in each eta sector.
   hisLayerIDvsEtaSec_ = inputDir.make<TH2F>("LayerIDvsEtaSec",";#eta sector; layer ID",nEta,-0.5,nEta-0.5,20,0.5,20.5);
   hisLayerIDreducedvsEtaSec_ = inputDir.make<TH2F>("LayerIDreducedvsEtaSec",";#eta sector; reduced layer ID",nEta,-0.5,nEta-0.5,20,0.5,20.5);
+
+  return inputDir;
 }
 
 //=== Fill histograms checking if (eta,phi) sector definition choices are good.
@@ -697,7 +795,7 @@ void Histos::fillEtaPhiSectors(const InputData& inputData, const matrix<Sector>&
 
 //=== Book histograms checking filling of r-phi HT array.
 
-void Histos::bookRphiHT() {
+TFileDirectory Histos::bookRphiHT() {
 
   TFileDirectory inputDir = fs_->mkdir("HTrphi");
 
@@ -833,6 +931,8 @@ void Histos::bookRphiHT() {
   hisNumStubsInCellVsEta_ = inputDir.make<TH2F>("NumStubsInCellVsEta","; no. of stubs per HT cell summed over phi sector; #eta region",100,-0.5,499.5, numEtaRegions_, -0.5, numEtaRegions_ - 0.5);
 
   hisStubsOnRphiTracksPerHT_ = inputDir.make<TH1F>("StubsOnRphiTracksPerHT","; Number of stubs assigned to tracks per r#phi HT array",500,-0.5,499.5);
+
+  return inputDir;
 }
 
 //=== Fill histograms checking filling of r-phi HT array.
@@ -910,45 +1010,38 @@ void Histos::fillRphiHT(const matrix<HTrphi>& mHtRphis) {
 
 //=== Book histograms about r-z track filters (or other filters applied after r-phi HT array).
 
-void Histos::bookRZfilters() {
+TFileDirectory Histos::bookRZfilters() {
 
-  // Only book histograms if one of the r-z filters was in use.
-  if (ranRZfilter_) {
+  TFileDirectory inputDir = fs_->mkdir("RZfilters");
 
-    TFileDirectory inputDir = fs_->mkdir("RZfilters");
-
-    //--- Histograms for Seed Filter
-    if (settings_->rzFilterName() == "SeedFilter") {
-      // Check number of track seeds that r-z filters must check.
-      hisNumSeedCombinations_ = inputDir.make<TH1F>("NumSeedCombinations_","; Number of seed combinations per track cand; no. seeds ; ", 50, -0.5 , 49.5);
-      hisNumGoodSeedCombinations_ = inputDir.make<TH1F>("NumGoodSeedCombinations_","; Number of good seed combinations per track cand; ", 30, -0.5 , 29.5);
-    }
+  //--- Histograms for Seed Filter
+  if (settings_->rzFilterName() == "SeedFilter") {
+    // Check number of track seeds that r-z filters must check.
+    hisNumSeedCombinations_ = inputDir.make<TH1F>("NumSeedCombinations_","; Number of seed combinations per track cand; no. seeds ; ", 50, -0.5 , 49.5);
+    hisNumGoodSeedCombinations_ = inputDir.make<TH1F>("NumGoodSeedCombinations_","; Number of good seed combinations per track cand; ", 30, -0.5 , 29.5);
   }
+  return inputDir;
 }
 
 //=== Fill histograms about r-z track filters.
 
 void Histos::fillRZfilters(const matrix<Get3Dtracks>& mGet3Dtrks) {
 
-  // Only fill histograms if one of the r-z filters was in use.
-  if (ranRZfilter_) {
+  for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
+    for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 
-    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-	const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-
-	//--- Histograms for Seed Filter
-	if (settings_->rzFilterName() == "SeedFilter") {
-	  // Check number of track seeds per sector that r-z "seed" filter checked.
-	  const vector<unsigned int>  numSeedComb = get3Dtrk.getRZfilter().numSeedCombsPerTrk();
-	  for (const unsigned int& num : numSeedComb) {
-	    hisNumSeedCombinations_->Fill(num) ;
-	  }
-	  // Same again, but this time only considering seeds the r-z filters defined as "good".
-	  const vector<unsigned int>  numGoodSeedComb = get3Dtrk.getRZfilter().numGoodSeedCombsPerTrk();
-	  for (const unsigned int& num : numGoodSeedComb) {
-	    hisNumGoodSeedCombinations_->Fill(num) ;
-	  }
+      //--- Histograms for Seed Filter
+      if (settings_->rzFilterName() == "SeedFilter") {
+	// Check number of track seeds per sector that r-z "seed" filter checked.
+	const vector<unsigned int>  numSeedComb = get3Dtrk.getRZfilter().numSeedCombsPerTrk();
+	for (const unsigned int& num : numSeedComb) {
+	  hisNumSeedCombinations_->Fill(num) ;
+	}
+	// Same again, but this time only considering seeds the r-z filters defined as "good".
+	const vector<unsigned int>  numGoodSeedComb = get3Dtrk.getRZfilter().numGoodSeedCombsPerTrk();
+	for (const unsigned int& num : numGoodSeedComb) {
+	  hisNumGoodSeedCombinations_->Fill(num) ;
 	}
       }
     }
@@ -957,17 +1050,17 @@ void Histos::fillRZfilters(const matrix<Get3Dtracks>& mGet3Dtrks) {
 
 //=== Book histograms studying track candidates found by Hough Transform.
 
-void Histos::bookTrackCands(bool withRZfilter) {
+TFileDirectory Histos::bookTrackCands(string tName) {
 
   // Now book histograms for studying tracking in general.
-
-  string tName = withRZfilter  ?  "RZ"  :  "HT";
 
   // Define lambda function to facilitate adding "tName" to directory & histogram names.
   //auto addn = [tName](string s){ return TString::Format("%s_%s", s.c_str(), tName.c_str()).Data(); };
   auto addn = [tName](string s){ return TString::Format("%s_%s", s.c_str(), tName.c_str()); };
 
   TFileDirectory inputDir = fs_->mkdir(addn("TrackCands").Data());
+
+  bool TMTT = (tName == "HT" || tName == "RZ");
 
   // Count tracks in various ways (including/excluding duplicates, excluding fakes ...)
   profNumTrackCands_[tName]  = inputDir.make<TProfile>(addn("NumTrackCands"),"; class; N. of tracks in tracker",7,0.5,7.5);
@@ -981,21 +1074,24 @@ void Histos::bookTrackCands(bool withRZfilter) {
 
   unsigned int nPhi = numPhiSectors_;
   unsigned int nEta = numEtaRegions_;
-  profNumTracksVsEta_[tName] = inputDir.make<TProfile>(addn("NumTracksVsEta"),"; #eta region; No. of tracks in tracker", nEta, -0.5, nEta - 0.5);
   float maxAbsQoverPt = 1./houghMinPt_; // Max. |q/Pt| covered by  HT array.
   hisNumTracksVsQoverPt_[tName] = inputDir.make<TH1F>(addn("NumTracksVsQoverPt"),"; Q/Pt; No. of tracks in tracker",100, -maxAbsQoverPt, maxAbsQoverPt);
-
-  hisNumTrksPerSect_[tName] = inputDir.make<TH1F>(addn("NumTrksPerSect"),"; No. tracks per sector;",100,-0.5,99.5);
   hisNumTrksPerNon_[tName]  = inputDir.make<TH1F>(addn("NumTrksPerNon"), "; No. tracks per nonant;",200,-0.5,199.5);
+  if (TMTT) {
+    profNumTracksVsEta_[tName] = inputDir.make<TProfile>(addn("NumTracksVsEta"),"; #eta region; No. of tracks in tracker", nEta, -0.5, nEta - 0.5);
+    hisNumTrksPerSect_[tName] = inputDir.make<TH1F>(addn("NumTrksPerSect"),"; No. tracks per sector;",100,-0.5,99.5);
+  }
 
   // Count stubs per event assigned to tracks (determines HT data output rate)
 
   profStubsOnTracks_[tName] = inputDir.make<TProfile>(addn("StubsOnTracks"),"; ; No. of stubs on tracks per event",1,0.5,1.5);
-  profStubsOnTracksVsEta_[tName] = inputDir.make<TProfile>(addn("StubsOnTracksVsEta"),"; #eta region; No. of stubs on tracks per event", nEta, -0.5, nEta - 0.5); 
-  hisStubsOnTracksPerSect_[tName] = inputDir.make<TH1F>(addn("StubsOnTracksPerSect"),"; No. of stubs on tracks per sector", 500,-0.5,499.5); 
   hisStubsOnTracksPerNon_[tName]  = inputDir.make<TH1F>(addn("StubsOnTracksPerNon"),"; No. of stubs on tracks per nonant", 1000,-0.5,999.5); 
-  hisUniqueStubsOnTrksPerSect_[tName] = inputDir.make<TH1F>(addn("UniqueStubsOnTrksPerSect"),"; No. of unique stubs on tracks per sector", 500,-0.5,499.5); 
   hisUniqueStubsOnTrksPerNon_[tName]  = inputDir.make<TH1F>(addn("UniqueStubsOnTrksPerNon"),"; No. of unique stubs on tracks per nonant", 500,-0.5,499.5); 
+  if (TMTT) {
+    profStubsOnTracksVsEta_[tName] = inputDir.make<TProfile>(addn("StubsOnTracksVsEta"),"; #eta region; No. of stubs on tracks per event", nEta, -0.5, nEta - 0.5); 
+    hisStubsOnTracksPerSect_[tName] = inputDir.make<TH1F>(addn("StubsOnTracksPerSect"),"; No. of stubs on tracks per sector", 500,-0.5,499.5); 
+    hisUniqueStubsOnTrksPerSect_[tName] = inputDir.make<TH1F>(addn("UniqueStubsOnTrksPerSect"),"; No. of unique stubs on tracks per sector", 500,-0.5,499.5); 
+  }
 
   hisStubsPerTrack_[tName] = inputDir.make<TH1F>(addn("StubsPerTrack"),";No. of stubs per track;",50,-0.5,49.5);
   hisLayersPerTrack_[tName] = inputDir.make<TH1F>(addn("LayersPerTrack"),";No. of layers with stubs per track;",20,-0.5,19.5);
@@ -1003,15 +1099,19 @@ void Histos::bookTrackCands(bool withRZfilter) {
   hisLayersPerTrueTrack_[tName] = inputDir.make<TH1F>(addn("LayersPerTrueTrack"),";No. of layers with stubs per genuine track;",20,-0.5,19.5);
   hisPSLayersPerTrueTrack_[tName] = inputDir.make<TH1F>(addn("PSLayersPerTrueTrack"),";No. of PS layers with stubs per genuine track;",20,-0.5,19.5);
 
-  hisNumStubsPerLink_[tName] = inputDir.make<TH1F>(addn("NumStubsPerLink"), "; Mean #stubs per HT output opto-link;", 50,-0.5,199.5);
-  hisNumStubsVsLink_[tName] = inputDir.make<TH2F>(addn("NumStubsVsLink"), "; HT output opto-link; No. stubs/event", 36, -0.5, 35.5, 20,-0.5,199.5);
-  profMeanStubsPerLink_[tName] = inputDir.make<TProfile>(addn("MeanStubsPerLink"), "; Mean #stubs per HT output opto-link;", 36,-0.5,35.5);
-  hisNumTrksPerLink_[tName] = inputDir.make<TH1F>(addn("NumTrksPerLink"), "; Mean #tracks per HT output opto-link;", 50,-0.5,49.5);
-  hisNumTrksVsLink_[tName] = inputDir.make<TH2F>(addn("NumTrksVsLink"), "; HT output opto-link; No. tracks/event", 72, -0.5, 71.5, 20,-0.5,49.5);
-  profMeanTrksPerLink_[tName] = inputDir.make<TProfile>(addn("MeanTrksPerLink"), "; Mean #tracks per HT output opto-link;", 36,-0.5,35.5);
+  if (TMTT) {
+    hisNumStubsPerLink_[tName] = inputDir.make<TH1F>(addn("NumStubsPerLink"), "; Mean #stubs per HT output opto-link;", 50,-0.5,199.5);
+    hisNumStubsVsLink_[tName] = inputDir.make<TH2F>(addn("NumStubsVsLink"), "; HT output opto-link; No. stubs/event", 36, -0.5, 35.5, 20,-0.5,199.5);
+    profMeanStubsPerLink_[tName] = inputDir.make<TProfile>(addn("MeanStubsPerLink"), "; Mean #stubs per HT output opto-link;", 36,-0.5,35.5);
+    hisNumTrksPerLink_[tName] = inputDir.make<TH1F>(addn("NumTrksPerLink"), "; Mean #tracks per HT output opto-link;", 50,-0.5,49.5);
+    hisNumTrksVsLink_[tName] = inputDir.make<TH2F>(addn("NumTrksVsLink"), "; HT output opto-link; No. tracks/event", 72, -0.5, 71.5, 20,-0.5,49.5);
+    profMeanTrksPerLink_[tName] = inputDir.make<TProfile>(addn("MeanTrksPerLink"), "; Mean #tracks per HT output opto-link;", 36,-0.5,35.5);
+  }
 
-  // Checks if tracks have too many stubs to be stored in memory in each cell.
-  profExcessStubsPerTrackVsPt_[tName] = inputDir.make<TProfile>(addn("ExcessStubsPerTrackVsPt"),";q/Pt; Prob. of too many stubs per track",16,0.,maxAbsQoverPt);
+  if (TMTT) {
+    // Checks if tracks have too many stubs to be stored in memory in each cell.
+    profExcessStubsPerTrackVsPt_[tName] = inputDir.make<TProfile>(addn("ExcessStubsPerTrackVsPt"),";q/Pt; Prob. of too many stubs per track",16,0.,maxAbsQoverPt);
+  }
 
   hisFracMatchStubsOnTracks_[tName] = inputDir.make<TH1F>(addn("FracMatchStubsOnTracks"),"; Fraction of stubs on tracks matching best TP;",101,-0.005,1.005);
 
@@ -1021,9 +1121,11 @@ void Histos::bookTrackCands(bool withRZfilter) {
   hisDeltaBendTrue_[tName] = inputDir.make<TH1F>(addn("DeltaBendTrue"),"True stubs; stub bend minus true bend / resolution;",100,-2.,2.);
   hisDeltaBendFake_[tName] = inputDir.make<TH1F>(addn("DeltaBendFake"),"Fake stubs; stub bend minus true bend / resolution;",100,-2.,2.);
 
-  // Study duplication of tracks within HT.
-  profDupTracksVsEta_[tName] = inputDir.make<TProfile>(addn("DupTracksVsTPeta"), "; #eta; No. of duplicate tracks per TP in individual HT array;",15,0.0,3.0);
-  profDupTracksVsInvPt_[tName] = inputDir.make<TProfile>(addn("DupTracksVsInvPt"), "; 1/Pt; No. of duplicate tracks per TP",16,0.,maxAbsQoverPt);
+  if (TMTT) {
+    // Study duplication of tracks within HT.
+    profDupTracksVsEta_[tName] = inputDir.make<TProfile>(addn("DupTracksVsTPeta"), "; #eta; No. of duplicate tracks per TP in individual HT array;",15,0.0,3.0);
+    profDupTracksVsInvPt_[tName] = inputDir.make<TProfile>(addn("DupTracksVsInvPt"), "; 1/Pt; No. of duplicate tracks per TP",16,0.,maxAbsQoverPt);
+  }
 
   // Histos of track params.
   hisQoverPt_[tName]    = inputDir.make<TH1F>(addn("QoverPt"),"; track q/Pt", 100,-0.5,0.5);
@@ -1044,13 +1146,9 @@ void Histos::bookTrackCands(bool withRZfilter) {
   hisRecoVsTrueEta_[tName]    = inputDir.make<TH2F>(addn("RecoVsTrueEta"), "; TP #eta; Reco #eta (good #chi^{2})", 70, -3.5, 3.5, 70, -3.5, 3.5 );
 
   // Histos for tracking efficiency vs. TP kinematics
-  hisTPinvptForEff_[tName]     = inputDir.make<TH1F>(addn("TPinvptForEff"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
   hisRecoTPinvptForEff_[tName] = inputDir.make<TH1F>(addn("RecoTPinvptForEff"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
-  hisTPptForEff_[tName]        = inputDir.make<TH1F>(addn("TPptForEff"), "; Pt of TP (used for effi. measurement);",25,0.0,100.0);
   hisRecoTPptForEff_[tName]    = inputDir.make<TH1F>(addn("RecoTPptForEff"), "; Pt of TP (used for effi. measurement);",25,0.0,100.0);
-  hisTPetaForEff_[tName]       = inputDir.make<TH1F>(addn("TPetaForEff"),"; #eta of TP (used for effi. measurement);",20,-3.,3.);
   hisRecoTPetaForEff_[tName]   = inputDir.make<TH1F>(addn("RecoTPetaForEff"),"; #eta of TP (used for effi. measurement);",20,-3.,3.);
-  hisTPphiForEff_[tName]       = inputDir.make<TH1F>(addn("TPphiForEff"),"; #phi of TP (used for effi. measurement);",20,-M_PI,M_PI);
   hisRecoTPphiForEff_[tName]   = inputDir.make<TH1F>(addn("RecoTPphiForEff"),"; #phi of TP (used for effi. measurement);",20,-M_PI,M_PI);
 
   // Histo for efficiency to reconstruct track perfectly (no incorrect hits).
@@ -1059,27 +1157,18 @@ void Histos::bookTrackCands(bool withRZfilter) {
   hisPerfRecoTPetaForEff_[tName]   = inputDir.make<TH1F>(addn("PerfRecoTPetaForEff"),"; #eta of TP (used for perf. effi. measurement);",20,-3.,3.);
 
   // Histos for  tracking efficiency vs. TP production point
-  hisTPd0ForEff_[tName]      = inputDir.make<TH1F>(addn("TPd0ForEff"), "; d0 of TP (used for effi. measurement);",40,0.,4.);
   hisRecoTPd0ForEff_[tName]  = inputDir.make<TH1F>(addn("RecoTPd0ForEff"), "; d0 of TP (used for effi. measurement);",40,0.,4.);
-  hisTPz0ForEff_[tName]      = inputDir.make<TH1F>(addn("TPz0ForEff"), "; z0 of TP (used for effi. measurement);",50,0.,25.);
   hisRecoTPz0ForEff_[tName]  = inputDir.make<TH1F>(addn("RecoTPz0ForEff"), "; z0 of TP (used for effi. measurement);",50,0.,25.);
 
   // Histos for algorithmic tracking efficiency vs. TP kinematics
-  hisTPinvptForAlgEff_[tName]     = inputDir.make<TH1F>(addn("TPinvptForAlgEff"), "; 1/Pt of TP (used for alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
   hisRecoTPinvptForAlgEff_[tName] = inputDir.make<TH1F>(addn("RecoTPinvptForAlgEff"), "; 1/Pt of TP (used for alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
-  hisTPptForAlgEff_[tName]        = inputDir.make<TH1F>(addn("TPptForAlgEff"), "; Pt of TP (used for alg. effi. measurement);",25,0.0,100.0);
   hisRecoTPptForAlgEff_[tName]    = inputDir.make<TH1F>(addn("RecoTPptForAlgEff"), "; Pt of TP (used for alg. effi. measurement);",25,0.0,100.0);
-  hisTPetaForAlgEff_[tName]       = inputDir.make<TH1F>(addn("TPetaForAlgEff"),"; #eta of TP (used for alg. effi. measurement);",20,-3.,3.);
   hisRecoTPetaForAlgEff_[tName]   = inputDir.make<TH1F>(addn("RecoTPetaForAlgEff"),"; #eta of TP (used for alg. effi. measurement);",20,-3.,3.);
-  hisTPphiForAlgEff_[tName]       = inputDir.make<TH1F>(addn("TPphiForAlgEff"),"; #phi of TP (used for alg. effi. measurement);",20,-M_PI,M_PI);
   hisRecoTPphiForAlgEff_[tName]   = inputDir.make<TH1F>(addn("RecoTPphiForAlgEff"),"; #phi of TP (used for alg. effi. measurement);",20,-M_PI,M_PI);
 
   // Histos for algorithmic tracking efficiency in jets.
-  hisTPinvptForAlgEff_inJetPtG30_[tName] = inputDir.make<TH1F>(addn("TPinvptForAlgEff_inJetPtG30"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
   hisRecoTPinvptForAlgEff_inJetPtG30_[tName] = inputDir.make<TH1F>(addn("RecoTPinvptForAlgEff_inJetPtG30"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
-  hisTPinvptForAlgEff_inJetPtG100_[tName] = inputDir.make<TH1F>(addn("TPinvptForAlgEff_inJetPtG100"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
   hisRecoTPinvptForAlgEff_inJetPtG100_[tName] = inputDir.make<TH1F>(addn("RecoTPinvptForAlgEff_inJetPtG100"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
-  hisTPinvptForAlgEff_inJetPtG200_[tName] = inputDir.make<TH1F>(addn("TPinvptForAlgEff_inJetPtG200"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
   hisRecoTPinvptForAlgEff_inJetPtG200_[tName] = inputDir.make<TH1F>(addn("RecoTPinvptForAlgEff_inJetPtG200"), "; 1/Pt of TP (used for effi. measurement);",24,0.,1.5*maxAbsQoverPt);
 
   // Histo for efficiency to reconstruct track perfectly (no incorrect hits).
@@ -1088,122 +1177,123 @@ void Histos::bookTrackCands(bool withRZfilter) {
   hisPerfRecoTPetaForAlgEff_[tName]   = inputDir.make<TH1F>(addn("PerfRecoTPetaForAlgEff"),"; #eta of TP (used for perf. alg. effi. measurement);",20,-3.,3.);
 
   // Histos for algorithmic tracking efficiency vs. TP production point
-  hisTPd0ForAlgEff_[tName]      = inputDir.make<TH1F>(addn("TPd0ForAlgEff"), "; d0 of TP (used for alg. effi. measurement);",40,0.,4.);
   hisRecoTPd0ForAlgEff_[tName]  = inputDir.make<TH1F>(addn("RecoTPd0ForAlgEff"), "; d0 of TP (used for alg. effi. measurement);",40,0.,4.);
-  hisTPz0ForAlgEff_[tName]      = inputDir.make<TH1F>(addn("TPz0ForAlgEff"), "; z0 of TP (used for alg. effi. measurement);",50,0.,25.);
   hisRecoTPz0ForAlgEff_[tName]  = inputDir.make<TH1F>(addn("RecoTPz0ForAlgEff"), "; z0 of TP (used for alg. effi. measurement);",50,0.,25.);
 
   // Histos for algorithmic tracking efficiency vs sector number (to check if looser cuts are needed in certain regions)
-  hisTPphisecForAlgEff_[tName]      = inputDir.make<TH1F>(addn("TPphisecForAlgEff"), "; #phi sectorof TP (used for alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
   hisRecoTPphisecForAlgEff_[tName]  = inputDir.make<TH1F>(addn("RecoTPphisecForAlgEff"), "; #phi sector of TP (used for alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
-  hisTPetasecForAlgEff_[tName]      = inputDir.make<TH1F>(addn("TPetasecForAlgEff"), "; #eta sector of TP (used for alg. effi. measurement);",nEta,-0.5,nEta-0.5);
   hisRecoTPetasecForAlgEff_[tName]  = inputDir.make<TH1F>(addn("RecoTPetasecForAlgEff"), "; #eta sector of TP (used for alg. effi. measurement);",nEta,-0.5,nEta-0.5);
 
   // Histo for efficiency to reconstruct tracks perfectly (no incorrect hits).
   hisPerfRecoTPphisecForAlgEff_[tName]  = inputDir.make<TH1F>(addn("PerfRecoTPphisecForAlgEff"), "; #phi sector of TP (used for perf. alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
   hisPerfRecoTPetasecForAlgEff_[tName]  = inputDir.make<TH1F>(addn("PerfRecoTPetasecForAlgEff"), "; #eta sector of TP (used for perf. alg. effi. measurement);",nEta,-0.5,nEta-0.5);
 
-  // For those tracking particles causing the algorithmic efficiency to be below 100%, plot a flag indicating why.
-  hisRecoFailureReason_[tName] = inputDir.make<TH1F>(addn("RecoFailureReason"),"; Reason TP (used for alg. effi.) not reconstructed;",1,-0.5,0.5); 
-  //hisRecoFailureLayer_[tName] = inputDir.make<TH1F>(addn("RecoFailureLayer"),"; Layer ID of lost stubs on unreconstructed TP;",30,-0.5,29.5);
+  if (TMTT) {
+    // For those tracking particles causing the algorithmic efficiency to be below 100%, plot a flag indicating why.
+    hisRecoFailureReason_[tName] = inputDir.make<TH1F>(addn("RecoFailureReason"),"; Reason TP (used for alg. effi.) not reconstructed;",1,-0.5,0.5); 
+    //hisRecoFailureLayer_[tName] = inputDir.make<TH1F>(addn("RecoFailureLayer"),"; Layer ID of lost stubs on unreconstructed TP;",30,-0.5,29.5);
+  }
 
   //hisWrongSignStubRZ_pBend_[tName] = inputDir.make<TH2F>(addn("WrongSignStubRZ_pBend"),"RZ of stubs with positive bend, but with wrong sign; z (cm); radius (cm); No. stubs in tracker",100,-280,280,100,0,130);
   //hisWrongSignStubRZ_nBend_[tName] = inputDir.make<TH2F>(addn("WrongSignStubRZ_nBend"),"RZ of stubs with negative bend, but with wrong sign; z (cm); radius (cm); No. stubs in tracker",100,-280,280,100,0,130);
 
   hisNumStubsOnLayer_[tName] = inputDir.make<TH1F>(addn("NumStubsOnLayer"),"; Layer occupancy;",16,1,17); 
+
+  return inputDir;
 }
 
 //=== Fill histograms studying track candidates found before track fit is run.
 
-void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks> mGet3Dtrks, bool withRZfilter) {
+void Histos::fillTrackCands(const InputData& inputData, const vector<L1track3D>& tracks, string tName) {
 
-  string tName = withRZfilter  ?  "RZ"  :  "HT";
+  bool withRZfilter = (tName == "RZ");
+
+  bool TMTT = (tName == "HT" || tName == "RZ");
 
   // Now fill histograms for studying tracking in general.
 
   const vector<TP>&  vTPs = inputData.getTPs();
 
   // Debug histogram for LR track fitter.
-  for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-      const std::vector< L1track3D >& tracks = get3Dtrk.trackCands3D(withRZfilter);
-      for ( auto t : tracks ) {
-        const std::vector< const Stub* > stubs = t.getStubs();
-        std::map< unsigned int, unsigned int > layerMap;
-        for ( auto s : stubs )
-          layerMap[ s->layerIdReduced() ]++;
-        for ( auto l : layerMap )
-          hisNumStubsOnLayer_[tName]->Fill( l.second );
-      }
+  for (const L1track3D& t : tracks) {
+    const std::vector< const Stub* > stubs = t.getStubs();
+    std::map< unsigned int, unsigned int > layerMap;
+    for ( auto s : stubs )
+      layerMap[ s->layerIdReduced() ]++;
+    for ( auto l : layerMap )
+      hisNumStubsOnLayer_[tName]->Fill( l.second );
   }
 
   //=== Count track candidates found in the tracker. 
 
-  unsigned int nTracks = 0;
   const unsigned int numPhiNonants = settings_->numPhiNonants();;
-  vector<unsigned int> nTracksInNonant(numPhiNonants, 0);
-  for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-    unsigned int nTracksInEtaReg = 0;
-    for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+  matrix<unsigned int> nTrksPerSec(numPhiSectors_, numEtaRegions_, 0);
+  vector<unsigned int> nTrksPerEtaReg(numEtaRegions_, 0);
+  vector<unsigned int> nTrksPerNonant(numPhiNonants, 0);
+  for (const L1track3D& t : tracks) {
+    unsigned int iNonant = floor((t.iPhiSec())*numPhiNonants/(numPhiSectors_)); // phi nonant number
+    nTrksPerSec(t.iPhiSec(), t.iEtaReg())++;
+    nTrksPerEtaReg[t.iEtaReg()]++;
+    nTrksPerNonant[iNonant]++;
+  }
 
-      hisNumTrksPerSect_[tName]->Fill(get3Dtrk.trackCands3D(withRZfilter).size()); 
-      unsigned int iNonant = floor(iPhiSec*numPhiNonants/(numPhiSectors_)); // phi nonant number
-      nTracksInNonant[iNonant] += get3Dtrk.trackCands3D(withRZfilter).size();
-      // Note number of tracks in this eta region (summed over all phi).
-      nTracksInEtaReg += get3Dtrk.trackCands3D(withRZfilter).size();
-      if (settings_->debug() == 2 && get3Dtrk.trackCands3D(withRZfilter).size() > 0) cout<<"Sector ("<<iPhiSec<<","<<iEtaReg<<") has ntracks = "<<get3Dtrk.trackCands3D(withRZfilter).size()<<endl;
+  profNumTrackCands_[tName]->Fill(1.0, tracks.size()); // Plot mean number of tracks/event.
+  if (TMTT) {
+    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
+      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+        hisNumTrksPerSect_[tName]->Fill(nTrksPerSec(iPhiSec, iEtaReg));
+      }
+      profNumTracksVsEta_[tName]->Fill(iEtaReg, nTrksPerEtaReg[iEtaReg]);
     }
-    nTracks += nTracksInEtaReg;
-    profNumTracksVsEta_[tName]->Fill(iEtaReg, nTracksInEtaReg);
   }
-  profNumTrackCands_[tName]->Fill(1.0, nTracks); // Plot mean number of tracks/event.
-  for (unsigned int k = 0; k < numPhiNonants; k++) {
-    hisNumTrksPerNon_[tName]->Fill(nTracksInNonant[k]); // Plots tracks in each phi nonant.
-  }
+  for (unsigned int iNonant = 0; iNonant < numPhiNonants; iNonant++) {
+    hisNumTrksPerNon_[tName]->Fill(nTrksPerNonant[iNonant]);
+  } 
 
   //=== Count stubs per event assigned to track candidates in the Tracker
 
   unsigned int nStubsOnTracks = 0;
+  matrix nStubsOnTracksInSec(numPhiSectors_,numEtaRegions_,0);
+  vector<unsigned int> nStubsOnTracksInEtaReg(numEtaRegions_, 0);
   vector<unsigned int> nStubsOnTracksInNonant(numPhiNonants, 0);
+  map< pair<unsigned int, unsigned int>, set<const Stub*> > uniqueStubsOnTracksInSect;
   map< unsigned int, set<const Stub*> > uniqueStubsOnTracksInNonant;
-  for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-    unsigned int nStubsOnTracksInEtaReg = 0;
-    for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-      unsigned int iNonant = floor(iPhiSec*numPhiNonants/(numPhiSectors_)); // phi nonant number
-      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 
-      // Count stubs on all tracks in this sector.
-      unsigned int nStubsOnTrksInSec = 0;
-      for (const L1track3D& trk : get3Dtrk.trackCands3D(withRZfilter)) {
-	nStubsOnTrksInSec += trk.getStubs().size();
-      }
-
-      hisStubsOnTracksPerSect_[tName]->Fill(nStubsOnTrksInSec); // Number of stubs assigned to tracks in this sector.
-      nStubsOnTracksInNonant[iNonant] += nStubsOnTrksInSec; // Number of stubs assigned to tracks in this nonant.
-      nStubsOnTracksInEtaReg += nStubsOnTrksInSec;
-      set<const Stub*> uniqueStubsOnTracksInSector;
-      // Loop over all stubs on all tracks in this sector, and add to std::set(), so each individual stub recorded at most once.
-      for (const L1track3D& trk : get3Dtrk.trackCands3D(withRZfilter) ) {
-	const vector<const Stub*>& stubs = trk.getStubs();
-	uniqueStubsOnTracksInSector.insert(stubs.begin(), stubs.end());
-	uniqueStubsOnTracksInNonant[iNonant].insert(stubs.begin(), stubs.end());
-      }
-      // Plot number of stubs assigned to tracks per sector, never counting each individual stub more than once.
-      hisUniqueStubsOnTrksPerSect_[tName]->Fill(uniqueStubsOnTracksInSector.size());
-    }
-    nStubsOnTracks += nStubsOnTracksInEtaReg;
-    profStubsOnTracksVsEta_[tName]->Fill(iEtaReg, nStubsOnTracksInEtaReg);
+  matrix<unsigned int> nStubsOnTrksInSec(numPhiSectors_, numEtaRegions_, 0);
+  for (const L1track3D& t : tracks) {
+    const vector<const Stub*>& stubs = t.getStubs();
+    unsigned int nStubs = stubs.size();
+    unsigned int iNonant = floor((t.iPhiSec())*numPhiNonants/(numPhiSectors_)); // phi nonant number
+    // Count stubs on all tracks in this sector & nonant.
+    nStubsOnTracks+= nStubs;
+    nStubsOnTrksInSec(t.iPhiSec(), t.iEtaReg()) += nStubs;
+    nStubsOnTracksInEtaReg[t.iEtaReg()] += nStubs;
+    nStubsOnTracksInNonant[iNonant] += nStubs;
+    // Note unique stubs in sector & nonant.
+    uniqueStubsOnTracksInSect[pair<unsigned int, unsigned int>(t.iPhiSec(), t.iEtaReg())].insert(stubs.begin(), stubs.end());
+    uniqueStubsOnTracksInNonant[iNonant].insert(stubs.begin(), stubs.end());
   }
+
   profStubsOnTracks_[tName]->Fill(1.0, nStubsOnTracks);
-  for (unsigned int k = 0; k < numPhiNonants; k++) {
-    hisStubsOnTracksPerNon_[tName]->Fill(nStubsOnTracksInNonant[k]); // Plots stubs on tracks in each phi nonant.
-    hisUniqueStubsOnTrksPerNon_[tName]->Fill(uniqueStubsOnTracksInNonant[k].size());
+  if (TMTT) {
+    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
+      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+        hisStubsOnTracksPerSect_[tName]->Fill(nStubsOnTrksInSec(iPhiSec, iEtaReg));
+        // Plot number of stubs assigned to tracks per sector, never counting each individual stub more than once.
+        hisUniqueStubsOnTrksPerSect_[tName]->Fill(uniqueStubsOnTracksInSect[pair(iPhiSec, iEtaReg)].size());
+      }
+      profStubsOnTracksVsEta_[tName]->Fill(iEtaReg, nStubsOnTracksInEtaReg[iEtaReg]);
+    }
   }
+  for (unsigned int iNonant = 0; iNonant < numPhiNonants; iNonant++) {
+    hisStubsOnTracksPerNon_[tName]->Fill(nStubsOnTracksInNonant[iNonant]);
+    // Plot number of stubs assigned to tracks per nonant, never counting each individual stub more than once.
+    hisUniqueStubsOnTrksPerNon_[tName]->Fill(uniqueStubsOnTracksInNonant[iNonant].size());
+  } 
 
   // Plot number of tracks & number of stubs per output HT opto-link.
 
-  if (not withRZfilter) {
+  if (TMTT && not withRZfilter) {
     const unsigned int numPhiSecPerNon = numPhiSectors_/numPhiNonants;
     // Hard-wired bodge
     const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon;
@@ -1213,20 +1303,17 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
 
       vector<unsigned int> stubsToLinkCount(nLinks, 0);
       vector<unsigned int> trksToLinkCount(nLinks, 0);
-      for (unsigned int iSecInNon = 0; iSecInNon < numPhiSecPerNon; iSecInNon++) {
-	unsigned int iPhiSec = iPhiNon * numPhiSecPerNon + iSecInNon;
-	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-	  const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-	  for (const L1track3D& trk : get3Dtrk.trackCands3D(false)) {
-	    unsigned int link = trk.optoLinkID();
-	    if (link < nLinks) {
-  	      stubsToLinkCount[link] += trk.getNumStubs();
-	      trksToLinkCount[link] += 1;
-	    } else {
-	      // Bug -- array too small ...
-	      //cout<<"MESS UP "<<link<<endl;
-	    }
-	  }
+      for (const L1track3D& trk : tracks) {
+	unsigned int iNonantTrk = floor((trk.iPhiSec())*numPhiNonants/(numPhiSectors_)); // phi nonant number
+	if (iPhiNon == iNonantTrk) {
+	  unsigned int link = trk.optoLinkID();
+	  if (link < nLinks) {
+  	    stubsToLinkCount[link] += trk.getNumStubs();
+            trksToLinkCount[link] += 1;
+          } else {
+            // Bug -- array too small ...
+            //cout<<"MESS UP "<<link<<endl;
+          }
 	}
       }
 
@@ -1246,85 +1333,71 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     }
   }
 
-  // Plot q/pt spectrum of track candidates, and number of stubs/track.
-  for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-
-      // Loop over all reconstructed tracks in this sector
-      const vector<L1track3D>& vecTrk3D = get3Dtrk.trackCands3D(withRZfilter);
-      for (const L1track3D& trk : vecTrk3D) {
-	hisNumTracksVsQoverPt_[tName]->Fill(trk.qOverPt()); // Plot reconstructed q/Pt of track cands.
-	hisStubsPerTrack_[tName]->Fill(trk.getNumStubs());  // Stubs per track.
-	// For genuine tracks, check how often they have too many stubs to be stored in cell memory. (Perhaps worse for high Pt particles in jets?).
-	const TP* tp = trk.getMatchedTP();
-	if (tp != nullptr) {
-	  if (tp->useForAlgEff()) profExcessStubsPerTrackVsPt_[tName]->Fill(1./tp->pt(), trk.getNumStubs() > 16);
-	}
-	hisLayersPerTrack_[tName]->Fill(trk.getNumLayers()); // Number of reduced layers with stubs per track.
-	hisPSLayersPerTrack_[tName]->Fill( Utility::countLayers(settings_, trk.getStubs(), false, true) ); // Number of reduced PS layers with stubs per track.
-	// Also plot just for genuine tracks.
-	if (tp != nullptr && tp->useForAlgEff()) {
-  	  hisLayersPerTrueTrack_[tName]->Fill(trk.getNumLayers()); // Number of reduced layers with stubs per track.
-	  hisPSLayersPerTrueTrack_[tName]->Fill( Utility::countLayers(settings_, trk.getStubs(), false, true) ); // Number of reduced PS layers with stubs per track.
-	}
+  // Plot q/pt spectrum of track candidates, and number of stubs/tracks
+  for (const L1track3D& trk : tracks) {
+    hisNumTracksVsQoverPt_[tName]->Fill(trk.qOverPt()); // Plot reconstructed q/Pt of track cands.
+    hisStubsPerTrack_[tName]->Fill(trk.getNumStubs());  // Stubs per track.
+    const TP* tp = trk.getMatchedTP();
+    if (TMTT) {
+      // For genuine tracks, check how often they have too many stubs to be stored in cell memory. (Perhaps worse for high Pt particles in jets?).
+      if (tp != nullptr) {
+        if (tp->useForAlgEff()) profExcessStubsPerTrackVsPt_[tName]->Fill(1./tp->pt(), trk.getNumStubs() > 16);
       }
+    }
+    hisLayersPerTrack_[tName]->Fill(trk.getNumLayers()); // Number of reduced layers with stubs per track.
+    hisPSLayersPerTrack_[tName]->Fill( Utility::countLayers(settings_, trk.getStubs(), false, true) ); // Number of reduced PS layers with stubs per track.
+    // Also plot just for genuine tracks.
+    if (tp != nullptr && tp->useForAlgEff()) {
+      hisLayersPerTrueTrack_[tName]->Fill(trk.getNumLayers()); // Number of reduced layers with stubs per track.
+      hisPSLayersPerTrueTrack_[tName]->Fill( Utility::countLayers(settings_, trk.getStubs(), false, true) ); // Number of reduced PS layers with stubs per track.
     }
   }  
 
   // Count fraction of stubs on each track matched to a TP that are from same TP.
 
-  for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+  for (const L1track3D& trk : tracks) {
+    // Only consider tracks that match a tracking particle used for the alg. efficiency measurement.
+    const TP* tp = trk.getMatchedTP();
+    if (tp != nullptr) {
+      if (tp->useForAlgEff()) {
+	hisFracMatchStubsOnTracks_[tName]->Fill( trk.getPurity() );
 
-      // Loop over all reconstructed tracks in this sector
-      const vector<L1track3D>& vecTrk3D = get3Dtrk.trackCands3D(withRZfilter);
-      for (const L1track3D& trk : vecTrk3D) {
-	// Only consider tracks that match a tracking particle used for the alg. efficiency measurement.
-	const TP* tp = trk.getMatchedTP();
-	if (tp != nullptr) {
-	  if (tp->useForAlgEff()) {
-            hisFracMatchStubsOnTracks_[tName]->Fill( trk.getPurity() );
+	const vector<const Stub*> stubs = trk.getStubs();
+	for (const Stub* s : stubs) {
+	  // Was this stub produced by correct truth particle?
+	  const set<const TP*> stubTPs = s->assocTPs();
+	  bool trueStub = (stubTPs.find(tp) != stubTPs.end());
 
-            const vector<const Stub*> stubs = trk.getStubs();
-            for (const Stub* s : stubs) {
-	      // Was this stub produced by correct truth particle?
-	      const set<const TP*> stubTPs = s->assocTPs();
-	      bool trueStub = (stubTPs.find(tp) != stubTPs.end());
+	  // Fraction of wrong stubs vs. tracker layer.
+	  profFracTrueStubsVsLayer_[tName]->Fill(s->layerId(), trueStub);
 
-	      // Fraction of wrong stubs vs. tracker layer.
-	      profFracTrueStubsVsLayer_[tName]->Fill(s->layerId(), trueStub);
-
-	      // Check how much stub bend differs from predicted one, relative to nominal bend resolution.
-	      float diffBend = (s->qOverPt() - trk.qOverPt()) / s->qOverPtOverBend();
-	      if (trueStub) {
-		hisDeltaBendTrue_[tName]->Fill(diffBend/s->bendRes());
-	      } else {
-		hisDeltaBendFake_[tName]->Fill(diffBend/s->bendRes());
-	      }
-
-	      // Debug printout to understand for matched tracks, how far stubs lie from true particle trajectory
-	      // Only prints for tracks with huge number of stubs, to also understand why these tracks exist.
-	      //if (trk.getNumStubs() > 20) { 
-	      /*
-	      if (trk.pt() > 20) { 
-		cout<<"--- Checking how far stubs on matched tracks lie from true particle trajectory. ---"<<endl;
-		cout<<"    Track "<<trk.getPurity()<<" "<<tp->pt()<<" "<<tp->d0()<<endl;
-		float sigPhiR = deltaPhiR/s->sigmaPerp();
-		float sigRorZ = deltaRorZ/s->sigmaPar();
-		string ohoh =  (fabs(sigPhiR) > 5 || fabs(sigRorZ) > 5)  ?  "FAR"  :  "NEAR";
-		if (trueStub) {
-		  cout<<"    Real stub "<<ohoh<<" ps="<<s->psModule()<<" bar="<<s->barrel()<<" lay="<<s->layerId()<<" : phi="<<deltaPhiR<<" ("<<sigPhiR<<") rz="<<deltaRorZ<<" ("<<sigRorZ<<")"<<endl;
-		} else {
-		  cout<<"    FAKE stub "<<ohoh<<" ps="<<s->psModule()<<" bar="<<s->barrel()<<" lay="<<s->layerId()<<" : phi="<<deltaPhiR<<" ("<<sigPhiR<<") rz="<<deltaRorZ<<" ("<<sigRorZ<<")"<<endl; 
-		}
-		cout<<"        coords="<<s->r()<<" "<<s->phi()<<" "<<s->eta()<<" bend="<<s->bend()<<" iphi="<<s->iphi()<<endl;
-		cout<<"        module="<<s->minR()<<" "<<s->minPhi()<<" "<<s->minZ()<<endl;
-	      }
-	      */
-	    }
+	  // Check how much stub bend differs from predicted one, relative to nominal bend resolution.
+	  float diffBend = (s->qOverPt() - trk.qOverPt()) / s->qOverPtOverBend();
+	  if (trueStub) {
+	    hisDeltaBendTrue_[tName]->Fill(diffBend/s->bendRes());
+	  } else {
+	    hisDeltaBendFake_[tName]->Fill(diffBend/s->bendRes());
 	  }
+
+	  // Debug printout to understand for matched tracks, how far stubs lie from true particle trajectory
+	  // Only prints for tracks with huge number of stubs, to also understand why these tracks exist.
+	  //if (trk.getNumStubs() > 20) { 
+	  /*
+	    if (trk.pt() > 20) { 
+	    cout<<"--- Checking how far stubs on matched tracks lie from true particle trajectory. ---"<<endl;
+	    cout<<"    Track "<<trk.getPurity()<<" "<<tp->pt()<<" "<<tp->d0()<<endl;
+	    float sigPhiR = deltaPhiR/s->sigmaPerp();
+	    float sigRorZ = deltaRorZ/s->sigmaPar();
+	    string ohoh =  (fabs(sigPhiR) > 5 || fabs(sigRorZ) > 5)  ?  "FAR"  :  "NEAR";
+	    if (trueStub) {
+	    cout<<"    Real stub "<<ohoh<<" ps="<<s->psModule()<<" bar="<<s->barrel()<<" lay="<<s->layerId()<<" : phi="<<deltaPhiR<<" ("<<sigPhiR<<") rz="<<deltaRorZ<<" ("<<sigRorZ<<")"<<endl;
+	    } else {
+	    cout<<"    FAKE stub "<<ohoh<<" ps="<<s->psModule()<<" bar="<<s->barrel()<<" lay="<<s->layerId()<<" : phi="<<deltaPhiR<<" ("<<sigPhiR<<") rz="<<deltaRorZ<<" ("<<sigRorZ<<")"<<endl; 
+	    }
+	    cout<<"        coords="<<s->r()<<" "<<s->phi()<<" "<<s->eta()<<" bend="<<s->bend()<<" iphi="<<s->iphi()<<endl;
+	    cout<<"        module="<<s->minR()<<" "<<s->minPhi()<<" "<<s->minZ()<<endl;
+	    }
+	  */
 	}
       }
     }
@@ -1345,19 +1418,28 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
       bool tpRecoedInEtaSec = false;
       for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-        const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 
-	// Get reconstructed tracks in this sector corresponding to this TP.
-	const vector<const L1track3D*> trks = get3Dtrk.assocTrackCands3D( tp, withRZfilter );
+	vector<const L1track3D*> matchedTrks;
+        for (const L1track3D& trk : tracks) {  
+	  if (trk.iPhiSec() == iPhiSec && trk.iEtaReg() == iEtaReg) {
+	    const TP* tpAssoc = trk.getMatchedTP();
+	    if (tpAssoc != nullptr) {
+	      if (tpAssoc->index() == tp.index()) matchedTrks.push_back(&trk);
+	    }
+	  }
+	}
+
 	// Count them
-	unsigned int nTrk = trks.size(); 
+	unsigned int nTrk = matchedTrks.size(); 
         if (nTrk > 0) {
 	  tpRecoed = true;            // This TP was reconstructed at least once in tracker.
 	  tpRecoedInEtaSec = true;    // This TP was reconstructed at least once in this eta sector.
           nSecsMatchingTPs += 1;      // Increment sum by no. of sectors this TP was reconstructed in
   	  nTrksMatchingTPs += nTrk;   // Increment sum by no. of tracks this TP was reconstructed as
-          profDupTracksVsEta_[tName]->Fill(fabs(tp.eta()), nTrk - 1); // Study duplication of tracks within an individual HT array.
-          profDupTracksVsInvPt_[tName]->Fill(fabs(tp.qOverPt()), nTrk - 1); // Study duplication of tracks within an individual HT array.
+	  if (TMTT) {
+            profDupTracksVsEta_[tName]->Fill(fabs(tp.eta()), nTrk - 1); // Study duplication of tracks within an individual HT array.
+            profDupTracksVsInvPt_[tName]->Fill(fabs(tp.qOverPt()), nTrk - 1); // Study duplication of tracks within an individual HT array.
+	  }
         }
       }
       if (tpRecoedInEtaSec) nEtaSecsMatchingTPs++; // Increment each time TP found in an eta sector.
@@ -1384,19 +1466,11 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
   profNumTrackCands_[tName]->Fill(2.0, nTrksMatchingTPs);
 
   // Histos of track helix params.
-  for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-
-      // Loop over all reconstructed tracks in this sector
-      const vector<L1track3D>& vecTrk3D = get3Dtrk.trackCands3D(withRZfilter);
-      for (const L1track3D& trk : vecTrk3D) {
-	hisQoverPt_[tName]->Fill(trk.qOverPt());
-	hisPhi0_[tName]->Fill(trk.phi0());
-	hisEta_[tName]->Fill(trk.eta());
-	hisZ0_[tName]->Fill(trk.z0());
-      }
-    }
+  for (const L1track3D& trk : tracks) {
+    hisQoverPt_[tName]->Fill(trk.qOverPt());
+    hisPhi0_[tName]->Fill(trk.phi0());
+    hisEta_[tName]->Fill(trk.eta());
+    hisZ0_[tName]->Fill(trk.z0());
   }
 
   // Histos of track parameter resolution
@@ -1406,23 +1480,21 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     if ((resPlotOpt_ && tp.useForAlgEff()) || (not resPlotOpt_)) { // Check TP is good for efficiency measurement (& also comes from signal event if requested)
 
       // For each tracking particle, find the corresponding reconstructed track(s).
-      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-          const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+      for (const L1track3D& trk : tracks) {
+	const TP* tpAssoc = trk.getMatchedTP();
+	if (tpAssoc != nullptr) {
+	  if (tpAssoc->index() == tp.index()) {
+	    hisQoverPtRes_[tName]->Fill(trk.qOverPt() - tp.qOverPt());
+	    hisPhi0Res_[tName]->Fill(reco::deltaPhi(trk.phi0(), tp.phi0()));
+	    hisEtaRes_[tName]->Fill(trk.eta() - tp.eta());
+	    hisZ0Res_[tName]->Fill(trk.z0() - tp.z0());
 
-  	  const vector<const L1track3D*> trkVec = get3Dtrk.assocTrackCands3D( tp, withRZfilter );
-	  for (const L1track3D* trk : trkVec) {
-	    hisQoverPtRes_[tName]->Fill(trk->qOverPt() - tp.qOverPt());
-	    hisPhi0Res_[tName]->Fill(reco::deltaPhi(trk->phi0(), tp.phi0()));
-	    hisEtaRes_[tName]->Fill(trk->eta() - tp.eta());
-	    hisZ0Res_[tName]->Fill(trk->z0() - tp.z0());
-
-	    hisRecoVsTrueQinvPt_[tName]->Fill( tp.qOverPt(), trk->qOverPt() );
-	    hisRecoVsTruePhi0_[tName]->Fill( tp.phi0(), trk->phi0( ));
-	    hisRecoVsTrueD0_[tName]->Fill( tp.d0(), trk->d0() );
-	    hisRecoVsTrueZ0_[tName]->Fill( tp.z0(), trk->z0() );
-	    hisRecoVsTrueEta_[tName]->Fill( tp.eta(), trk->eta() );
-          }
+	    hisRecoVsTrueQinvPt_[tName]->Fill( tp.qOverPt(), trk.qOverPt() );
+	    hisRecoVsTruePhi0_[tName]->Fill( tp.phi0(), trk.phi0( ));
+	    hisRecoVsTrueD0_[tName]->Fill( tp.d0(), trk.d0() );
+	    hisRecoVsTrueZ0_[tName]->Fill( tp.z0(), trk.z0() );
+	    hisRecoVsTrueEta_[tName]->Fill( tp.eta(), trk.eta() );
+	  }
 	}
       }
     }
@@ -1447,52 +1519,15 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
 	if (sectorTmp.insideEtaReg(tp)) iEtaReg_TP = iEtaReg;
       }
 
-      // Plot kinematics of all good TP.
-      hisTPinvptForEff_[tName]->Fill(1./tp.pt());
-      hisTPptForEff_[tName]->Fill(tp.pt());
-      hisTPetaForEff_[tName]->Fill(tp.eta());
-      hisTPphiForEff_[tName]->Fill(tp.phi0());
-      // Plot also production point of all good TP.
-      hisTPd0ForEff_[tName]->Fill(fabs(tp.d0()));
-      hisTPz0ForEff_[tName]->Fill(fabs(tp.z0()));
-
-      if (tp.useForAlgEff()) { // Check TP is good for algorithmic efficiency measurement.
-        hisTPinvptForAlgEff_[tName]->Fill(1./tp.pt());
-        hisTPptForAlgEff_[tName]->Fill(tp.pt());
-        hisTPetaForAlgEff_[tName]->Fill(tp.eta());
-        hisTPphiForAlgEff_[tName]->Fill(tp.phi0());
-	// Plot also production point of all good TP.
-        hisTPd0ForAlgEff_[tName]->Fill(fabs(tp.d0()));
-        hisTPz0ForAlgEff_[tName]->Fill(fabs(tp.z0()));
-	// Plot sector nunber.
-        hisTPphisecForAlgEff_[tName]->Fill(iPhiSec_TP);
-        hisTPetasecForAlgEff_[tName]->Fill(iEtaReg_TP);
-
-        // Plot 1/pt for TPs inside a jet
-        if ( tp.tpInJet() ) {
-          hisTPinvptForAlgEff_inJetPtG30_[tName]->Fill(1./tp.pt());
-        }
-        if ( tp.tpInHighPtJet() ) {
-          hisTPinvptForAlgEff_inJetPtG100_[tName]->Fill(1./tp.pt());           
-        }
-        if ( tp.tpInVeryHighPtJet() ) {
-          hisTPinvptForAlgEff_inJetPtG200_[tName]->Fill(1./tp.pt());           
-        }
-      }
-
       // Check if this TP was reconstructed anywhere in the tracker..
       bool tpRecoed = false;
       bool tpRecoedPerfect = false;
-      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-          const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-  	  const vector<const L1track3D*> assTrkVec = get3Dtrk.assocTrackCands3D( tp, withRZfilter );
-	  if (assTrkVec.size() > 0) {
+      for (const L1track3D& trk : tracks) {
+	const TP* tpAssoc = trk.getMatchedTP();
+	if (tpAssoc != nullptr) {
+	  if (tpAssoc->index() == tp.index()) {
 	    tpRecoed = true;
-	    // Also note if TP was reconstructed perfectly (no incorrect hits on reco track).
-	    for (const L1track3D* assTrk : assTrkVec) {
-	      if (assTrk->getPurity() == 1.) tpRecoedPerfect = true; 
-	    }
+	    if (trk.getPurity() == 1.) tpRecoedPerfect = true; 
 	  }
 	}
       }
@@ -1548,10 +1583,12 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     }
   }
 
-  // Diagnose reason why not all viable tracking particles were reconstructed.
-  const map<const TP*, string> diagnosis = this->diagnoseTracking(inputData.getTPs(), mGet3Dtrks, withRZfilter);
-  for (const auto& iter: diagnosis) {
-    hisRecoFailureReason_[tName]->Fill(iter.second.c_str(), 1.); // Stores flag indicating failure reason.
+  if (TMTT) {
+    // Diagnose reason why not all viable tracking particles were reconstructed.
+    const map<const TP*, string> diagnosis = this->diagnoseTracking(inputData.getTPs(), tracks, withRZfilter);
+    for (const auto& iter: diagnosis) {
+      hisRecoFailureReason_[tName]->Fill(iter.second.c_str(), 1.); // Stores flag indicating failure reason.
+    }
   }
 }
 
@@ -1562,7 +1599,7 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
 // (If string = "mystery", reason for loss unknown. This may be a result of reconstruction of one 
 // track candidate preventing reconstruction of another. e.g. Due to duplicate track removal).
 
-map<const TP*, string> Histos::diagnoseTracking(const vector<TP>& allTPs, const matrix<Get3Dtracks> mGet3Dtrks, 
+map<const TP*, string> Histos::diagnoseTracking(const vector<TP>& allTPs, const vector<L1track3D>& tracks, 
 						bool withRZfilter) const 
 {
   map<const TP*, string> diagnosis;
@@ -1575,10 +1612,10 @@ map<const TP*, string> Histos::diagnoseTracking(const vector<TP>& allTPs, const 
 
       //--- Check if this TP was reconstructed anywhere in the tracker..
       bool tpRecoed = false;
-      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-          const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-	  if (get3Dtrk.assocTrackCands3D( tp, withRZfilter ).size() > 0) tpRecoed = true;
+      for (const L1track3D& trk : tracks) {
+	const TP* tpAssoc = trk.getMatchedTP();
+	if (tpAssoc != nullptr) {
+	  if (tpAssoc->index() == tp.index()) tpRecoed = true;
 	}
       }
 
@@ -1787,7 +1824,7 @@ map<const TP*, string> Histos::diagnoseTracking(const vector<TP>& allTPs, const 
 
 //=== Book histograms studying freak, large events with too many stubs.
 
-void Histos::bookStudyBusyEvents() {
+TFileDirectory Histos::bookStudyBusyEvents() {
 
   TFileDirectory inputDir = fs_->mkdir("BusyEvents");
 
@@ -1826,12 +1863,14 @@ void Histos::bookStudyBusyEvents() {
     hisSumPtTPphysics_[tn]    = inputDir.make<TH1F>(("SumPtTPphysics"+(tn)).c_str(),    ("; Sum Pt physics TP"+(en)).c_str(), 100,  0.0, 100.);
     hisSumPtTPpileup_[tn]     = inputDir.make<TH1F>(("SumPtTPpileup"+(tn)).c_str(),     ("; Sum Pt pileup TP"+(en)).c_str(),  100,  0.0, 100.);
   }
+
+  return inputDir;
 }
 
 //=== Fill histograms studying freak, large events with too many stubs at HT.
 
 void Histos::fillStudyBusyEvents(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtRphis, 
-                		 const matrix<Get3Dtracks> mGet3Dtrks) {
+                		 const matrix<Get3Dtracks>& mGet3Dtrks) {
 
   const bool withRZfilter = false; // Care about events at HT.
 
@@ -2006,12 +2045,14 @@ void Histos::fillStudyBusyEvents(const InputData& inputData, const matrix<Sector
 
 //=== Book histograms for studying track fitting.
 
-void Histos::bookTrackFitting() {
+map<string, TFileDirectory> Histos::bookTrackFitting() {
  
   const float maxEta = settings_->maxStubEta();
   const float maxAbsQoverPt = 1./houghMinPt_; // Max. |q/Pt| covered by  HT array.
  
   // Book histograms for 4 and 5 parameter helix fits.
+
+  map<string, TFileDirectory> inputDirMap;
 
   for (const string& fitName : trackFitters_ ) {
 
@@ -2020,6 +2061,7 @@ void Histos::bookTrackFitting() {
 
     //std::cout << "Booking histograms for " << fitName << std::endl;
     TFileDirectory inputDir = fs_->mkdir( fitName );
+    inputDirMap[fitName] = inputDir;
  
     profNumFitTracks_[fitName] = inputDir.make<TProfile>(addn("NumFitTracks"), "; class; # of fitted tracks", 11, 0.5, 11.5, -0.5, 9.9e6);
     profNumFitTracks_[fitName]->GetXaxis()->SetBinLabel(7, "TP for eff fitted");
@@ -2218,6 +2260,8 @@ void Histos::bookTrackFitting() {
     hisPerfFitTPphisecForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPphisecForAlgEff") ,"; #phi sector of TP (used for perf. alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
     hisPerfFitTPetasecForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPetasecForAlgEff") ,"; #eta sector of TP (used for perf. alg. effi. measurement);",nEta,-0.5,nEta-0.5);
   }
+
+  return inputDirMap;
 }
 
 //=== Fill histograms for studying track fitting.
@@ -2745,159 +2789,155 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
 
 //=== Produce plots of tracking efficiency after HT or after r-z track filter (run at end of job).
 
-void Histos::plotTrackEfficiency(bool withRZfilter) {
-
-  string tName = withRZfilter  ?  "RZ"  :  "HT";
+TFileDirectory Histos::plotTrackEfficiency(string tName) {
 
   // Define lambda function to facilitate adding "tName" to directory & histogram names.
   auto addn = [tName](string s){ return TString::Format("%s_%s", s.c_str(), tName.c_str()); };
 
-  // Histograms of input truth particles (e.g. hisTPinvptForEff_), used for denominator of efficiencies, are identical, 
-  // irrespective of whether made after HT or after r-z track filter, so always use the former.
-
   TFileDirectory inputDir = fs_->mkdir(addn("Effi").Data());
   // Plot tracking efficiency
-  makeEfficiencyPlot(inputDir, teffEffVsInvPt_[tName], hisRecoTPinvptForEff_[tName], hisTPinvptForEff_["HT"],
+  makeEfficiencyPlot(inputDir, teffEffVsInvPt_[tName], hisRecoTPinvptForEff_[tName], hisTPinvptForEff_,
 		     addn("EffVsInvPt"), "; 1/Pt; Tracking efficiency" );
-  makeEfficiencyPlot(inputDir, teffEffVsPt_[tName], hisRecoTPptForEff_[tName], hisTPptForEff_["HT"],
+  makeEfficiencyPlot(inputDir, teffEffVsPt_[tName], hisRecoTPptForEff_[tName], hisTPptForEff_,
 		     addn("EffVsPt"), "; Pt; Tracking efficiency" );
-  makeEfficiencyPlot(inputDir, teffEffVsEta_[tName], hisRecoTPetaForEff_[tName], hisTPetaForEff_["HT"],
+  makeEfficiencyPlot(inputDir, teffEffVsEta_[tName], hisRecoTPetaForEff_[tName], hisTPetaForEff_,
 		     addn("EffVsEta"), "; #eta; Tracking efficiency" );
 
   // std::cout << "Made first graph" << std::endl;
-  // graphEffVsEta_[tName] = inputDir.make<TGraphAsymmErrors>(hisRecoTPetaForEff_[tName], hisTPetaForEff_["HT"]);
+  // graphEffVsEta_[tName] = inputDir.make<TGraphAsymmErrors>(hisRecoTPetaForEff_[tName], hisTPetaForEff_);
   // graphEffVsEta_[tName]->SetNameTitle("EffVsEta","; #eta; Tracking efficiency");
-  makeEfficiencyPlot(inputDir, teffEffVsPhi_[tName], hisRecoTPphiForEff_[tName], hisTPphiForEff_["HT"],
+  makeEfficiencyPlot(inputDir, teffEffVsPhi_[tName], hisRecoTPphiForEff_[tName], hisTPphiForEff_,
 		     addn("EffVsPhi"), "; #phi; Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffEffVsD0_[tName], hisRecoTPd0ForEff_[tName], hisTPd0ForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffVsD0_[tName], hisRecoTPd0ForEff_[tName], hisTPd0ForEff_, 
 		      addn("EffVsD0"),"; d0 (cm); Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffEffVsZ0_[tName], hisRecoTPz0ForEff_[tName], hisTPz0ForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffVsZ0_[tName], hisRecoTPz0ForEff_[tName], hisTPz0ForEff_, 
 		      addn("EffVsZ0"),"; z0 (cm); Tracking efficiency");
 
   // Also plot efficiency to reconstruct track perfectly.
-  makeEfficiencyPlot( inputDir, teffPerfEffVsInvPt_[tName], hisPerfRecoTPinvptForEff_[tName], hisTPinvptForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffPerfEffVsInvPt_[tName], hisPerfRecoTPinvptForEff_[tName], hisTPinvptForEff_, 
 		      addn("PerfEffVsInvPt"),"; 1/Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfEffVsPt_[tName], hisPerfRecoTPptForEff_[tName], hisTPptForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffPerfEffVsPt_[tName], hisPerfRecoTPptForEff_[tName], hisTPptForEff_, 
 		      addn("PerfEffVsPt"),"; Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfEffVsEta_[tName], hisPerfRecoTPetaForEff_[tName], hisTPetaForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffPerfEffVsEta_[tName], hisPerfRecoTPetaForEff_[tName], hisTPetaForEff_, 
 		      addn("PerfEffVsEta"),"; #eta; Tracking perfect efficiency");
 
   // Plot algorithmic tracking efficiency
-  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_[tName], hisRecoTPinvptForAlgEff_[tName], hisTPinvptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_[tName], hisRecoTPinvptForAlgEff_[tName], hisTPinvptForAlgEff_,
 		      addn("AlgEffVsInvPt"),"; 1/Pt; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffVsPt_[tName], hisRecoTPptForAlgEff_[tName], hisTPptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffVsPt_[tName], hisRecoTPptForAlgEff_[tName], hisTPptForAlgEff_,
 		      addn("AlgEffVsPt"),"; Pt; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffVsEta_[tName], hisRecoTPetaForAlgEff_[tName], hisTPetaForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffVsEta_[tName], hisRecoTPetaForAlgEff_[tName], hisTPetaForAlgEff_, 
 		      addn("AlgEffVsEta"),"; #eta; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffVsPhi_[tName], hisRecoTPphiForAlgEff_[tName], hisTPphiForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffVsPhi_[tName], hisRecoTPphiForAlgEff_[tName], hisTPphiForAlgEff_, 
 		      addn("AlgEffVsPhi"),"; #phi; Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffAlgEffVsD0_[tName], hisRecoTPd0ForAlgEff_[tName], hisTPd0ForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffVsD0_[tName], hisRecoTPd0ForAlgEff_[tName], hisTPd0ForAlgEff_, 
 		      addn("AlgEffVsD0"),"; d0 (cm); Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffVsZ0_[tName], hisRecoTPz0ForAlgEff_[tName], hisTPz0ForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffVsZ0_[tName], hisRecoTPz0ForAlgEff_[tName], hisTPz0ForAlgEff_, 
 		      addn("AlgEffVsZ0"),"; z0 (cm); Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffAlgEffVsPhiSec_[tName], hisRecoTPphisecForAlgEff_[tName], hisTPphisecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffVsPhiSec_[tName], hisRecoTPphisecForAlgEff_[tName], hisTPphisecForAlgEff_,
 		      addn("AlgEffVsPhiSec"),"; #phi sector; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffVsEtaSec_[tName], hisRecoTPetasecForAlgEff_[tName], hisTPetasecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffVsEtaSec_[tName], hisRecoTPetasecForAlgEff_[tName], hisTPetasecForAlgEff_,
 		      addn("AlgEffVsEtaSec"),"; #eta sector; Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_inJetPtG30_[tName], hisRecoTPinvptForAlgEff_inJetPtG30_[tName], hisTPinvptForAlgEff_inJetPtG30_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_inJetPtG30_[tName], hisRecoTPinvptForAlgEff_inJetPtG30_[tName], hisTPinvptForAlgEff_inJetPtG30_,
           addn("AlgEffVsInvPt_inJetPtG30"),"; 1/Pt; Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_inJetPtG100_[tName], hisRecoTPinvptForAlgEff_inJetPtG100_[tName], hisTPinvptForAlgEff_inJetPtG100_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_inJetPtG100_[tName], hisRecoTPinvptForAlgEff_inJetPtG100_[tName], hisTPinvptForAlgEff_inJetPtG100_,
           addn("AlgEffVsInvPt_inJetPtG100"),"; 1/Pt; Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_inJetPtG200_[tName], hisRecoTPinvptForAlgEff_inJetPtG200_[tName], hisTPinvptForAlgEff_inJetPtG200_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffVsInvPt_inJetPtG200_[tName], hisRecoTPinvptForAlgEff_inJetPtG200_[tName], hisTPinvptForAlgEff_inJetPtG200_,
           addn("AlgEffVsInvPt_inJetPtG200"),"; 1/Pt; Tracking efficiency");
 
   // Also plot algorithmic efficiency to reconstruct track perfectly.
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsInvPt_[tName], hisPerfRecoTPinvptForAlgEff_[tName], hisTPinvptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsInvPt_[tName], hisPerfRecoTPinvptForAlgEff_[tName], hisTPinvptForAlgEff_,
 		      addn("PerfAlgEffVsInvPt"),"; 1/Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsPt_[tName], hisPerfRecoTPptForAlgEff_[tName], hisTPptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsPt_[tName], hisPerfRecoTPptForAlgEff_[tName], hisTPptForAlgEff_,
 		      addn("PerfAlgEffVsPt"),"; Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsEta_[tName], hisPerfRecoTPetaForAlgEff_[tName], hisTPetaForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsEta_[tName], hisPerfRecoTPetaForAlgEff_[tName], hisTPetaForAlgEff_,
 		      addn("PerfAlgEffVsEta"),"; #eta; Tracking perfect efficiency");
 
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsPhiSec_[tName], hisPerfRecoTPphisecForAlgEff_[tName], hisTPphisecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsPhiSec_[tName], hisPerfRecoTPphisecForAlgEff_[tName], hisTPphisecForAlgEff_,
 		      addn("PerfAlgEffVsPhiSec"),"; #phi sector; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsEtaSec_[tName], hisPerfRecoTPetasecForAlgEff_[tName], hisTPetasecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffVsEtaSec_[tName], hisPerfRecoTPetasecForAlgEff_[tName], hisTPetasecForAlgEff_,
 		      addn("PerfAlgEffVsEtaSec"),"; #eta sector; Tracking perfect efficiency");
+
+  return inputDir;
 }
 
 //=== Produce plots of tracking efficiency after track fit (run at end of job).
 
-void Histos::plotTrackEffAfterFit(string fitName) {
+TFileDirectory Histos::plotTrackEffAfterFit(string fitName) {
 
   // Define lambda function to facilitate adding "fitName" to directory & histogram names.
   auto addn = [fitName](string s){ return TString::Format("%s_%s", s.c_str(), fitName.c_str()); };
 
-  // Histograms of input truth particles (e.g. hisTPinvptForEff_), used for denominator of efficiencies, are identical, 
-  // irrespective of whether made after HT or after r-z track filter, so always use the former.
-
   TFileDirectory inputDir = fs_->mkdir(addn("Effi").Data());
   // Plot tracking efficiency
-  makeEfficiencyPlot( inputDir, teffEffFitVsInvPt_[fitName], hisFitTPinvptForEff_[fitName], hisTPinvptForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffFitVsInvPt_[fitName], hisFitTPinvptForEff_[fitName], hisTPinvptForEff_, 
 		      addn("EffFitVsInvPt"),"; 1/Pt; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffEffFitVsPt_[fitName], hisFitTPptForEff_[fitName], hisTPptForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffFitVsPt_[fitName], hisFitTPptForEff_[fitName], hisTPptForEff_, 
 		      addn("EffFitVsPt"),"; Pt; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffEffFitVsEta_[fitName], hisFitTPetaForEff_[fitName], hisTPetaForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffFitVsEta_[fitName], hisFitTPetaForEff_[fitName], hisTPetaForEff_, 
 		      addn("EffFitVsEta"),"; #eta; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffEffFitVsPhi_[fitName], hisFitTPphiForEff_[fitName], hisTPphiForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffFitVsPhi_[fitName], hisFitTPphiForEff_[fitName], hisTPphiForEff_, 
 		      addn("EffFitVsPhi"),"; #phi; Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffEffFitVsD0_[fitName], hisFitTPd0ForEff_[fitName], hisTPd0ForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffFitVsD0_[fitName], hisFitTPd0ForEff_[fitName], hisTPd0ForEff_, 
 		      addn("EffFitVsD0"),"; d0 (cm); Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffEffFitVsZ0_[fitName], hisFitTPz0ForEff_[fitName], hisTPz0ForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffEffFitVsZ0_[fitName], hisFitTPz0ForEff_[fitName], hisTPz0ForEff_, 
 		      addn("EffFitVsZ0"),"; z0 (cm); Tracking efficiency");
 
   // Also plot efficiency to reconstruct track perfectly.
-  makeEfficiencyPlot( inputDir, teffPerfEffFitVsInvPt_[fitName], hisPerfFitTPinvptForEff_[fitName], hisTPinvptForEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfEffFitVsInvPt_[fitName], hisPerfFitTPinvptForEff_[fitName], hisTPinvptForEff_,
 		      addn("PerfEffFitVsInvPt"),"; 1/Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfEffFitVsPt_[fitName], hisPerfFitTPptForEff_[fitName], hisTPptForEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfEffFitVsPt_[fitName], hisPerfFitTPptForEff_[fitName], hisTPptForEff_,
 		      addn("PerfEffFitVsPt"),"; Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfEffFitVsEta_[fitName], hisPerfFitTPetaForEff_[fitName], hisTPetaForEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffPerfEffFitVsEta_[fitName], hisPerfFitTPetaForEff_[fitName], hisTPetaForEff_, 
 		      addn("PerfEffFitVsEta"),"; #eta; Tracking perfect efficiency");
 
   // Plot algorithmic tracking efficiency
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsInvPt_[fitName], hisFitTPinvptForAlgEff_[fitName], hisTPinvptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsInvPt_[fitName], hisFitTPinvptForAlgEff_[fitName], hisTPinvptForAlgEff_,
 		      addn("AlgEffFitVsInvPt"),"; 1/Pt; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsPt_[fitName], hisFitTPptForAlgEff_[fitName], hisTPptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsPt_[fitName], hisFitTPptForAlgEff_[fitName], hisTPptForAlgEff_,
 		      addn("AlgEffFitVsPt"),"; Pt; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsEta_[fitName], hisFitTPetaForAlgEff_[fitName], hisTPetaForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsEta_[fitName], hisFitTPetaForAlgEff_[fitName], hisTPetaForAlgEff_, 
 		      addn("AlgEffFitVsEta"),"; #eta; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsPhi_[fitName], hisFitTPphiForAlgEff_[fitName], hisTPphiForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsPhi_[fitName], hisFitTPphiForAlgEff_[fitName], hisTPphiForAlgEff_, 
 		      addn("AlgEffFitVsPhi"),"; #phi; Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsD0_[fitName], hisFitTPd0ForAlgEff_[fitName], hisTPd0ForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsD0_[fitName], hisFitTPd0ForAlgEff_[fitName], hisTPd0ForAlgEff_, 
 		      addn("AlgEffFitVsD0"),"; d0 (cm); Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsZ0_[fitName], hisFitTPz0ForAlgEff_[fitName], hisTPz0ForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsZ0_[fitName], hisFitTPz0ForAlgEff_[fitName], hisTPz0ForAlgEff_, 
 		      addn("AlgEffFitVsZ0"),"; z0 (cm); Tracking efficiency");
 
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsPhiSec_[fitName], hisFitTPphisecForAlgEff_[fitName], hisTPphisecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsPhiSec_[fitName], hisFitTPphisecForAlgEff_[fitName], hisTPphisecForAlgEff_,
 		      addn("AlgEffFitVsPhiSec"),"; #phi sector; Tracking efficiency");
-  makeEfficiencyPlot( inputDir, teffAlgEffFitVsEtaSec_[fitName], hisFitTPetasecForAlgEff_[fitName], hisTPetasecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffAlgEffFitVsEtaSec_[fitName], hisFitTPetasecForAlgEff_[fitName], hisTPetasecForAlgEff_,
 		      addn("AlgEffFitVsEtaSec"),"; #eta sector; Tracking efficiency");
 
   // Also plot algorithmic efficiency to reconstruct track perfectly.
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_[fitName], hisPerfFitTPinvptForAlgEff_[fitName], hisTPinvptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_[fitName], hisPerfFitTPinvptForAlgEff_[fitName], hisTPinvptForAlgEff_,
 		      addn("PerfAlgEffFitVsInvPt"),"; 1/Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsPt_[fitName], hisPerfFitTPptForAlgEff_[fitName], hisTPptForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsPt_[fitName], hisPerfFitTPptForAlgEff_[fitName], hisTPptForAlgEff_,
 		      addn("PerfAlgEffFitVsPt"),"; Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsEta_[fitName], hisPerfFitTPetaForAlgEff_[fitName], hisTPetaForAlgEff_["HT"], 
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsEta_[fitName], hisPerfFitTPetaForAlgEff_[fitName], hisTPetaForAlgEff_, 
 		      addn("Perf AlgEffFitVsEta"),"; #eta; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_inJetPtG30_[fitName], hisPerfFitTPinvptForAlgEff_inJetPtG30_[fitName], hisTPinvptForAlgEff_inJetPtG30_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_inJetPtG30_[fitName], hisPerfFitTPinvptForAlgEff_inJetPtG30_[fitName], hisTPinvptForAlgEff_inJetPtG30_,
 		      addn("PerfAlgEffFitVsInvPt_inJetPtG30"),"; 1/Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_inJetPtG100_[fitName], hisPerfFitTPinvptForAlgEff_inJetPtG100_[fitName], hisTPinvptForAlgEff_inJetPtG100_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_inJetPtG100_[fitName], hisPerfFitTPinvptForAlgEff_inJetPtG100_[fitName], hisTPinvptForAlgEff_inJetPtG100_,
 		      addn("PerfAlgEffFitVsInvPt_inJetPtG100"),"; 1/Pt; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_inJetPtG200_[fitName], hisPerfFitTPinvptForAlgEff_inJetPtG200_[fitName], hisTPinvptForAlgEff_inJetPtG200_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsInvPt_inJetPtG200_[fitName], hisPerfFitTPinvptForAlgEff_inJetPtG200_[fitName], hisTPinvptForAlgEff_inJetPtG200_,
 		      addn("PerfAlgEffFitVsInvPt_inJetPtG200"),"; 1/Pt; Tracking perfect efficiency");
 
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsPhiSec_[fitName], hisPerfFitTPphisecForAlgEff_[fitName], hisTPphisecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsPhiSec_[fitName], hisPerfFitTPphisecForAlgEff_[fitName], hisTPphisecForAlgEff_,
 		      addn("PerfAlgEffFitVsPhiSec"),"; #phi sector; Tracking perfect efficiency");
-  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsEtaSec_[fitName], hisPerfFitTPetasecForAlgEff_[fitName], hisTPetasecForAlgEff_["HT"],
+  makeEfficiencyPlot( inputDir, teffPerfAlgEffFitVsEtaSec_[fitName], hisPerfFitTPetasecForAlgEff_[fitName], hisTPetasecForAlgEff_,
 		      addn("PerfAlgEffFitVsEtaSec"),"; #eta sector; Tracking perfect efficiency");
+
+  return inputDir;
 }
 
 void Histos::makeEfficiencyPlot( TFileDirectory &inputDir, TEfficiency* outputEfficiency, TH1F* pass, TH1F* all, TString name, TString title ) {
@@ -2907,11 +2947,9 @@ void Histos::makeEfficiencyPlot( TFileDirectory &inputDir, TEfficiency* outputEf
   outputEfficiency->SetTitle(title);
 }
 
-//=== Print summary of track-finding performance after HT or after r-z track filter.
+//=== Print summary of track-finding performance after track pattern reco.
 
-void Histos::printTrackPerformance(bool withRZfilter) {
-
-  string tName = withRZfilter  ?  "RZ"  :  "HT";
+void Histos::printTrackPerformance(string tName) {
 
   float numTrackCands = profNumTrackCands_[tName]->GetBinContent(1); // No. of track cands
   float numTrackCandsErr = profNumTrackCands_[tName]->GetBinError(1); // No. of track cands uncertainty
@@ -2927,7 +2965,7 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   unsigned int numRecoTPforAlg = hisRecoTPinvptForAlgEff_[tName]->GetEntries();
   // Histograms of input truth particles (e.g. hisTPinvptForAlgEff_), used for denominator of efficiencies, are identical, 
   // irrespective of whether made after HT or after r-z track filter, so always use the former.
-  unsigned int numTPforAlg     = hisTPinvptForAlgEff_["HT"]->GetEntries();
+  unsigned int numTPforAlg     = hisTPinvptForAlgEff_->GetEntries();
   unsigned int numPerfRecoTPforAlg = hisPerfRecoTPinvptForAlgEff_[tName]->GetEntries();
   float algEff = float(numRecoTPforAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
   float algEffErr = sqrt(algEff*(1-algEff)/(numTPforAlg + 1.0e-6)); // uncertainty
@@ -2938,10 +2976,12 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   cout.precision(4);
 
   cout<<"========================================================================="<<endl;
-  if (withRZfilter) {
+  if (tName == "HT") {
     cout<<"               TRACK-FINDING SUMMARY AFTER R-Z TRACK FILTER            "<<endl;
-  } else {
+  } else if (tName == "RZ") {
     cout<<"               TRACK-FINDING SUMMARY AFTER HOUGH TRANSFORM             "<<endl;
+  } else if (tName == "TRACKLET") {
+    cout<<"               TRACK-FINDING SUMMARY AFTER TRACKLET PATTERN RECO       "<<endl;
   }
   cout<<"Number of track candidates found per event = "<<numTrackCands<<" +- "<<numTrackCandsErr<<endl;
   cout<<"                     with mean stubs/track = "<<meanStubsPerTrack<<endl; 
@@ -2969,7 +3009,7 @@ void Histos::printFitTrackPerformance(string fitName) {
   unsigned int numFitTPforAlg = hisFitTPinvptForAlgEff_[fitName]->GetEntries();
   // Histograms of input truth particles (e.g. hisTPinvptForAlgEff_), used for denominator of efficiencies, are identical, 
   // irrespective of whether made after HT or after r-z track filter, so always use the former.
-  unsigned int numTPforAlg     = hisTPinvptForAlgEff_["HT"]->GetEntries();
+  unsigned int numTPforAlg     = hisTPinvptForAlgEff_->GetEntries();
   unsigned int numPerfFitTPforAlg = hisPerfFitTPinvptForAlgEff_[fitName]->GetEntries();
   float fitEff = float(numFitTPforAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
   float fitEffErr = sqrt(fitEff*(1-fitEff)/(numTPforAlg + 1.0e-6)); // uncertainty
@@ -3003,11 +3043,19 @@ void Histos::endJobAnalysis() {
   // Don't bother producing summary if user didn't request histograms via TFileService in their cfg.
   if ( ! this->enabled() ) return;
 
-  // Produce plots of tracking efficiency using track candidates found after HT.
-  this->plotTrackEfficiency(false);
+  if (settings_->hybrid()) {
 
-  // Optionally produce plots of tracking efficiency using track candidates found after r-z track filter.
-  if (ranRZfilter_) this->plotTrackEfficiency(true);
+    // Produce plots of tracking efficieny after tracklet pattern reco.
+    this->plotTrackEfficiency("TRACKLET");
+
+  } else {
+
+    // Produce plots of tracking efficiency using track candidates found after HT.
+    this->plotTrackEfficiency("HT");
+
+    // Optionally produce plots of tracking efficiency using track candidates found after r-z track filter.
+    if (ranRZfilter_) this->plotTrackEfficiency("RZ");
+  }
 
   // Produce more plots of tracking efficiency using track candidates after track fit.
   for (auto &fitName : trackFitters_) {
@@ -3083,10 +3131,15 @@ void Histos::endJobAnalysis() {
   }
   cout<<endl;
 
-  //--- Print summary of track-finding performance after HT
-  this->printTrackPerformance(false);
-  //--- Optionally print summary of track-finding performance after r-z track filter.
-  if (ranRZfilter_) this->printTrackPerformance(true);
+  if (settings_->hybrid()) {
+    //--- Print summary of tracklet pattern reco
+    this->printTrackPerformance("TRACKLET");
+  } else {
+    //--- Print summary of track-finding performance after HT
+    this->printTrackPerformance("HT");
+    //--- Optionally print summary of track-finding performance after r-z track filter.
+    if (ranRZfilter_) this->printTrackPerformance("RZ");
+  }
 
   //--- Print summary of track-finding performance after helix fit, for each track fitting algorithm used.
   for (const string& fitName : trackFitters_) {
@@ -3094,23 +3147,25 @@ void Histos::endJobAnalysis() {
   }
   cout << "=========================================================================" << endl;
 
-  // Check that stub filling was consistent with known limitations of firmware design.
+  if (not settings_->hybrid()) {
+    // Check that stub filling was consistent with known limitations of HT firmware design.
 
-  cout<<endl<<"Max. |gradients| of stub lines in HT array is: r-phi = "<<HTrphi::maxLineGrad()<<endl;
+    cout<<endl<<"Max. |gradients| of stub lines in HT array is: r-phi = "<<HTrphi::maxLineGrad()<<endl;
 
-  if (HTrphi::maxLineGrad() > 1.) {
+    if (HTrphi::maxLineGrad() > 1.) {
 
-    cout<<"WARNING: Line |gradient| exceeds 1, which firmware will not be able to cope with! Please adjust HT array size to avoid this."<<endl;
+      cout<<"WARNING: Line |gradient| exceeds 1, which firmware will not be able to cope with! Please adjust HT array size to avoid this."<<endl;
 
-  } else if (HTrphi::fracErrorsTypeA() > 0.) {
+    } else if (HTrphi::fracErrorsTypeA() > 0.) {
 
-    cout<<"WARNING: Despite line gradients being less than one, some fraction of HT columns have filled cells with no filled neighbours in W, SW or NW direction. Firmware will object to this! ";
-    cout<<"This fraction = "<<HTrphi::fracErrorsTypeA()<<" for r-phi HT"<<endl; 
+      cout<<"WARNING: Despite line gradients being less than one, some fraction of HT columns have filled cells with no filled neighbours in W, SW or NW direction. Firmware will object to this! ";
+      cout<<"This fraction = "<<HTrphi::fracErrorsTypeA()<<" for r-phi HT"<<endl; 
 
-  } else if (HTrphi::fracErrorsTypeB() > 0.) {
+    } else if (HTrphi::fracErrorsTypeB() > 0.) {
 
-    cout<<"WARNING: Despite line gradients being less than one, some fraction of HT columns recorded individual stubs being added to more than two cells! Thomas firmware will object to this! "; 
-    cout<<"This fraction = "<<HTrphi::fracErrorsTypeB()<<" for r-phi HT"<<endl;   
+      cout<<"WARNING: Despite line gradients being less than one, some fraction of HT columns recorded individual stubs being added to more than two cells! Thomas firmware will object to this! "; 
+      cout<<"This fraction = "<<HTrphi::fracErrorsTypeB()<<" for r-phi HT"<<endl;   
+    }
   }
 
   // Check for presence of common MC bug.

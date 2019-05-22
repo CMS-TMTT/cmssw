@@ -11,6 +11,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/HTrphi.h"
 
 #include <vector>
+#include <string>
 #include <utility>
 
 using namespace std;
@@ -32,7 +33,8 @@ public:
     settings_(settings),
     stubs_(stubs), 
     cellLocationHT_(cellLocationHT), helixRphi_(helixRphi), helixRz_  (helixRz),  helixD0_(helixD0),
-    iPhiSec_(iPhiSec), iEtaReg_(iEtaReg), optoLinkID_(optoLinkID), mergedHTcell_(mergedHTcell)
+    iPhiSec_(iPhiSec), iEtaReg_(iEtaReg), optoLinkID_(optoLinkID), mergedHTcell_(mergedHTcell),
+    seedLayerType_(999), seedPS_(999)
   {
     nLayers_   = Utility::countLayers(settings, stubs); // Count tracker layers these stubs are in
     matchedTP_ = Utility::matchingTP(settings, stubs, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate info about match.
@@ -46,6 +48,17 @@ public:
   L1track3D() : L1trackBase() {}; // Creates track object, but doesn't set any variables.
 
   ~L1track3D() {}
+
+  //--- Set/get optional info for specific track types.
+
+  // Tracklet seeding layer pair (from FPGATracklet::seedIndex())
+  // 0-7 = "L1L2","L2L3","L3L4","L5L6","D1D2","D3D4","L1D1","L2D1"
+  void setSeedLayerType(unsigned int seedLayerType) {seedLayerType_ = seedLayerType;}
+  unsigned int seedLayerType() const {return seedLayerType_;}
+
+  // Tracklet seed stub pair uses PS modules (from FPGATracket::PSseed())
+  void setSeedPS(unsigned int seedPS) {seedPS_ = seedPS;}
+  unsigned int seedPS() const {return seedPS_;}
 
   //--- Get information about the reconstructed track.
 
@@ -210,6 +223,10 @@ private:
   unsigned int                       iEtaReg_; 
   unsigned int                       optoLinkID_;
   bool                               mergedHTcell_;
+
+  //--- Optional info used for tracklet tracks.
+  unsigned int                       seedLayerType_;
+  unsigned int                       seedPS_;
 
   //--- Information about its association (if any) to a truth Tracking Particle.
   const TP*                          matchedTP_;

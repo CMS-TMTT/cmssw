@@ -3,7 +3,8 @@
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-#include <L1Trigger/TrackFindingTMTT/interface/Settings.h>
+#include "L1Trigger/TrackFindingTMTT/interface/Settings.h"
+#include "L1Trigger/TrackFindingTMTT/interface/L1track3D.h"
 #include "L1Trigger/TrackFindingTMTT/interface/TrackerGeometryInfo.h"
 
 #include "boost/numeric/ublas/matrix.hpp"
@@ -41,67 +42,66 @@ public:
   // Store cfg parameters.
   Histos(const Settings* settings);
 
-  ~Histos(){}
+  virtual ~Histos(){}
 
   // Book & fill all histograms.
-  void book();
-  void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtPhis, 
+  virtual void book();
+  virtual void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtPhis, 
     	    const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
 
   // Print tracking performance summary & make tracking efficiency histograms.
-  void endJobAnalysis();
+  virtual void endJobAnalysis();
 
   // Determine "B" parameter, used in GP firmware to allow for tilted modules.
-  void trackerGeometryAnalysis( const TrackerGeometryInfo trackerGeometryInfo );
+  virtual void trackerGeometryAnalysis( const TrackerGeometryInfo trackerGeometryInfo );
 
   // Did user request output histograms via the TFileService in their cfg?
-  bool available() const {return fs_.isAvailable();}
+  virtual  bool available() const {return fs_.isAvailable();}
 
   // Should histograms be produced?
-  bool enabled() const {return ( settings_->enableHistos() && available() );}
+  virtual bool enabled() const {return ( settings_->enableHistos() && available() );}
 
-private:
+protected:
 
   // Book histograms for specific topics.
-  void bookInputData();
-  void bookEtaPhiSectors();
-  void bookRphiHT();
-  void bookRZfilters();
-  void bookStudyBusyEvents();
-  void bookTrackCands(bool withRZfilter);
-  void bookTrackFitting();
+  virtual TFileDirectory bookInputData();
+  virtual TFileDirectory bookEtaPhiSectors();
+  virtual TFileDirectory bookRphiHT();
+  virtual TFileDirectory bookRZfilters();
+  virtual TFileDirectory bookStudyBusyEvents();
+  virtual TFileDirectory bookTrackCands(string tName);
+  virtual map<string, TFileDirectory> bookTrackFitting();
 
   // Fill histograms for specific topics.
-  void fillInputData(const InputData& inputData);
-  void fillEtaPhiSectors(const InputData& inputData, const matrix<Sector>& mSectors);
-  void fillRphiHT(const matrix<HTrphi>& mHtRphis);
-  void fillRZfilters(const matrix<Get3Dtracks>& mGet3Dtrks);
-  void fillStudyBusyEvents(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtRphis, 
-    		           const matrix<Get3Dtracks> mGet3Dtrks);
-  void fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks> mGet3Dtrks, bool withRZfilter);
-  void fillTrackFitting(const InputData& inputData, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
+  virtual void fillInputData(const InputData& inputData);
+  virtual void fillEtaPhiSectors(const InputData& inputData, const matrix<Sector>& mSectors);
+  virtual void fillRphiHT(const matrix<HTrphi>& mHtRphis);
+  virtual void fillRZfilters(const matrix<Get3Dtracks>& mGet3Dtrks);
+  virtual void fillStudyBusyEvents(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtRphis, 
+    		           const matrix<Get3Dtracks>& mGet3Dtrks);
+  virtual void fillTrackCands(const InputData& inputData, const vector<L1track3D>& tracks, string tName);
+  virtual void fillTrackFitting(const InputData& inputData, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
 
   // Produce plots of tracking efficiency after HZ or after r-z track filter (run at end of job)
-  void plotTrackEfficiency(bool withRZfilter);
+  virtual TFileDirectory plotTrackEfficiency(string tName);
   // Produce plots of tracking efficiency after track fit (run at end of job).
-  void plotTrackEffAfterFit(string fitName);
+  virtual TFileDirectory plotTrackEffAfterFit(string fitName);
 
-  void makeEfficiencyPlot( TFileDirectory &inputDir, TEfficiency* outputEfficiency, TH1F* pass, TH1F* all, TString name, TString title );
+  virtual void makeEfficiencyPlot( TFileDirectory &inputDir, TEfficiency* outputEfficiency, TH1F* pass, TH1F* all, TString name, TString title );
 
-
-  // Print summary of track-finding performance after HT or after r-z track filter.
-  void printTrackPerformance(bool withRZfilter);
+  // Print summary of track-finding performance after track pattern reco.
+  virtual void printTrackPerformance(string tName);
 
   // Print summary of track-finding performance after helix fit for given track fitter.
-  void printFitTrackPerformance(string fitName);
+  virtual void printFitTrackPerformance(string fitName);
 
   // Understand why not all tracking particles were reconstructed.
   // Returns list of tracking particles that were not reconstructed and an integer indicating why.
   // Only considers TP used for algorithmic efficiency measurement.
-  map<const TP*, string> diagnoseTracking(const vector<TP>& allTPs, const matrix<Get3Dtracks> mGet3Dtrks,
+  virtual map<const TP*, string> diagnoseTracking(const vector<TP>& allTPs, const vector<L1track3D>& tracks,
 					  bool withRZfilter) const;
 
- private:
+ protected:
 
   // Configuration parameters.
   const Settings *settings_; 
@@ -309,55 +309,59 @@ private:
 
   map<string, TH1F*> hisNumStubsOnLayer_;
 
+  // Histos used for denominator of tracking efficiency plots.
+  TH1F* hisTPinvptForEff_;
+  TH1F* hisTPptForEff_;
+  TH1F* hisTPetaForEff_;
+  TH1F* hisTPphiForEff_;
+  TH1F* hisTPd0ForEff_;
+  TH1F* hisTPz0ForEff_;
+  //
+  TH1F* hisTPinvptForAlgEff_;
+  TH1F* hisTPptForAlgEff_;
+  TH1F* hisTPetaForAlgEff_;
+  TH1F* hisTPphiForAlgEff_;
+  TH1F* hisTPd0ForAlgEff_;
+  TH1F* hisTPz0ForAlgEff_;
+  //
+  TH1F* hisTPphisecForAlgEff_;
+  TH1F* hisTPetasecForAlgEff_;
+  TH1F* hisTPinvptForAlgEff_inJetPtG30_;
+  TH1F* hisTPinvptForAlgEff_inJetPtG100_;
+  TH1F* hisTPinvptForAlgEff_inJetPtG200_;
+
   // Histograms used to make efficiency plots with 3D track candidates prior to fit.
-  map<string, TH1F*> hisTPinvptForEff_;
   map<string, TH1F*> hisRecoTPinvptForEff_;
-  map<string, TH1F*> hisTPptForEff_;
   map<string, TH1F*> hisRecoTPptForEff_;
-  map<string, TH1F*> hisTPetaForEff_;
   map<string, TH1F*> hisRecoTPetaForEff_;
-  map<string, TH1F*> hisTPphiForEff_;
   map<string, TH1F*> hisRecoTPphiForEff_;
   //
   map<string, TH1F*> hisPerfRecoTPinvptForEff_;
   map<string, TH1F*> hisPerfRecoTPptForEff_;
   map<string, TH1F*> hisPerfRecoTPetaForEff_;
   //  
-  map<string, TH1F*> hisTPd0ForEff_;
   map<string, TH1F*> hisRecoTPd0ForEff_;
-  map<string, TH1F*> hisTPz0ForEff_;
   map<string, TH1F*> hisRecoTPz0ForEff_;
   //
-  map<string, TH1F*> hisTPinvptForAlgEff_;
   map<string, TH1F*> hisRecoTPinvptForAlgEff_;
-  map<string, TH1F*> hisTPptForAlgEff_;
   map<string, TH1F*> hisRecoTPptForAlgEff_;
-  map<string, TH1F*> hisTPetaForAlgEff_;
   map<string, TH1F*> hisRecoTPetaForAlgEff_;
-  map<string, TH1F*> hisTPphiForAlgEff_;
   map<string, TH1F*> hisRecoTPphiForAlgEff_;
   //
   map<string, TH1F*> hisPerfRecoTPinvptForAlgEff_;
   map<string, TH1F*> hisPerfRecoTPptForAlgEff_;
   map<string, TH1F*> hisPerfRecoTPetaForAlgEff_;
   //
-  map<string, TH1F*> hisTPd0ForAlgEff_;
   map<string, TH1F*> hisRecoTPd0ForAlgEff_;
-  map<string, TH1F*> hisTPz0ForAlgEff_;
   map<string, TH1F*> hisRecoTPz0ForAlgEff_;
   //
-  map<string, TH1F*> hisTPphisecForAlgEff_;
   map<string, TH1F*> hisRecoTPphisecForAlgEff_;
   map<string, TH1F*> hisPerfRecoTPphisecForAlgEff_;
-  map<string, TH1F*> hisTPetasecForAlgEff_;
   map<string, TH1F*> hisRecoTPetasecForAlgEff_;
   map<string, TH1F*> hisPerfRecoTPetasecForAlgEff_;
 
-  map<string, TH1F*> hisTPinvptForAlgEff_inJetPtG30_;
   map<string, TH1F*> hisRecoTPinvptForAlgEff_inJetPtG30_;
-  map<string, TH1F*> hisTPinvptForAlgEff_inJetPtG100_;
   map<string, TH1F*> hisRecoTPinvptForAlgEff_inJetPtG100_;
-  map<string, TH1F*> hisTPinvptForAlgEff_inJetPtG200_;
   map<string, TH1F*> hisRecoTPinvptForAlgEff_inJetPtG200_;
 
   // Histograms for track fitting evaluation, where map index specifies name of track fitting algorithm used.
