@@ -49,8 +49,9 @@ TMTrackProducer_params = cms.PSet(
      # Print stub windows corresponding to KillLowPtStubs, in python cfg format used by CMSSW.
      PrintStubWindows = cms.bool(False),
      # Bend resolution assumed by bend filter in units of strip pitch. Also used when assigning stubs to sectors if EtaPhiSectors.CalcPhiTrkRes=True. And by the bend filter if HTFillingRphi.UseBendFilter=True.
-     # Suggested value: 1.19 if BendResReduced = false, or 1.30 if it is true.
-     BendResolution = cms.double(1.25),
+     # Suggested value: 1.19 if BendResReduced = false, or 1.249 if it is true.
+     # N.B. Avoid 1/4-integer values due to rounding error issues.
+     BendResolution = cms.double(1.249),
      # Additional contribution to bend resolution from its encoding into a reduced number of bits.
      # This number is the assumed resolution relative to the naive guess of its value.
      # It is ignored in BendResReduced = False.

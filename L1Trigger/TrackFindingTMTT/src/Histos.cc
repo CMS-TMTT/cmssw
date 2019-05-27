@@ -932,6 +932,10 @@ TFileDirectory Histos::bookRphiHT() {
 
   hisStubsOnRphiTracksPerHT_ = inputDir.make<TH1F>("StubsOnRphiTracksPerHT","; Number of stubs assigned to tracks per r#phi HT array",500,-0.5,499.5);
 
+  hisHTstubsPerTrack_ = inputDir.make<TH1F>("stubsPerTrk","No. stubs per track",25,-0.5,24.5);
+  hisHTmBin_ = inputDir.make<TH1F>("mBin","HT m bin", houghNbinsPt_, -0.5, houghNbinsPt_-0.5);
+  hisHTcBin_ = inputDir.make<TH1F>("cBin","HT c bin", houghNbinsPhi_, -0.5, houghNbinsPhi_-0.5);
+
   return inputDir;
 }
 
@@ -1004,6 +1008,12 @@ void Histos::fillRphiHT(const matrix<HTrphi>& mHtRphis) {
     for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
       const HTrphi& htRphi = mHtRphis(iPhiSec, iEtaReg);
       hisStubsOnRphiTracksPerHT_->Fill(htRphi.numStubsOnTrackCands2D()); 
+      // Also note cell location of HT tracks.
+      for (const L1track2D& trk : htRphi.trackCands2D()) {
+	hisHTstubsPerTrack_->Fill(trk.getNumStubs());
+	hisHTmBin_->Fill(trk.getCellLocationHT().first);
+	hisHTcBin_->Fill(trk.getCellLocationHT().second);
+      }
     }
   }
 }
@@ -2977,9 +2987,9 @@ void Histos::printTrackPerformance(string tName) {
 
   cout<<"========================================================================="<<endl;
   if (tName == "HT") {
-    cout<<"               TRACK-FINDING SUMMARY AFTER R-Z TRACK FILTER            "<<endl;
-  } else if (tName == "RZ") {
     cout<<"               TRACK-FINDING SUMMARY AFTER HOUGH TRANSFORM             "<<endl;
+  } else if (tName == "RZ") {
+    cout<<"               TRACK-FINDING SUMMARY AFTER R-Z TRACK FILTER            "<<endl;
   } else if (tName == "TRACKLET") {
     cout<<"               TRACK-FINDING SUMMARY AFTER TRACKLET PATTERN RECO       "<<endl;
   }

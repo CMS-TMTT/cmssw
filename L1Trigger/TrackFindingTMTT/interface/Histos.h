@@ -220,6 +220,9 @@ protected:
   TH1F* hisExcStubsPerHT_;
   TH2F* hisNumStubsInCellVsEta_;
   TH1F* hisStubsOnRphiTracksPerHT_;
+  TH1F* hisHTstubsPerTrack_;
+  TH1F* hisHTmBin_;
+  TH1F* hisHTcBin_;
 
   // Histograms about r-z track filters (or other filters applied after r-phi HT array).
   TH1F* hisNumZtrkSeedCombinations_;
