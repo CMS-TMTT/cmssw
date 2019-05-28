@@ -60,6 +60,8 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		HTcell htCell;
 		const bool mergedCell = false; // This represents mini cell.
 		htCell.init( settings_, iPhiSec, iEtaReg, sector.etaMin(), sector.etaMax(), qOverPtBin, cell.first + mBin, mergedCell );
+		// Firmware doesn't use bend filter in MHT.
+		htCell.disableBendFilter();
 
 		for ( auto& stub: stubs ) {
 		  // Ensure stubs are digitized with respect to the current phi sector.
