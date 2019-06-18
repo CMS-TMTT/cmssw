@@ -181,15 +181,14 @@ std::vector<double> KFParamsComb::seedx(const L1track3D& l1track3D)const{
 TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
   TMatrixD p(nPar_,nPar_);
 
-  double c = getSettings()->invPtToInvR() / 2; 
+  double invPtToInv2R = getSettings()->invPtToInvR() / 2; 
 
   // Assumed track seed (from HT) uncertainty in transverse impact parameter.
   const float d0Sigma = 1.0;
 
   if (getSettings()->hybrid()) {
 
-    //    p(INV2R,INV2R) = 100000*0.0157 * 0.0157 * c * c * 10; // N.B. Such large uncertainty may cause problems.
-    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; 
+    p(INV2R,INV2R) = 0.0157 * 0.0157 * invPtToInv2R * invPtToInv2R * 4; 
     p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; 
     p(Z0,Z0) = 5.0 * 5.0; // N.B. r-z seed uncertainties could be smaller for hybrid, except if seeded in 2S?
     p(T,T) = 0.25 * 0.25 * 4;
@@ -200,7 +199,7 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
   } else {
 
     // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
-    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
+    p(INV2R,INV2R) = 0.0157 * 0.0157 * invPtToInv2R * invPtToInv2R * 4;  // Base on HT cell size
     p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; // Based on HT cell size.
     p(Z0,Z0) = 5.0 * 5.0; 
     p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
