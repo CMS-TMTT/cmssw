@@ -7,6 +7,7 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.Utilities.FileUtils as FileUtils
 import FWCore.ParameterSet.VarParsing as VarParsing
+import os
 
 process = cms.Process("Demo")
 
@@ -24,12 +25,12 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 options = VarParsing.VarParsing ('analysis')
 
 #--- Specify input MC
-options.register('inputMC', 'MCsamples/937/RelVal/TTbar/PU200.txt',
-#options.register('inputMC', 'MCsamples/1020/RelVal/TTbar/PU200_D17.txt',
-#options.register('inputMC', 'MCsamples/1020/RelVal/TTbar/PU200_D21.txt',
+options.register('inputMC', 'L1Trigger/TrackFindingTMTT/test/MCsamples/937/RelVal/TTbar/PU200.txt',
+#options.register('inputMC', 'L1Trigger/TrackFindingTMTT/test/MCsamples/1020/RelVal/TTbar/PU200_D17.txt',
+#options.register('inputMC', 'L1Trigger/TrackFindingTMTT/test/MCsamples/1020/RelVal/TTbar/PU200_D21.txt',
 
 # Fastest to use a local copy ...
-#options.register('inputMC', 'MCsamples/937/RelVal/TTbar/localRAL/PU200.txt', 
+#options.register('inputMC', 'L1Trigger/TrackFindingTMTT/test/MCsamples/937/RelVal/TTbar/localRAL/PU200.txt', 
 
 VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "Files to be processed")
 
@@ -50,7 +51,10 @@ options.parseArguments()
 
 #--- input and output
 
-list = FileUtils.loadListFromFile(options.inputMC)
+def getTxtFile(txtFileName): 
+  return FileUtils.loadListFromFile(os.environ['CMSSW_BASE']+'/src/'+txtFileName)
+
+list = getTxtFile(options.inputMC)
 readFiles = cms.untracked.vstring(*list)
 secFiles = cms.untracked.vstring()
 
