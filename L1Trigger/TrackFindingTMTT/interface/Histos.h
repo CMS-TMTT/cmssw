@@ -87,6 +87,12 @@ protected:
   // Produce plots of tracking efficiency after track fit (run at end of job).
   virtual TFileDirectory plotTrackEffAfterFit(string fitName);
 
+  // For Hybrid tracking
+  // Produce plots of tracklet seed finding efficiency before track reco
+  virtual void           plotTrackletSeedEfficiency() {};
+  // Produce plots of hybrid duplicate removal efficiency after track reco
+  virtual void           plotHybridDupRemovalEfficiency() {};
+
   virtual void makeEfficiencyPlot( TFileDirectory &inputDir, TEfficiency* outputEfficiency, TH1F* pass, TH1F* all, TString name, TString title );
 
   // Print summary of track-finding performance after track pattern reco.
@@ -94,6 +100,13 @@ protected:
 
   // Print summary of track-finding performance after helix fit for given track fitter.
   virtual void printFitTrackPerformance(string fitName);
+
+  // For Hybrid tracking
+  // Print summary of seed finding and extrapolation performance during track pattern reco.
+  virtual void printTrackletSeedFindingPerformance() {};
+
+  // Print summary of duplicate removal performance after track pattern reco.
+  virtual void printHybridDupRemovalPerformance() {};
 
   // Understand why not all tracking particles were reconstructed.
   // Returns list of tracking particles that were not reconstructed and an integer indicating why.

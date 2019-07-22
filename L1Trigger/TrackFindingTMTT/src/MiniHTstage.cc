@@ -78,7 +78,7 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		  pair< float, float > helix2D( qOverPtBin, reco::deltaPhi( phiBin + chosenRofPhi_ * invPtToDphi_ * qOverPtBin + phiCentre, 0. ) );
 		  unsigned int newLink = link;
 		  // Static load balancing.
-		  const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon_;
+		  // const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon_;
 		  if (settings_->miniHoughLoadBalance() >= 1) {
 		    //unsigned int iOffset = 2*mBin + cBin; // Send each mini-cell to a different output link. 
 		    //newLink = (newLink + iOffset)%nLinks;

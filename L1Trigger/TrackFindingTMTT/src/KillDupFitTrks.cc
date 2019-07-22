@@ -75,13 +75,14 @@ vector<L1fittedTrack> KillDupFitTrks::filterAlg50(const vector<L1fittedTrack>& t
 
   for (const L1fittedTrack& trk : tracks) {
 
-    // For debugging.
-    const TP* tp = trk.getMatchedTP();
-
     // Only consider tracks whose fitted helix parameters are in the same sector as the HT originally used to find the track.
     if ( ( ! doSectorCheck) || trk.consistentSector() ) {
       if ( ( ! usePtAndZ0Cuts) || ( fabs(trk.z0()) < settings_->beamWindowZ() && trk.pt() > settings_->houghMinPt() - 0.2) ) {
-	// Check if this track's fitted (q/pt, phi0) helix parameters correspond to the same HT cell as the HT originally found the track in.
+	
+    // For debugging.
+    const TP* tp = trk.getMatchedTP();
+
+  // Check if this track's fitted (q/pt, phi0) helix parameters correspond to the same HT cell as the HT originally found the track in.
 	bool consistentCell = trk.consistentHTcell();
 	if (consistentCell) {
 	  // This track is probably not a duplicate, so keep & and store its HT cell location (which equals the HT cell corresponding to the fitted track).
@@ -148,8 +149,6 @@ vector<L1fittedTrack> KillDupFitTrks::filterAlg50(const vector<L1fittedTrack>& t
     // Making a second pass through the rejected tracks, checking if any should be rescued.
     for (const L1fittedTrack* trk : tracksRejected) {
 
-      // For debugging.
-      const TP* tp = trk->getMatchedTP();
 
       // Get location in HT array corresponding to fitted track helix parameters.
       pair<unsigned int, unsigned int> htCell = trk->getCellLocationFit();
@@ -160,6 +159,9 @@ vector<L1fittedTrack> KillDupFitTrks::filterAlg50(const vector<L1fittedTrack>& t
 	// Optionally store cell location to avoid rescuing other tracks at the same location, which may be duplicates of this track. 
 	bool outsideCheck =( goOutsideArray || trk->pt() > settings_->houghMinPt() );
 	if (reduceDups && outsideCheck) htCellUsed.insert( htCell );
+
+  // For debugging.
+  const TP* tp = trk->getMatchedTP();
 
 	if (debug && tp != nullptr) {
 	  cout<<"SECOND PASS: m="<<trk->getCellLocationHT().first<<"/"<<trk->getCellLocationFit().first<<" c="<<trk->getCellLocationHT().second<<"/"<<trk->getCellLocationFit().second<<" Delta(m,c)=("<<int(trk->getCellLocationHT().first) - int(trk->getCellLocationFit().first)<<","<<int(trk->getCellLocationHT().second) - int(trk->getCellLocationFit().second)<<") pure="<<trk->getPurity()<<" merged="<<trk->getL1track3D().mergedHTcell()<<" #layers="<<trk->getL1track3D().getNumLayers()<<" tp="<<tp->index()<<" dupCell=("<<tpFound[tp->index()].first<<","<<tpFound[tp->index()].second<<") dup="<<tpFoundAtPass[tp->index()]<<endl;

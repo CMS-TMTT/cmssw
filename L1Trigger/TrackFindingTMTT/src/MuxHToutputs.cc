@@ -129,7 +129,7 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInNon, unsigned int iEtaReg, 
 
       // IRT - match firmware, taking into account that fw uses mBin = -mBin relative to sw.
       // NOT NEEDED ANYMORE, AS NOW FW USES MBIN SAME SIGN AS Q/PT.
-      unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0;
+      // unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0;
       // Sign flip for FW using opposite 
       //link += (busySectorMbinRanges_.size() - iCorr) - mBinRange - 1; 
       link += mBinRange; 

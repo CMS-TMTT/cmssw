@@ -1,13 +1,13 @@
-#include "L1Trigger/TrackFindingTMTT/interface/kalmanState.h"
+#include "L1Trigger/TrackFindingTMTT/interface/KalmanState.h"
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include <TMatrixD.h>
 
 namespace TMTT {
 
-kalmanState::kalmanState(): kLayerNext_(0), layerId_(0), xa_(0), pxxa_(), K_(), dcov_(), stubCluster_(0), chi2_(0), fitter_(0), fXtoTrackParams_(0), barrel_(true), n_skipped_(0){
+KalmanState::KalmanState(): kLayerNext_(0), layerId_(0), xa_(0), pxxa_(), K_(), dcov_(), stubCluster_(0), chi2_(0), fitter_(0), fXtoTrackParams_(0), barrel_(true), n_skipped_(0){
 }
 
-kalmanState::kalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, const kalmanState *last_state, 
+KalmanState::KalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, const KalmanState *last_state, 
 	const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, 
 	const StubCluster* stubCluster, double chi2,
 	L1KalmanComb *fitter, GET_TRACK_PARAMS f ){
@@ -28,7 +28,8 @@ kalmanState::kalmanState( const L1track3D& candidate, unsigned n_skipped, unsign
     stubCluster_ = stubCluster;
     chi2_ = chi2;
 
-    const kalmanState *state = this;
+    // EJC CLANG complains about this line, 
+    // const KalmanState *state = this;
 
     r_ = 0.1;
     z_ = 0;
@@ -48,7 +49,7 @@ kalmanState::kalmanState( const L1track3D& candidate, unsigned n_skipped, unsign
     fXtoTrackParams_ = f;
 }
 
-kalmanState::kalmanState(const kalmanState &p){
+KalmanState::KalmanState(const KalmanState &p){
 
     l1track3D_ = p.candidate();
     n_skipped_ = p.nSkippedLayers();
@@ -70,7 +71,7 @@ kalmanState::kalmanState(const kalmanState &p){
     barrel_ = p.barrel();
 }
 
-kalmanState & kalmanState::operator=( const kalmanState &other )
+KalmanState & KalmanState::operator=( const KalmanState &other )
 {
     if (&other == this)
 	return *this;
@@ -96,9 +97,9 @@ kalmanState & kalmanState::operator=( const kalmanState &other )
     return *this;
 }
 
-bool kalmanState::good( const TP *tp )const{
+bool KalmanState::good( const TP *tp )const{
 
-    const kalmanState *state = this;
+    const KalmanState *state = this;
     while( state ){
 	const StubCluster *stubCluster = state->stubCluster();
 	if( stubCluster ){
@@ -111,15 +112,15 @@ bool kalmanState::good( const TP *tp )const{
     return true;
 }
 
-double kalmanState::reducedChi2() const
+double KalmanState::reducedChi2() const
 { 
     if( 2 * n_stubs_ - xa_.size() > 0 ) return chi2_ / ( 2 * n_stubs_ - xa_.size() ); 
     else return 0; 
 } 
 
-const kalmanState *kalmanState::last_update_state()const
+const KalmanState *KalmanState::last_update_state()const
 {
-    const kalmanState *state = this;
+    const KalmanState *state = this;
     while( state ){
 	if( state->stubCluster() ) return state;
 	state = state->last_state();
@@ -127,11 +128,11 @@ const kalmanState *kalmanState::last_update_state()const
     return 0;
 }
 
-std::vector<const Stub *> kalmanState::stubs()const
+std::vector<const Stub *> KalmanState::stubs()const
 {
     std::vector<const Stub *> all_stubs;
 
-    const kalmanState *state = this;
+    const KalmanState *state = this;
     while( state ){
 	const StubCluster *stbcl = state->stubCluster();
 	if( stbcl ){
@@ -145,21 +146,21 @@ std::vector<const Stub *> kalmanState::stubs()const
     return all_stubs;
 }
 
-bool kalmanState::order(const kalmanState *left, const kalmanState *right){ return (left->nStubLayers() > right->nStubLayers()); }
+bool KalmanState::order(const KalmanState *left, const KalmanState *right){ return (left->nStubLayers() > right->nStubLayers()); }
 
-bool kalmanState::orderReducedChi2(const kalmanState *left, const kalmanState *right){ 
+bool KalmanState::orderReducedChi2(const KalmanState *left, const KalmanState *right){ 
   return ( left->reducedChi2() < right->reducedChi2() );
 }
 
-bool kalmanState::orderMinSkipChi2(const kalmanState *left, const kalmanState *right){ 
+bool KalmanState::orderMinSkipChi2(const KalmanState *left, const KalmanState *right){ 
   return ( left->chi2()*(left->nSkippedLayers()+1) < right->chi2()*(right->nSkippedLayers()+1) );
 }
 
-bool kalmanState::orderChi2(const kalmanState *left, const kalmanState *right){ 
+bool KalmanState::orderChi2(const KalmanState *left, const KalmanState *right){ 
   return ( left->chi2() < right->chi2() );
 }
 
-void kalmanState::dump( ostream &os, const TP *tp, bool all )const
+void KalmanState::dump( ostream &os, const TP *tp, bool all )const
 {
     std::map<std::string, double> tp_x;
     bool useForAlgEff(false);
@@ -173,7 +174,7 @@ void kalmanState::dump( ostream &os, const TP *tp, bool all )const
     }
     std::map<std::string, double> y = fXtoTrackParams_( fitter_, this );
 
-    os << "kalmanState : ";
+    os << "KalmanState : ";
     os << "next Kalman layer = " << kLayerNext_ << ", ";
     os << "layerId = " << layerId_ << ", ";
     os << " n_skipped = " << n_skipped_ << ", ";
@@ -233,10 +234,10 @@ void kalmanState::dump( ostream &os, const TP *tp, bool all )const
     os << endl;
 
     if( all ){
-	const kalmanState *state = last_state();
+	const KalmanState *state = last_state();
 	if( state ){
 	    state->dump( os, tp, all );
-	    state = state->last_state();
+	    // state = state->last_state();
 	}
 	else return;
     }

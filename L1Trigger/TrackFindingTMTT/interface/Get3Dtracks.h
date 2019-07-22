@@ -29,7 +29,7 @@ class Get3Dtracks {
 
 public:
   
-  Get3Dtracks() {}
+  Get3Dtracks() : settings_(nullptr), iPhiSec_(0), iEtaReg_(0), etaMinSector_(0), etaMaxSector_(0), phiCentreSector_(0), runRZfilter_(false) {}
   ~Get3Dtracks() {}
 
   //=== Main routines to make 3D tracks.

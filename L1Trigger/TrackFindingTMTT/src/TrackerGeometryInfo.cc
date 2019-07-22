@@ -20,7 +20,6 @@ void TrackerGeometryInfo::getTiltedModuleInfo(const Settings* settings, const Tr
     float Z0 = fabs(gd->position().z());
     DetId detId = gd->geographicalId();
 
-    bool psModule = theTrackerGeom->getDetectorType( detId ) ==  TrackerGeometry::ModuleType::Ph2PSP;
     bool barrel = detId.subdetId()==StripSubdetector::TOB || detId.subdetId()==StripSubdetector::TIB;
     bool tiltedBarrel = barrel && (theTrackerTopo->tobSide(detId) != 3);
     bool isLower = theTrackerTopo->isLower(detId);
@@ -29,12 +28,8 @@ void TrackerGeometryInfo::getTiltedModuleInfo(const Settings* settings, const Tr
     // Only do this for the "lower" sensor
     if ( tiltedBarrel && isLower ) {
 
-      int type   = 2*theTrackerTopo->tobSide(detId)-3; // -1 for tilted-, 1 for tilted+, 3 for flat
-      int layer = theTrackerTopo->layer(detId);
-      int ladder = theTrackerTopo->tobRod(detId);
-      double corr   = (barrelNTiltedModules_+1)/2.;
-
-      ladder = corr-(corr-ladder)*type; // Corrected ring number, bet 0 and barrelNTiltedModules_.at(layer), in ascending |z|
+      // int type   = 2*theTrackerTopo->tobSide(detId)-3; // -1 for tilted-, 1 for tilted+, 3 for flat
+      // double corr   = (barrelNTiltedModules_+1)/2.;
 
       double minZOfThisModule = fabs(gd->surface().zSpan().first);
       double maxZOfThisModule = fabs(gd->surface().zSpan().second);

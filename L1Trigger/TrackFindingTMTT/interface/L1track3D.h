@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 using namespace std;
@@ -49,7 +50,7 @@ public:
 
   ~L1track3D() {}
 
-  //--- Set/get optional info for specific track types.
+  //--- Set/get optional info for tracklet tracks.
 
   // Tracklet seeding layer pair (from FPGATracklet::seedIndex())
   // 0-7 = "L1L2","L2L3","L3L4","L5L6","D1D2","D3D4","L1D1","L2D1"
@@ -59,6 +60,10 @@ public:
   // Tracklet seed stub pair uses PS modules (from FPGATracket::PSseed())
   void setSeedPS(unsigned int seedPS) {seedPS_ = seedPS;}
   unsigned int seedPS() const {return seedPS_;}
+
+  // Best stub (stub with smallest Phi residual in each layer/disk)
+  void setBestStubs(std::unordered_set<const Stub*> bestStubs) {bestStubs_ = bestStubs;}
+  std::unordered_set<const Stub*> bestStubs() const {return bestStubs_;}
 
   //--- Get information about the reconstructed track.
 
@@ -214,6 +219,7 @@ private:
 
   //--- Information about the reconstructed track.
   vector<const Stub*>                stubs_;
+  unordered_set<const Stub*>         bestStubs_;
   unsigned int                       nLayers_;
   pair<unsigned int, unsigned int>   cellLocationHT_; 
   pair<float, float>                 helixRphi_; 

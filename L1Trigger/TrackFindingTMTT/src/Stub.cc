@@ -28,13 +28,15 @@ StubKiller Stub::stubKiller_;
 //=== Store useful info about the stub (for use with HYBRID code), with hard-wired constants to allow use outside CMSSW.
 
 Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology, unsigned int ID) : 
-  phi_(phi), r_(r), z_(z), bend_(bend), iphi_(iphi), alpha_(alpha), psModule_(psModule), layerId_(layerid), barrel_(barrel), 
+  phi_(phi), r_(r), z_(z), bend_(bend), iphi_(iphi), alpha_(alpha), psModule_(psModule), layerId_(layerid), endcapRing_(0), barrel_(barrel), 
   digitalStub_(settings), stubWindowSuggest_(settings)
 { //work in progress on better constructor for new hybrid
   if (psModule && barrel) {
     double zMax[4];
     settings->get_zMaxNonTilted(zMax);
     tiltedBarrel_ = (fabs(z) > zMax[layerid]);
+  } else {
+    tiltedBarrel_ = false;
   }
   if (!psModule) {
     stripPitch_ = settings->ssStripPitch(); nStrips_=settings->ssNStrips(); sigmaPar_=settings->ssStripLength()/std::sqrt(12.0);

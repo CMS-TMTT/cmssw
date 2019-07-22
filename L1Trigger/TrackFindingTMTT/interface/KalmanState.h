@@ -9,22 +9,22 @@
 namespace TMTT {
 
 class L1KalmanComb;
-class kalmanState;
+class KalmanState;
 class StubCluster;
 
-typedef std::map<std::string, double> (*GET_TRACK_PARAMS)( const L1KalmanComb *p, const kalmanState *state );
+typedef std::map<std::string, double> (*GET_TRACK_PARAMS)( const L1KalmanComb *p, const KalmanState *state );
  
-class kalmanState{
+class KalmanState{
     public:
-	kalmanState();
-	kalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, const kalmanState *last_state, 
+	KalmanState();
+	KalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, const KalmanState *last_state, 
 		const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, 
 		const StubCluster* stubcl, double chi2, 
 		L1KalmanComb *fitter, GET_TRACK_PARAMS f );
-	kalmanState(const kalmanState &p);
-	~kalmanState(){}
+	KalmanState(const KalmanState &p);
+	~KalmanState(){}
 
-	kalmanState & operator=( const kalmanState &other );
+	KalmanState & operator=( const KalmanState &other );
 
 	unsigned             nextLayer()const{ return      kLayerNext_; }
 	unsigned               layerId()const{ return         layerId_; }
@@ -34,7 +34,7 @@ class kalmanState{
         // Hit coordinates.
 	double                       r()const{ return               r_; }
 	double                       z()const{ return               z_; }
-	const kalmanState  *last_state()const{ return      last_state_; }
+	const KalmanState  *last_state()const{ return      last_state_; }
         // Helix parameters (1/2R, phi relative to sector, z0, tanLambda) 
 	std::vector<double>         xa()const{ return              xa_; }
         // Covariance matrix on helix params.
@@ -47,21 +47,21 @@ class kalmanState{
 	const StubCluster* stubCluster()const{ return     stubCluster_; }
 	double                    chi2()const{ return            chi2_; }
 	unsigned           nStubLayers()const{ return         n_stubs_; }
-        L1track3D            candidate()const{ return       l1track3D_; }
+    L1track3D            candidate()const{ return       l1track3D_; }
 
 	bool                            good( const TP *tp )const;
 	double                   reducedChi2()const;
-	const kalmanState *last_update_state()const;
+	const KalmanState *last_update_state()const;
 	std::vector<const Stub *>      stubs()const;
 	L1KalmanComb                 *fitter()const{ return fitter_; }
 	GET_TRACK_PARAMS     fXtoTrackParams()const{ return fXtoTrackParams_; };
 
 
-	static bool orderReducedChi2(const kalmanState *left, const kalmanState *right);
-	static bool orderChi2(const kalmanState *left, const kalmanState *right);
-	static bool orderMinSkipChi2(const kalmanState *left, const kalmanState *right);
+	static bool orderReducedChi2(const KalmanState *left, const KalmanState *right);
+	static bool orderChi2(const KalmanState *left, const KalmanState *right);
+	static bool orderMinSkipChi2(const KalmanState *left, const KalmanState *right);
 
-	static bool order(const kalmanState *left, const kalmanState *right);
+	static bool order(const KalmanState *left, const KalmanState *right);
 	void dump( ostream &os, const TP *tp=0, bool all=0 )const;
 	void setChi2( double p ){ chi2_ = p; }
 
@@ -74,7 +74,7 @@ class kalmanState{
 	unsigned                 layerId_;
 	unsigned              endcapRing_;
 	double                         r_;
-	const kalmanState    *last_state_;
+	const KalmanState    *last_state_;
 	std::vector<double>           xa_;
 	TMatrixD                    pxxa_;
 	TMatrixD                       K_;

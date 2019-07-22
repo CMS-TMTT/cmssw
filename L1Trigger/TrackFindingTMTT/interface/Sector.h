@@ -17,7 +17,8 @@ class Sector {
 
 public:
   
-  Sector() : settings_(nullptr) {}
+  Sector() : settings_(nullptr), beamWindowZ_(0), trackerOuterRadius_(0), trackerInnerRadius_(0), trackerHalfLength_(0), handleStripsPhiSec_(0), handleStripsEtaSec_(0), iPhiSec_(0), iEtaReg_(0), etaMin_(0), etaMax_(0), chosenRofZ_(0), rOuterMax_(0), zOuterMax_(0), rOuterMin_(0), zOuterMin_(0), phiCentre_(0), sectorHalfWidth_(0), chosenRofPhi_(0), useStubPhi_(0), minPt_(0), useStubPhiTrk_(0), assumedPhiTrkRes_(0), calcPhiTrkRes_(0), numSubSecsEta_(0), zOuterMinSub_(), zOuterMaxSub_() {}
+
   ~Sector() {}
 
   // Initialization.

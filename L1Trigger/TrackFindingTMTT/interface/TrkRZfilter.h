@@ -34,7 +34,7 @@ class TrkRZfilter {
 
 public:
 
-  TrkRZfilter() {}
+  TrkRZfilter() : settings_(nullptr), iPhiSec_(0), iEtaReg_(0), etaMinSector_(0), etaMaxSector_(0), phiCentreSector_(0), rzHelix_z0_(0), rzHelix_tanL_(0), rzHelix_set_(false), chosenRofZ_(0), zTrkMinSector_(0), zTrkMaxSector_(0), beamWindowZ_(0) {}
   ~TrkRZfilter() {}
   
   struct SortStubsInLayer{

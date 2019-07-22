@@ -176,7 +176,8 @@ void DegradeBend::sanityChecks(bool psModule, const DetId& stDetId, float window
       float bendTmp = float(bendHalfStrips)/2.;
       float degradedBendTmp;
       bool rejectTmp;
-      unsigned int numInGroupTmp, windowHalfStripsTmp;
+      unsigned int numInGroupTmp = 0;
+      unsigned int windowHalfStripsTmp = 0;
       this->work(bendTmp, psModule, stDetId, windowFEnew,
 		 degradedBendTmp, rejectTmp, numInGroupTmp, windowHalfStripsTmp);
       if (numInGroupTmp > 1) wasDegraded = true;

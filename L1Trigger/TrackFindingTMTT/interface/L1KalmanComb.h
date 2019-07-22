@@ -9,7 +9,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/Settings.h"
 #include "L1Trigger/TrackFindingTMTT/interface/L1track3D.h"
 #include "L1Trigger/TrackFindingTMTT/interface/L1fittedTrack.h"
-#include "L1Trigger/TrackFindingTMTT/interface/kalmanState.h"
+#include "L1Trigger/TrackFindingTMTT/interface/KalmanState.h"
 #include <map>
 #include <vector>
 #include <fstream>
@@ -21,7 +21,7 @@ class TH2F;
 namespace TMTT {
 
 class TP; 
-class kalmanState;
+class KalmanState;
 class StubCluster;
 
 class L1KalmanComb : public TrackFitGeneric{
@@ -37,11 +37,11 @@ class L1KalmanComb : public TrackFitGeneric{
 	void bookHists();
 
     protected:
-	static  std::map<std::string, double> getTrackParams( const L1KalmanComb *p, const kalmanState *state );
-	virtual std::map<std::string, double> getTrackParams( const kalmanState *state ) const=0;
+	static  std::map<std::string, double> getTrackParams( const L1KalmanComb *p, const KalmanState *state );
+	virtual std::map<std::string, double> getTrackParams( const KalmanState *state ) const=0;
 
         // Get track params with beam-spot constraint & chi2 increase from applying it..
-        virtual std::map<std::string, double> getTrackParams_BeamConstr( const kalmanState *state, double& deltaChi2 ) const {
+        virtual std::map<std::string, double> getTrackParams_BeamConstr( const KalmanState *state, double& deltaChi2 ) const {
           deltaChi2 = 0.0;
           return (this->getTrackParams(state)); // Returns unconstrained result, unless derived class overrides it.
         }
@@ -50,11 +50,11 @@ class L1KalmanComb : public TrackFitGeneric{
 	{
 	    return 2.*M_PI * (0.5 + float(iCurrentPhiSec_)) / float(getSettings()->numPhiSectors()) - M_PI; // Centre of sector in phi
 	}
-        //bool kalmanUpdate( const StubCluster *stubCluster, kalmanState &state, kalmanState &new_state, const TP *tpa );
-	virtual const kalmanState *kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster* stubCluster, const kalmanState &state, const TP *);
+        //bool kalmanUpdate( const StubCluster *stubCluster, KalmanState &state, KalmanState &new_state, const TP *tpa );
+	virtual const KalmanState *kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster* stubCluster, const KalmanState &state, const TP *);
 	void resetStates();
 	void deleteStubClusters();
-	const kalmanState *mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const kalmanState *last_state, 
+	const KalmanState *mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const KalmanState *last_state, 
 				    const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2 );
 
     protected:
@@ -74,24 +74,30 @@ class L1KalmanComb : public TrackFitGeneric{
 	virtual void barrelToEndcap( double r, const StubCluster *stubCluster, std::vector<double> &x, TMatrixD &cov_x )const{}
 	virtual std::vector<double> d(const StubCluster* stubCluster )const=0;
 	virtual TMatrixD H(const StubCluster* stubCluster)const=0;
-	virtual TMatrixD F(const StubCluster* stubCluster=0, const kalmanState *state=0 )const=0;
-	virtual TMatrixD PxxModel( const kalmanState *state, const StubCluster *stubCluster )const=0; 
-  	virtual TMatrixD PddMeas(const StubCluster* stubCluster, const kalmanState *state )const=0;
+	virtual TMatrixD F(const StubCluster* stubCluster=0, const KalmanState *state=0 )const=0;
+	virtual TMatrixD PxxModel( const KalmanState *state, const StubCluster *stubCluster )const=0; 
+  	virtual TMatrixD PddMeas(const StubCluster* stubCluster, const KalmanState *state )const=0;
 
         virtual std::vector<double> residual(const StubCluster* stubCluster, const std::vector<double> &x, double candQoverPt )const;
-	virtual const kalmanState *updateSeedWithStub( const kalmanState &state, const StubCluster *stubCluster ){ return 0; }
-	virtual bool isGoodState( const kalmanState &state )const{ return true; }
+	virtual const KalmanState *updateSeedWithStub( const KalmanState &state, const StubCluster *stubCluster ){ return 0; }
+	virtual bool isGoodState( const KalmanState &state )const{ return true; }
 
-	double calcChi2( const kalmanState &state )const;
-	void printTP( std::ostream &os, const TP *tp )const;
-
+	double calcChi2( const KalmanState &state )const;
 
 	virtual double getRofState( unsigned layerId, const vector<double> &xa )const{ return 0;}
-	std::vector<const kalmanState *> doKF( const L1track3D &l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa );
+	std::vector<const KalmanState *> doKF( const L1track3D &l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa );
 
-	void fillSeedHists( const kalmanState *state, const TP *tpa );
-	void fillCandHists( const kalmanState &state, const TP *tpa=0 );
-	void fillStepHists( const TP *tpa, unsigned nItr, const kalmanState *new_state );
+        void printTPSummary( std::ostream &os, const TP *tp, bool addReturn=true ) const;
+	void printTP( std::ostream &os, const TP *tp ) const;
+        void printStubLayers( std::ostream &os, std::vector<const Stub *> &stubs ) const;
+        void printStubCluster( std::ostream &os, const StubCluster * stubCluster, bool addReturn=true ) const;
+        void printStubClusters( std::ostream &os, std::vector<const StubCluster *> &stubClusters ) const;
+        void printStub( std::ostream &os, const Stub * stub, bool addReturn=true ) const;
+        void printStubs( std::ostream &os, std::vector<const Stub *> &stubs ) const;
+
+	void fillSeedHists( const KalmanState *state, const TP *tpa );
+	void fillCandHists( const KalmanState &state, const TP *tpa=0 );
+	void fillStepHists( const TP *tpa, unsigned nItr, const KalmanState *new_state );
 
 	double DeltaRphiForClustering( unsigned layerId, unsigned endcapRing );
 	double DeltaRForClustering( unsigned endcapRing );
@@ -108,7 +114,7 @@ class L1KalmanComb : public TrackFitGeneric{
     protected:
 	unsigned nPar_;
 	unsigned nMeas_;
-	std::vector<kalmanState *> state_list_;
+	std::vector<KalmanState *> state_list_;
 	std::vector<StubCluster *> stbcl_list_;
 
 	std::vector<double> hxaxtmin;

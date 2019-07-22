@@ -48,10 +48,8 @@ Matrix<double> ChiSquared4ParamsApprox::D(std::vector<double> x){
     double rInv = y["rInv"];
     double phi0 = y["phi0"];
     double t = y["t"];
-    double z0 = y["z0"];
     for (unsigned i = 0; i < stubs_.size(); i++){
         double ri=stubs_[i]->r();
-        double zi=stubs_[i]->z();
         if( stubs_[i]->barrel() ){
 	  D(j, 0) = -0.5*ri*ri; // Fine for now;
 	  D(j, 1) = ri; // Fine
@@ -81,7 +79,7 @@ Matrix<double> ChiSquared4ParamsApprox::D(std::vector<double> x){
 	  double theta0=(DeltaiOverRi)+0.67*(DeltaiOverRi)*(DeltaiOverRi)*(DeltaiOverRi);
 
 	  double phi_track=phi0-0.5*rInv*ri; //Expected phi hit given the track
-	  //std::cout << phi_track << "/" << phi0 << "/" << rInv << "/" << zi << "/" << z0 << "/" << t << std::endl;
+	  //std::cout << phi_track << "/" << phi0 << "/" << rInv << "/" << t << std::endl;
 	  
 	  double tInv = 1/t;
 	  

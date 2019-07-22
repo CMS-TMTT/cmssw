@@ -7,7 +7,7 @@
 
 #include <TMatrixD.h> 
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
-#include "L1Trigger/TrackFindingTMTT/interface/kalmanState.h"
+#include "L1Trigger/TrackFindingTMTT/interface/KalmanState.h"
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -43,7 +43,7 @@ static bool orderStubsByR(const Stub* a, const Stub* b){
 }
 #endif
 
-void printTPSummary( std::ostream &os, const TP *tp, bool addReturn=true ){
+void L1KalmanComb::printTPSummary( std::ostream &os, const TP *tp, bool addReturn) const {
 	
   if( tp ){
 		
@@ -60,7 +60,7 @@ void printTPSummary( std::ostream &os, const TP *tp, bool addReturn=true ){
   }
 }
 
-void L1KalmanComb::printTP( std::ostream &os, const TP *tp )const{
+void L1KalmanComb::printTP( std::ostream &os, const TP *tp ) const {
         
   std::map<std::string, double> tpParams;
   bool useForAlgEff(false);
@@ -85,7 +85,7 @@ void L1KalmanComb::printTP( std::ostream &os, const TP *tp )const{
   os << endl;
 }
 
-static void printStubLayers( std::ostream &os, std::vector<const Stub *> &stubs ){
+void L1KalmanComb::printStubLayers( std::ostream &os, std::vector<const Stub *> &stubs ) const {
 
   if( stubs.size() == 0 ) os << "stub layers = []" << endl;
   else{
@@ -95,7 +95,7 @@ static void printStubLayers( std::ostream &os, std::vector<const Stub *> &stubs 
   }
 }
 
-static void printStubCluster( std::ostream &os, const StubCluster * stubCluster, bool addReturn=true ){
+void L1KalmanComb::printStubCluster( std::ostream &os, const StubCluster * stubCluster, bool addReturn ) const {
   os << "stub: ";
   //   os << "addr=" << stub << " "; 
   os << "layer=" << stubCluster->layerId() << " ";
@@ -114,13 +114,14 @@ static void printStubCluster( std::ostream &os, const StubCluster * stubCluster,
   else os << " | ";
 }
 
-static void printStubClusters( std::ostream &os, std::vector<const StubCluster *> &stubClusters ){
+void L1KalmanComb::printStubClusters( std::ostream &os, std::vector<const StubCluster *> &stubClusters ) const {
 
   for( auto &stubcl : stubClusters ){
     printStubCluster( os, stubcl );
   }
 }
-static void printStub( std::ostream &os, const Stub * stub, bool addReturn=true ){
+
+void L1KalmanComb::printStub( std::ostream &os, const Stub * stub, bool addReturn ) const {
   os << "stub ";
   //   os << "addr=" << stub << " "; 
   os << "index=" << stub->index() << " ";
@@ -139,7 +140,7 @@ static void printStub( std::ostream &os, const Stub * stub, bool addReturn=true 
 
 }
 
-static void printStubs( std::ostream &os, std::vector<const Stub *> &stubs ){
+void L1KalmanComb::printStubs( std::ostream &os, std::vector<const Stub *> &stubs ) const {
 
   for( auto &stub : stubs ){
     printStub( os, stub );
@@ -369,13 +370,13 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
   }
 
   //Kalman Filter
-  std::vector<const kalmanState *> cands = doKF( l1track3D, stubcls, tpa );
+  std::vector<const KalmanState *> cands = doKF( l1track3D, stubcls, tpa );
 
  
   //return L1fittedTrk for the selected state (if KF produced one it was happy with).
   if( cands.size() ) {
 
-    const kalmanState *cand = cands[0];
+    const KalmanState *cand = cands[0];
 
     //cout<<"Final KF candidate eta="<<cand->candidate().iEtaReg()<<" ns="<<cand->nSkippedLayers()<<" klid="<<cand->nextLayer()-1<<" n="<<cand->nStubLayers()<<endl;
 
@@ -468,7 +469,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 	cout<<"---------------------"<<endl;
 	/*				
 					for( it_last = last_states.begin(); it_last != last_states.end(); it_last++ ){
-					const kalmanState *state = *it_last;
+					const KalmanState *state = *it_last;
 				
 					//std::map<std::string, double> trackParams = getTrackParams(state);
 					//L1fittedTrack returnTrk(getSettings(), l1track3D, state->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state->chi2(), nPar_, true);
@@ -509,16 +510,16 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 }
 
 
-std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa ){
+std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa ){
 
 #ifdef RECALC_DEBUG
   cout<<"FITTER new track: HT cell=("<<l1track3D.getCellLocationHT().first<<","<<l1track3D.getCellLocationHT().second<<")"<<endl;
 #endif
 
   // output container (contains 0 or 1 states).
-  std::vector<const kalmanState *> finished_states;
+  std::vector<const KalmanState *> finished_states;
 
-  std::map<unsigned int, const kalmanState *, std::greater<unsigned int> > best_state_by_nstubs; // Best state (if any) for each viable no. of stubs on track value. 
+  std::map<unsigned int, const KalmanState *, std::greater<unsigned int> > best_state_by_nstubs; // Best state (if any) for each viable no. of stubs on track value. 
 	
   // seed helix params & their covariance.
   std::vector<double> x0 = seedx(l1track3D);
@@ -526,14 +527,14 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   TMatrixD K( nPar_, 2 );
   TMatrixD dcov( 2, 2 );
 	
-  const kalmanState *state0 = mkState( l1track3D, 0, 0, 0, 0, x0, pxx0, K, dcov, 0, 0 );
+  const KalmanState *state0 = mkState( l1track3D, 0, 0, 0, 0, x0, pxx0, K, dcov, 0, 0 );
 	
   if( getSettings()->kalmanFillInternalHists() ) fillSeedHists( state0, tpa );
 	
 	
   // internal containers - i.e. the state FIFO. Contains estimate of helix params in last/next layer, with multiple entries if there were multiple stubs, yielding multiple states.
-  std::vector<const kalmanState *> new_states;
-  std::vector<const kalmanState *> prev_states;
+  std::vector<const KalmanState *> new_states;
+  std::vector<const KalmanState *> prev_states;
   prev_states.push_back( state0 );
 	
 
@@ -616,10 +617,10 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     unsigned int kalmanMaxSkipLayers = easy ? getSettings()->kalmanMaxSkipLayersEasy() : getSettings()->kalmanMaxSkipLayersHard();
 		
     // update each state from previous iteration (or seed) using stubs in next Kalman layer
-    std::vector<const kalmanState *>::const_iterator i_state = prev_states.begin();
+    std::vector<const KalmanState *>::const_iterator i_state = prev_states.begin();
     for(; i_state != prev_states.end(); i_state++ ){ 
 		
-      const kalmanState *the_state = *i_state;
+      const KalmanState *the_state = *i_state;
 			
 
       unsigned layer = the_state->nextLayer();
@@ -636,8 +637,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       }
 
       // containers for updated state+stub combinations
-      std::vector<const kalmanState *> next_states;
-      std::vector<const kalmanState *> next_states_skipped;
+      std::vector<const KalmanState *> next_states;
+      std::vector<const KalmanState *> next_states_skipped;
 
 			
       // find stubs for this layer
@@ -691,7 +692,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	const StubCluster * next_stubCluster = stubs[i];
 				
 	// Update helix params by adding this stub.
-	const kalmanState * new_state = kalmanUpdate( skipped, layer+1, next_stubCluster, *the_state, tpa );
+	const KalmanState * new_state = kalmanUpdate( skipped, layer+1, next_stubCluster, *the_state, tpa );
 				
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
 				
@@ -704,7 +705,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	
 	const StubCluster * next_stubCluster = next_stubs[i];
 				
-	const kalmanState * new_state = kalmanUpdate( skipped+1+nSkippedDeadLayers_nextStubs, layer+2+nSkippedDeadLayers_nextStubs, next_stubCluster, *the_state, tpa );
+	const KalmanState * new_state = kalmanUpdate( skipped+1+nSkippedDeadLayers_nextStubs, layer+2+nSkippedDeadLayers_nextStubs, next_stubCluster, *the_state, tpa );
 				
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
 				
@@ -712,8 +713,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       }		
 			
       // post Kalman filter local sorting per state
-      sort( next_states.begin(), next_states.end(), kalmanState::orderChi2);
-      sort( next_states_skipped.begin(), next_states_skipped.end(), kalmanState::orderChi2);
+      sort( next_states.begin(), next_states.end(), KalmanState::orderChi2);
+      sort( next_states_skipped.begin(), next_states_skipped.end(), KalmanState::orderChi2);
 			
 			
       int i, max_states, max_states_skip;
@@ -795,7 +796,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     // copy new_states into prev_states for next iteration or end if we are on 
     // last iteration by clearing all states and making final state selection
 		
-    sort( new_states.begin(), new_states.end(), kalmanState::orderMinSkipChi2); // Sort by chi2*(skippedLayers+1)
+    sort( new_states.begin(), new_states.end(), KalmanState::orderMinSkipChi2); // Sort by chi2*(skippedLayers+1)
 
     unsigned int nStubs = iteration + 1;
     // Success. We have at least one state that passes all cuts. Save best state found with this number of stubs.
@@ -835,7 +836,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 
   if (best_state_by_nstubs.size()) {
     // Select state with largest number of stubs.
-    const kalmanState* stateFinal = best_state_by_nstubs.begin()->second; // First element has largest number of stubs.
+    const KalmanState* stateFinal = best_state_by_nstubs.begin()->second; // First element has largest number of stubs.
     finished_states.push_back(stateFinal);
     if ( getSettings()->kalmanDebugLevel() >= 1 ) {
       cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" etaReg="<<l1track3D.iEtaReg();
@@ -859,7 +860,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 //--- Update a helix state by adding a stub. 
 //--- ("layer" is not the layer of the stub being added now, but rather the next layer that will be searched after this stub has been added).
 
-const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster *stubCluster, const kalmanState &state, const TP *tpa ){
+const KalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster *stubCluster, const KalmanState &state, const TP *tpa ){
 
   if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "---------------" << endl;
@@ -959,7 +960,7 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
     new_pxxa.Print();
   }
 
-  const kalmanState *new_state = mkState( state.candidate(), skipped, layer, stubCluster->layerId(), &state, new_xa, new_pxxa, k, dcov, stubCluster, 0 );
+  const KalmanState *new_state = mkState( state.candidate(), skipped, layer, stubCluster->layerId(), &state, new_xa, new_pxxa, k, dcov, stubCluster, 0 );
   if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "new state" << endl;
     new_state->dump( cout, tpa  );
@@ -970,7 +971,7 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
 }
 
 
-double L1KalmanComb::calcChi2( const kalmanState &state )const{
+double L1KalmanComb::calcChi2( const KalmanState &state )const{
 
   if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "calcChi2 " << endl;
@@ -1070,7 +1071,7 @@ double L1KalmanComb::Chi2( const TMatrixD &dcov, const std::vector<double> &delt
 }
 
 
-std::map<std::string, double> L1KalmanComb::getTrackParams( const L1KalmanComb *p, const kalmanState *state )
+std::map<std::string, double> L1KalmanComb::getTrackParams( const L1KalmanComb *p, const KalmanState *state )
 {
   return p->getTrackParams( state );
 }
@@ -1216,11 +1217,11 @@ void L1KalmanComb::resetStates()
 }
 
 
-const kalmanState *L1KalmanComb::mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const kalmanState *last_state, 
+const KalmanState *L1KalmanComb::mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const KalmanState *last_state, 
 					  const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2 )
 {
 
-  kalmanState *new_state = new kalmanState( candidate, skipped, layer, layerId, last_state, x, pxx, K, dcov, stubCluster, chi2, this, &getTrackParams );
+  KalmanState *new_state = new KalmanState( candidate, skipped, layer, layerId, last_state, x, pxx, K, dcov, stubCluster, chi2, this, &getTrackParams );
 
   if( chi2 == 0 ){
     double new_state_chi2 = calcChi2( *new_state ); 
@@ -1376,11 +1377,11 @@ void L1KalmanComb::bookHists(){
 }
 
 
-void L1KalmanComb::fillCandHists( const kalmanState &state, const TP *tpa )
+void L1KalmanComb::fillCandHists( const KalmanState &state, const TP *tpa )
 {
   if( tpa && tpa->useForAlgEff() ){
 
-    const kalmanState *the_state = &state;
+    const KalmanState *the_state = &state;
     while( the_state ){
       if( the_state->stubCluster() ){
 	std::vector<double> x = the_state->xa();
@@ -1414,7 +1415,7 @@ void L1KalmanComb::fillCandHists( const kalmanState &state, const TP *tpa )
 }
 
 
-void L1KalmanComb::fillSeedHists( const kalmanState *state, const TP *tpa ){
+void L1KalmanComb::fillSeedHists( const KalmanState *state, const TP *tpa ){
 
   std::vector<double> x0   = state->xa();
   TMatrixD            pxx0 = state->pxxa();
@@ -1462,7 +1463,7 @@ void L1KalmanComb::fillSeedHists( const kalmanState *state, const TP *tpa ){
 }
 
 
-void L1KalmanComb::fillStepHists( const TP *tpa, unsigned nItr, const kalmanState *new_state )
+void L1KalmanComb::fillStepHists( const TP *tpa, unsigned nItr, const KalmanState *new_state )
 {
   unsigned path = 0;
 
@@ -1555,7 +1556,6 @@ bool L1KalmanComb::isOverlap( const Stub* a, const Stub*b, OVERLAP_TYPE type ){
       if( fabs( b->z() - a->z() ) > 0.5 * b->stripLength() || fabs( reco::deltaPhi( b->phi(), sectorPhi() ) * b->r() - reco::deltaPhi( a->phi(), sectorPhi() ) * a->r() ) > 0.5 * b->stripPitch() ) return false;
     }
     else{
-      dr = DeltaRForClustering( a->endcapRing() ); 
       if( fabs( b->r() - a->r() ) > 0.5 * b->stripLength() || fabs( reco::deltaPhi( b->phi(), sectorPhi() ) * b->r() - reco::deltaPhi( a->phi(), sectorPhi() ) * a->r() ) > 0.5 * b->stripPitch() ) return false;
     }
     return true;

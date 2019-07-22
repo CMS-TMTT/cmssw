@@ -231,12 +231,8 @@ L1fittedTrack SimpleLR::fit( const L1track3D& l1track3D) {
     fitStubs.push_back(ResStubPair.first);
   }
 
-  qOverPt = 0.;
-  phi0 = 0.;
   phiT = 0.;
-  z0 = 0.;
   zT = 0.;
-  tanLambda = 0.;
   
   SumRPhi = 0.;
   SumR = 0.;
