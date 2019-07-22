@@ -86,8 +86,9 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		  }
 		  // Dynamic load balancing.
 		  if (settings_->miniHoughLoadBalance() >= 2) {
-                    const unsigned int nMix = 3;
-                    const unsigned int nSep = 6;
+                    const unsigned int nMix = 4;
+                    const unsigned int nSep = 8;
+
                     //unsigned int newerLinkBest = newLink;
                     //for (unsigned int j = 0; j < nMix; j++) {
                     //  unsigned int newerLink = (newLink + j * nSep)%nLinks;
