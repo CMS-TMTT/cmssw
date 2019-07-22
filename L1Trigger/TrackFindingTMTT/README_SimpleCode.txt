@@ -2,22 +2,22 @@
 * How to setup the framework and how to run our analysis code:
 
 The code is in GITHUB. It can be browsed in in
-https://github.com/CMS-TMTT/cmssw/blob/TMTT_1025/L1Trigger/TrackFindingTMTT/ . 
+https://github.com/CMS-TMTT/cmssw/blob/TMTT_1060/L1Trigger/TrackFindingTMTT/ . 
 (An older version of the code can be found in SVN in https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/software/cmssw/trunkSimpleCode9).
 
 - Setup a CMSSW environment. 
-cmsrel CMSSW_10_2_5
-cd CMSSW_10_2_5/src
+cmsrel CMSSW_10_6_0
+cd CMSSW_10_6_0/src
 cmsenv
 
 - Software checkout
 
-Check out from GIT following instructions in https://github.com/CMS-TMTT/cmssw/blob/TMTT_1025/L1Trigger/TrackFindingTMTT/README.md .
+Check out from GIT following instructions in https://github.com/CMS-TMTT/cmssw/blob/TMTT_1060/L1Trigger/TrackFindingTMTT/README.md .
 
 - MC samples 
-  You can use the RelVal samples in L1Trigger/TrackFindingTMTT/test/MCsamples/937/RelVal/ or MCsamples/932/RelVal/eclement/ . (Or in 1032/ if you want CMSSW 10 ones).
-  The CMSSW 9.3.7 samples are made with slightly looser stub windows than the 9.3.2 ones.
-  (The 9.3.2 ones originally missed the stub-truth association map, so Emyr Clement added it).
+  You can use the RelVal samples in L1Trigger/TrackFindingTMTT//test/MCsamples/1040/RelVal/ or 
+  L1Trigger/TrackFindingTMTT/test/MCsamples/937/RelVal/ .
+  These are based on CMS geometry D21 or D17 respectively. 
 
   It is strongly recommended to copy a sample of events to your local scratch disk, since this will run much
   faster than reading them from dcache or XROOTD.
