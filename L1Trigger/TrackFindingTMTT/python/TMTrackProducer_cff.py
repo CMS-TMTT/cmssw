@@ -25,6 +25,22 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 #--- Disable internal digitisation of SimpleLR fitter, as it was never retuned for nonants.
 TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 
+
+TMTrackProducer.HTFillingRphi.BusyInputSectorNumStubs = cms.uint32(114)
+TMTrackProducer.HTFillingRphi.BusySectorNumStubs = cms.uint32(138)
+TMTrackProducer.HTArraySpecRphi.NumSubSecsEta = cms.uint32(1)
+TMTrackProducer.HTFillingRphi. MaxStubsInCell = cms.uint32(144)
+TMTrackProducer.L1TrackDef.EtaSecsReduceLayers = cms.vuint32()
+
+# Use 16 m-bins per phi sector, rather than 18
+TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(32)
+TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2, 16)
+TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,16, 2,18, 4,20, 6,22, 8,24, 10,26, 12,28, 14,30, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31)
+# Increase ChosenRofPhi to keep HT gradient below one
+TMTrackProducer.PhiSectors.ChosenRofPhi      = cms.double(66.886)
+# Turn on LB for study
+TMTrackProducer.HTArraySpecRphi.MiniHoughLoadBalance = cms.uint32(2)
+
 #===================================================================================================
 #=== All the following parameters already have identical values in TMTrackProducer_Defaults_cfi .
 #=== They are listed here just to remind you of the most interesting parameters to play with.
