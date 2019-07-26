@@ -9,6 +9,8 @@ MiniHTstage::MiniHTstage( const Settings* settings ) :
         settings_( settings ),
         miniHTstage_( settings_->miniHTstage() ),
         muxOutputsHT_( settings_->muxOutputsHT() ),
+	houghNbinsPt_( settings_->houghNbinsPt() ),
+	houghNbinsPhi_( settings_->houghNbinsPhi() ),
         miniHoughNbinsPt_( settings_->miniHoughNbinsPt() ),
         miniHoughNbinsPhi_( settings_->miniHoughNbinsPhi() ),
         miniHoughMinPt_( settings_->miniHoughMinPt() ),
@@ -23,8 +25,8 @@ MiniHTstage::MiniHTstage( const Settings* settings ) :
         busySectorMbinRanges_( settings_->busySectorMbinRanges() ),
         chosenRofPhi_( settings_->chosenRofPhi() ),
 	// Get size of 1st stage HT cells.
-        binSizeQoverPtAxis_( miniHoughNbinsPt_ * 2. / (float)settings->houghMinPt() / (float)settings->houghNbinsPt() ),
-        binSizePhiTrkAxis_( miniHoughNbinsPhi_ * 2. * M_PI / (float)settings->numPhiSectors() / (float)settings->houghNbinsPhi() ),
+        binSizeQoverPtAxis_( miniHoughNbinsPt_ * 2. / (float)settings->houghMinPt() / (float)houghNbinsPt_ ),
+        binSizePhiTrkAxis_( miniHoughNbinsPhi_ * 2. * M_PI / (float)settings->numPhiSectors() / (float)houghNbinsPhi_ ),
         invPtToDphi_( settings_->invPtToDphi() ) {}
 
 void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
@@ -86,8 +88,10 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		  }
 		  // Dynamic load balancing.
 		  if (settings_->miniHoughLoadBalance() >= 2) {
-                    const unsigned int nMix = 3;
-                    const unsigned int nSep = 6;
+		    // The mixing for 32 mbins avoids data from different phi sectors being mixed together.
+                    //const unsigned int nMix = 3; // Old value for 36 mbins  
+                    const unsigned int nMix = 4; // New value for 32 mbins  
+                    const unsigned int nSep = 2*nMix;
                     //unsigned int newerLinkBest = newLink;
                     //for (unsigned int j = 0; j < nMix; j++) {
                     //  unsigned int newerLink = (newLink + j * nSep)%nLinks;

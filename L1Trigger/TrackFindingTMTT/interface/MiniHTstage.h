@@ -25,6 +25,8 @@ private:
   const Settings* settings_; // Configuration parameters
   bool miniHTstage_;
   unsigned int muxOutputsHT_;
+  unsigned int houghNbinsPt_;
+  unsigned int houghNbinsPhi_;
   unsigned int miniHoughNbinsPt_;
   unsigned int miniHoughNbinsPhi_;
   float miniHoughMinPt_;
