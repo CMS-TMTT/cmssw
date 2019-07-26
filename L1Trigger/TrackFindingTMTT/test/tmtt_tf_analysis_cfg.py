@@ -26,9 +26,9 @@ options = VarParsing.VarParsing ('analysis')
 
 #--- Specify input MC
 # D17 geom
-#options.register('inputMC', 'L1Trigger/TrackFindingTMTT//test/MCsamples/937/RelVal/TTbar/PU200.txt',
+#options.register('inputMC', 'L1Trigger/TrackFindingTMTT/test/MCsamples/937/RelVal/TTbar/PU200.txt',
 # D21 geom
-options.register('inputMC', 'L1Trigger/TrackFindingTMTT//test/MCsamples/1040/RelVal/PU200.txt',
+options.register('inputMC', 'L1Trigger/TrackFindingTMTT/test/MCsamples/1040/RelVal/TTbar/PU200.txt',
 
 # Fastest to use a local copy ...
 #options.register('inputMC', 'L1Trigger/TrackFindingTMTT//test/MCsamples/1040/RelVal/TTbar/localRAL/PU200.txt', 
