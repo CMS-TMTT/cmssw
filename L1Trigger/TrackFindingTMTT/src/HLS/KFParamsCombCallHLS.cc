@@ -13,7 +13,7 @@
 
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
-#include "L1Trigger/TrackFindingTMTT/interface/kalmanState.h"
+#include "L1Trigger/TrackFindingTMTT/interface/KalmanState.h"
 
 #include "FWCore/Utilities/interface/Exception.h"
 
@@ -25,20 +25,20 @@ namespace TMTT {
 //--- Explicit instantiation required for all non-specialized templates, to allow them to be implemented 
 //--- in .cc files.
 
-template KalmanHLS::KFstateHLS<4> KFParamsCombCallHLS::getDigiStateIn(unsigned int skipped, unsigned int layer, const kalmanState* state) const;
+template KalmanHLS::KFstateHLS<4> KFParamsCombCallHLS::getDigiStateIn(unsigned int skipped, unsigned int layer, const KalmanState* state) const;
 
-template KalmanHLS::KFstateHLS<5> KFParamsCombCallHLS::getDigiStateIn(unsigned int skipped, unsigned int layer, const kalmanState* state) const;
+template KalmanHLS::KFstateHLS<5> KFParamsCombCallHLS::getDigiStateIn(unsigned int skipped, unsigned int layer, const KalmanState* state) const;
 
-template const kalmanState* KFParamsCombCallHLS::getStateOut<4>(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<4>& stateOutDigi, const KalmanHLS::ExtraOutHLS<4>& extraOut);
+template const KalmanState* KFParamsCombCallHLS::getStateOut<4>(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<4>& stateOutDigi, const KalmanHLS::ExtraOutHLS<4>& extraOut);
 
-template const kalmanState* KFParamsCombCallHLS::getStateOut<5>(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<5>& stateOutDigi, const KalmanHLS::ExtraOutHLS<5>& extraOut);
+template const KalmanState* KFParamsCombCallHLS::getStateOut<5>(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<5>& stateOutDigi, const KalmanHLS::ExtraOutHLS<5>& extraOut);
 
 //--- Normal code below ...
 
 //=== Update KF helix params with this stub.
 //=== (Override KF state updator in L1KalmanComb with version suitable for HLS).
 
-const kalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster *stubCluster, const kalmanState &stateIn, const TP *tpa ) {
+const KalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster *stubCluster, const KalmanState &stateIn, const TP *tpa ) {
 
   //  cout.setf(ios::scientific, ios::floatfield); // Get useful debug printout ...
   cout.unsetf(ios::floatfield); // Get useful debug printout ...
@@ -71,7 +71,7 @@ const kalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned
     KalmanHLS::kalmanUpdateHLS(stubDigi, stateInDigi, stateOutDigi, extraOut);
 
     // Convert digitized ourput KF state to floating point.
-    const kalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, extraOut);
+    const KalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, extraOut);
 
     return newState;
 
@@ -86,7 +86,7 @@ const kalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned
     KalmanHLS::kalmanUpdateHLS(stubDigi, stateInDigi, stateOutDigi, extraOut);
 
     // Convert digitized ourput KF state to floating point.
-    const kalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, extraOut);
+    const KalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, extraOut);
 
     return newState;
   }
@@ -94,7 +94,7 @@ const kalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned
 
 //=== Get digital stub that the KF VHDL injects into the KF state updater (Maxeller/HLS)
 
-KalmanHLS::StubHLS KFParamsCombCallHLS::getDigiStub(const StubCluster* stubCluster, const kalmanState* state) {
+KalmanHLS::StubHLS KFParamsCombCallHLS::getDigiStub(const StubCluster* stubCluster, const KalmanState* state) {
   // Get digitised stub(s) making up stub cluster.
   const vector<const Stub*> stubs = stubCluster->stubs();
   if (stubs.size() != 1) throw cms::Exception("KFParamsCombCallHLS: Can't cope with StubCluster that doesn't contain a single stub")<<stubs.size()<<endl;
@@ -138,7 +138,7 @@ KalmanHLS::StubHLS KFParamsCombCallHLS::getDigiStub(const StubCluster* stubClust
 //=== for NPAR = 4 & 5 param helix fits.
 
 template <unsigned int NPAR>
-KalmanHLS::KFstateHLS<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skipped, unsigned int layer, const kalmanState* state) const {
+KalmanHLS::KFstateHLS<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skipped, unsigned int layer, const KalmanState* state) const {
   // Calculate factors to convert floating point helix params to digitized ones.
   // Based on constants & functions named *HWU* in
 //https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/firmware/trunk/cactusupgrades/projects/tracktrigger/kalmanfit/firmware/cgn/src/formats/Constants.maxj .
@@ -265,16 +265,16 @@ void KFParamsCombCallHLS::getDigiStateInUtil<5>(const vector<double>& helixParam
 //=== Convert digitized ourput KF state to floating point for both NPAR = 4 & 5 param helix fits.
 
 template<unsigned int NPAR>
-const kalmanState* KFParamsCombCallHLS::getStateOut(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<NPAR>& stateOutDigi, const KalmanHLS::ExtraOutHLS<NPAR>& extraOut) {
+const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<NPAR>& stateOutDigi, const KalmanHLS::ExtraOutHLS<NPAR>& extraOut) {
   // Convert digitized helix state to floating point one.
   // Also copy some info directly from input floating point to output floating point state, if unchanged.
 
-  // Fill arguments of L1KalmanComb::mkState(), which is called to make a kalmanState object.
+  // Fill arguments of L1KalmanComb::mkState(), which is called to make a KalmanState object.
   const L1track3D& candidate = stateIn->candidate();
   unsigned int n_skipped     = stateOutDigi.nSkippedLayers;
   unsigned int kLayer_next   = stateOutDigi.layerID; // Unchanged by KF updator.
   unsigned int layerId       = stateIn->layerId();
-  const kalmanState* last_state = stateIn; 
+  const KalmanState* last_state = stateIn; 
 
   // Factors to convert digitized helix params to floating ones are inverse of those in getDigiStateIn().
   vector<double> x(NPAR); // helix params
@@ -300,10 +300,10 @@ const kalmanState* KFParamsCombCallHLS::getStateOut(const kalmanState* stateIn, 
   const StubCluster* stubcl = stubCluster;
   double chi2 = (double(stateOutDigi.chiSquared) + 0.5 / pow(2, stateOutDigi.chiSquared.width - stateOutDigi.chiSquared.iwidth));
 
-  const kalmanState* ks = this->mkState(candidate, n_skipped, kLayer_next, layerId, last_state,
+  const KalmanState* ks = this->mkState(candidate, n_skipped, kLayer_next, layerId, last_state,
 				        x, pxx, K, dcov, stubcl, chi2);
 
-  (const_cast<kalmanState*>(ks))->setHLSextra(int(extraOut.mBinHelix) + getSettings()->houghNbinsPt()/2, int(extraOut.cBinHelix) + getSettings()->houghNbinsPhi()/2, bool(extraOut.consistent));
+  (const_cast<KalmanState*>(ks))->setHLSextra(int(extraOut.mBinHelix) + getSettings()->houghNbinsPt()/2, int(extraOut.cBinHelix) + getSettings()->houghNbinsPhi()/2, bool(extraOut.consistent));
 
 #ifdef IRT_DEBUG
   if (ks->candidate().getMatchedTP() != nullptr) {
@@ -344,7 +344,7 @@ void KFParamsCombCallHLS::getStateOutUtil<5>(const KalmanHLS::KFstateHLS<5>& sta
 //=== This is identical to version in KFParamsComb, deciding if a state passes cuts,
 //=== except that it also checks the cut decisions produced by the HLS KalmanUpdate.
 
-bool KFParamsCombCallHLS::isGoodState( const kalmanState &state ) const
+bool KFParamsCombCallHLS::isGoodState( const KalmanState &state ) const
 {
 
 #ifdef IRT_DEBUG

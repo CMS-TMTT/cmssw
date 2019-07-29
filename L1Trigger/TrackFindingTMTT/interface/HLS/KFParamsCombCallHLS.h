@@ -22,7 +22,7 @@ using namespace std;
 namespace TMTT {
 
 class TP; 
-class kalmanState;
+class KalmanState;
 class StubCluster;
 
 class KFParamsCombCallHLS : public KFParamsComb {
@@ -41,7 +41,7 @@ public:
 
   // Update KF helix params with this stub.
   // (Override KF state updator in L1KalmanComb with version suitable for HLS).
-  const kalmanState *kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster* stubCluster, const kalmanState &stateIn, const TP *);
+  const KalmanState *kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster* stubCluster, const KalmanState &stateIn, const TP *);
 
   // Print summary info to help tune bit ranges of HLS calculations.
   virtual void endJob() {KalmanHLS::CHECK_AP::printCheckMap();}
@@ -54,12 +54,12 @@ protected:
 private:
 
   // Get digital stub info that the KF VHDL injects into the KF state updater (Maxeller/HLS)
-  KalmanHLS::StubHLS    getDigiStub(const StubCluster* stubCluster, const kalmanState* state);
+  KalmanHLS::StubHLS    getDigiStub(const StubCluster* stubCluster, const KalmanState* state);
 
   // Get digitised KF state info that the KF VHDL injects into the KF state updater (Maxeller/HLS),
   // both for NPAR = 4 & 5 param helix states.
   template <unsigned int NPAR> 
-  KalmanHLS::KFstateHLS<NPAR> getDigiStateIn(unsigned int skipped, unsigned int layer, const kalmanState* state) const;
+  KalmanHLS::KFstateHLS<NPAR> getDigiStateIn(unsigned int skipped, unsigned int layer, const KalmanState* state) const;
 
   // Implement NPAR-specific code called by getDigiStateIn(...).
   template <unsigned int NPAR>
@@ -68,7 +68,7 @@ private:
   // Convert digitized ourput KF state to floating point,
   // both for NPAR = 4 & 5 param helix states.
   template <unsigned int NPAR>
-  const kalmanState* getStateOut(const kalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<NPAR>& stateOutDigi, const KalmanHLS::ExtraOutHLS<NPAR>& extraOut);
+  const KalmanState* getStateOut(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<NPAR>& stateOutDigi, const KalmanHLS::ExtraOutHLS<NPAR>& extraOut);
 
   // Implement NPAR-specific code call by getStateOut(...).
   template <unsigned int NPAR>
@@ -76,7 +76,7 @@ private:
 
   // This is identical to version in KFParamsComb, deciding if a state passes cuts,
   // except that it also checks the cut decisions produced by the HLS KalmanUpdate.
-  bool isGoodState( const kalmanState &state ) const;
+  bool isGoodState( const KalmanState &state ) const;
 
 private:
   // Digitisation multipliers
