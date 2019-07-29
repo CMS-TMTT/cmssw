@@ -190,8 +190,13 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
 
     p(INV2R,INV2R) = 0.0157 * 0.0157 * invPtToInv2R * invPtToInv2R * 4; 
     p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; 
-    p(Z0,Z0) = 5.0 * 5.0; // N.B. r-z seed uncertainties could be smaller for hybrid, except if seeded in 2S?
+    p(Z0,Z0) = 5.0 * 5.0; 
     p(T,T) = 0.25 * 0.25 * 4;
+    // N.B. (z0, tanL, d0) seed uncertainties could be smaller for hybrid, if seeded in PS? -- not tried
+    //if (l1track3D.seedPS() > 0) { // Tracklet seed used PS layers
+    //  p(Z0,Z0) /= (4.*4.).;
+    //  p(T,T) /= (4.*4.);
+    // }
     if (nPar_ == 5) {
       p(D0,D0) = d0Sigma * d0Sigma; 
     } 

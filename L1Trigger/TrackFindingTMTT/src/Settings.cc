@@ -8,6 +8,7 @@ namespace TMTT {
 
 Settings::Settings() {
   //
+  // TMTT related configuration parameters, including Kalman Filter.
   // Meaning of these parameters explained in TrackFindingTMTT/python/TMTrackProducer_Defaults_cfi.py
   //
   reduceLayerID_=true;
@@ -51,8 +52,9 @@ Settings::Settings() {
   kalmanFillInternalHists_=false;
   kalmanMultiScattTerm_=0.00075;
   kalmanMultiScattFactor_=0.0;
-
+  //
   // Cfg params & constants required only for HYBRID tracking (as taken from DB for TMTT).
+  //
   hybrid_=true;
   psStripPitch_=0.01;
   psNStrips_=960;
