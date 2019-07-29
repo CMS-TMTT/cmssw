@@ -61,7 +61,8 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		float phiBin = reco::deltaPhi( roughTrkPhi - binSizePhiTrkAxis_ / 2. + ( cBin + .5 ) * binSizePhiTrkAxis_ / settings_->miniHoughNbinsPhi(), 0. );
 		HTcell htCell;
 		const bool mergedCell = false; // This represents mini cell.
-		htCell.init( settings_, iPhiSec, iEtaReg, sector.etaMin(), sector.etaMax(), qOverPtBin, cell.first + mBin, mergedCell );
+		const bool miniHTcell = true; 
+		htCell.init( settings_, iPhiSec, iEtaReg, sector.etaMin(), sector.etaMax(), qOverPtBin, cell.first + mBin, mergedCell, miniHTcell );
 		// Firmware doesn't use bend filter in MHT.
 		htCell.disableBendFilter();
 

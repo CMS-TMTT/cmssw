@@ -163,7 +163,7 @@ TMTrackProducer_params = cms.PSet(
      # N.B. If mini-HT is in use, then this cut applies to coarse-HT.
      #MaxStubsInCell       = cms.uint32(99999), # Setting this to anything more than 99 disables this option
      MaxStubsInCell          = cms.uint32(32),    # set it equal to value used in hardware.
-     MaxStubsInCellMiniHough = cms.uint32(16),    # NOT YET ENABLED IN SOFTWARE. Same type of cut for mini-HT (if in use)
+     MaxStubsInCellMiniHough = cms.uint32(16),    # Same type of cut for mini-HT (if in use)
      # If BusySectorKill = True, and more than BusySectorNumStubs stubs are assigned to tracks by an r-phi HT array, then the excess tracks are killed, with lowest Pt ones killed first. This is because HT hardware has finite readout time.
      BusySectorKill       = cms.bool(True),
      BusySectorNumStubs   = cms.uint32(144),

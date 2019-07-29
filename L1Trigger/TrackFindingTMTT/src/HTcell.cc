@@ -12,7 +12,7 @@ namespace TMTT {
 
 void HTcell::init(const Settings* settings, unsigned int iPhiSec, unsigned int iEtaReg,
 		  float etaMinSector, float etaMaxSector, float qOverPt, unsigned int ibin_qOverPt, 
-		  bool mergedCell) 
+		  bool mergedCell, bool miniHTcell) 
 {
   settings_ = settings;
 
@@ -27,6 +27,8 @@ void HTcell::init(const Settings* settings, unsigned int iPhiSec, unsigned int i
   // Note bin number of cell along q/Pt axis of r-phi HT array. (Not used if r-z HT).
   ibin_qOverPt_ = ibin_qOverPt;
   mergedCell_ = mergedCell;
+  // Is cell in Mini-HT?
+  miniHTcell_ = miniHTcell;
   // Rapidity range of sector.
   etaMinSector_ = etaMinSector;
   etaMaxSector_ = etaMaxSector;
@@ -37,7 +39,11 @@ void HTcell::init(const Settings* settings, unsigned int iPhiSec, unsigned int i
   useBendFilter_ = settings->useBendFilter();
 
   // A filter is used each HT cell, which prevents more than the specified number of stubs being stored in the cell. (Reflecting memory limit of hardware).
-  maxStubsInCell_ = settings->maxStubsInCell();
+  if (miniHTcell_) {
+    maxStubsInCell_ = settings->maxStubsInCellMiniHough();
+  } else {
+    maxStubsInCell_ = settings->maxStubsInCell();
+  }
 
   // Check if subsectors are being used within each sector. These are only ever used for r-phi HT.
   numSubSecs_ = settings->numSubSecsEta();

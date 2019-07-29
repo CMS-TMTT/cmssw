@@ -140,6 +140,7 @@ public:
   bool                 useBendFilter()           const   {return useBendFilter_;} 
   // A filter is used each HT cell, which prevents more than the specified number of stubs being stored in the cell. (Reflecting memory limit of hardware). N.B. If mini-HT is in use, then this cut applies to coarse-HT.   
   unsigned int         maxStubsInCell()          const   {return maxStubsInCell_;}
+  // Similar cut for Mini-HT.
   unsigned int         maxStubsInCellMiniHough() const   {return maxStubsInCellMiniHough_;}
   // If this returns true, and if more than busySectorNumStubs() stubs are assigned to tracks by an r-phi HT array, then 
   // the excess tracks are killed, with lowest Pt ones killed first. This is because hardware has finite readout time.

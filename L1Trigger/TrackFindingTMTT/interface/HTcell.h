@@ -33,7 +33,7 @@ public:
   // and a flag indicating if this cell is the merge of smaller HT cells.
   void init(const Settings* settings, unsigned int iPhiSec, unsigned int iEtaReg, 
 	    float etaMinSector, float etaMaxSector, float qOverPt, unsigned int ibin_qOverPt, 
-	    bool mergedCell);
+	    bool mergedCell, bool miniHTcell=false);
 
   // Add stub to this cell in HT array.
   void store (const Stub* stub) { vStubs_.push_back(stub); }
@@ -118,6 +118,9 @@ private:
   unsigned int ibin_qOverPt_;
   // Is this HT cell the merge of smaller HT cells?
   bool mergedCell_;
+
+  // Is this cell in Mini-HT?
+  bool miniHTcell_;
 
   float invPtToDphi_; // B*c/2E11
  
