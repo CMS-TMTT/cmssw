@@ -397,8 +397,9 @@ public:
 
   double               pitchPS()                 const   {cout<<"ERROR: Use Stub::stripPitch instead of Settings::pitchPS!";exit(1);return 0.;} // pitch of PS modules - OBSOLETE
   double               pitch2S()                 const   {cout<<"ERROR: Use Stub::stripPitch instead of Settings::pitch2S!";exit(1);return 0.;} // pitch of 2S modules - OBSOLETE
-  double               invPtToInvR()             const   {return (this->getBfield())*(2.9979E8/1.0E11);} // B*c/1E11 - converts q/Pt to 1/radius_of_curvature
-  double               invPtToDphi()             const   {return (this->getBfield())*(2.9979E8/2.0E11);} // B*c/2E11 - converts q/Pt to track angle at some radius from beamline.  
+  double               cSpeed()                  const   {return 2.99792458e10;} // Speed of light (cm/s)
+  double               invPtToInvR()             const   {return (this->getBfield())*(this->cSpeed())/1.0E13;} // B*c/1E11 - converts q/Pt to 1/radius_of_curvature
+  double               invPtToDphi()             const   {return (this->getBfield())*(this->cSpeed())/2.0E13;} // B*c/2E11 - converts q/Pt to track angle at some radius from beamline.  
   double               trackerOuterRadius()      const   {return 112.7;}  // max. occuring stub radius.
   double               trackerInnerRadius()      const   {return  21.8;}  // min. occuring stub radius.
   double               trackerHalfLength()       const   {return 270.;}  // half-length of tracker. 

@@ -66,7 +66,7 @@ Settings::Settings() {
   zMaxNonTilted_[2] = 24.6; 
   zMaxNonTilted_[3] = 33.9; 
 
-  bField_=3.8112;
+  bField_=3.81120228767395;
 
   if (hybrid_) {
     if (not useApproxB_) {

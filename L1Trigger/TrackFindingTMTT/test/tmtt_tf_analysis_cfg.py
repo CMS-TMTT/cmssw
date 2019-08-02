@@ -190,11 +190,9 @@ if options.outputDataset == 1:
           dataTier = cms.untracked.string('GEN-SIM')
       )
   )
-  # Include TMTT L1 tracks, optionally excluding the debug ones only reconstructed by HT.
-  process.writeDataset.outputCommands.append('keep  *_TMTrackProducer_TML1Tracks*_*')
-  process.writeDataset.outputCommands.append('drop  *_TMTrackProducer_TML1TracksHT_*')
-  # Include TMTT L1 track to truth associators.
-  process.pd = cms.EndPath(process.writeDataset)
-  process.writeDataset.outputCommands.append('keep  *_TTAssociator*_TML1Tracks*_*')
+  # Include TMTT L1 tracks & associators + stubs.
+  process.writeDataset.outputCommands.append('keep  *TTTrack*_*_*_*')
+  process.writeDataset.outputCommands.append('keep  *TTStub*_*_*_*')
 
+  process.pd = cms.EndPath(process.writeDataset)
   process.schedule = cms.Schedule(process.p, process.pa, process.pd)

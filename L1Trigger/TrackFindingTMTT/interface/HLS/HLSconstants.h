@@ -42,8 +42,9 @@ static const StubHLS::TR chosenRofPhi = chosenRofPhi_flt*rMult;
 static const float chosenRofZ_flt = 50.0;
 static const StubHLS::TR chosenRofZ = chosenRofZ_flt*rMult;
 
-static const float bField = 3.8112;
-static const float invPtToInvR = bField*(2.9979e8/1.0e11);
+static const float bField = 3.81120228767395;
+static const float cSpeed = 2.99792458e10; // Speed of light (cm/s)
+static const float invPtToInvR = bField*(cSpeed/1.0e13);
 #ifdef PT_2GEV
 static const float minPt_HT = 2.; // Range of Hough transform
 #else

@@ -117,7 +117,12 @@ KalmanHLS::StubHLS KFParamsCombCallHLS::getDigiStub(const StubCluster* stubClust
 #ifdef IRT_DEBUG
   if (state->candidate().getMatchedTP() != nullptr) {
     unsigned int iPhiSec = state->candidate().iPhiSec();
-    float phiSec = 2.*M_PI * (0.5 + float(iPhiSec)) / float(getSettings()->numPhiSectors()) - M_PI;
+
+    // Centre of phi (tracking) nonant zero must be along x-axis to be consistent with tracker cabling map.
+    // Define phi sector zero  to start at lower end of phi range in nonant 0.
+    float phiCentreSec0 = -M_PI/float(getSettings()->numPhiNonants()) + M_PI/float(getSettings()->numPhiSectors());
+    float phiSec = 2.*M_PI * float(iPhiSec) / float(getSettings()->numPhiSectors()) + phiCentreSec0; // Centre of sector in phi
+
     float phiStubOff = reco::deltaPhi(digiStub.phi(), digiStub.phiS());
     cout<<"KF sector phi check "<<phiSec<<" "<<phiStubOff<<endl;
     cout<<"KF input stub: float (r,phi) = "<<stubs[0]->r()<<" "<<reco::deltaPhi(stubs[0]->phi(),phiSec)<<endl;
@@ -178,7 +183,8 @@ KalmanHLS::KFstateHLS<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int ski
 #ifdef IRT_DEBUG
   if (state->candidate().getMatchedTP() != nullptr) {
     unsigned int iPhiSec = state->candidate().iPhiSec();
-    float phiSec = 2.*M_PI * (0.5 + float(iPhiSec)) / float(getSettings()->numPhiSectors()) - M_PI;
+    float phiCentreSec0 = -M_PI/float(getSettings()->numPhiNonants()) + M_PI/float(getSettings()->numPhiSectors());
+    float phiSec = 2.*M_PI * float(iPhiSec) / float(getSettings()->numPhiSectors()) + phiCentreSec0; // Centre of sector in phi
     cout<<"KF Input track (float): q/pt = "<<inv2R/(0.5*getSettings()->invPtToInvR())<<" phi0 = "<<phi0<<endl;
     cout<<"KF Input track (digi): q/pt = "<<double(stateDigi.inv2R)/inv2R_Mult_/(0.5*getSettings()->invPtToInvR())<<" phi0 = "<<double(stateDigi.phi0)/phiMult_<<endl;
     cout<<"          truth: q/pt = "<<state->candidate().getMatchedTP()->qOverPt()<<" phi0 = "<<reco::deltaPhi(state->candidate().getMatchedTP()->phi0(),phiSec)<<endl;
@@ -308,7 +314,8 @@ const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, 
 #ifdef IRT_DEBUG
   if (ks->candidate().getMatchedTP() != nullptr) {
     unsigned int iPhiSec = ks->candidate().iPhiSec();
-    float phiSec = 2.*M_PI * (0.5 + float(iPhiSec)) / float(getSettings()->numPhiSectors()) - M_PI;
+    float phiCentreSec0 = -M_PI/float(getSettings()->numPhiNonants()) + M_PI/float(getSettings()->numPhiSectors());
+    float phiSec = 2.*M_PI * float(iPhiSec) / float(getSettings()->numPhiSectors()) + phiCentreSec0; // Centre of sector in phi
     double inv2R = x[0]; // Half inverse radius of curvature.
     double phi0  = x[1]; // Measured with respect to centre of phi sector.
     double tanL  = x[2];

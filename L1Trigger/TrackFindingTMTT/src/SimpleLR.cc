@@ -50,6 +50,7 @@ void SimpleLR::initRun(){
   shiftingBitsLambda_         = settings_->ShiftingBitsLambda();
   
   phiSectorWidth_             =  2.*M_PI / float(settings_->numPhiSectors());
+  phiNonantWidth_             =  2.*M_PI / float(settings_->numPhiNonants());
   
   chi2cut_                    = settings_->slr_chi2cut();
   invPtToDPhi_                = - settings_->invPtToDphi();
@@ -61,9 +62,11 @@ void SimpleLR::initRun(){
 
 L1fittedTrack SimpleLR::fit( const L1track3D& l1track3D) {
   if(settings_->debug()==6) cout << "=============== FITTING TRACK ====================" << endl;
-  phiSectorCentre = phiSectorWidth_ * (0.5 + double(l1track3D.iPhiSec())) - M_PI; 
 
-  if(digitize_) phiSectorCentre = floor(phiSectorCentre*phiTMult_)/phiTMult_;
+  double phiCentreSec0 = -0.5*phiNonantWidth_ + 0.5*phiSectorWidth_;
+  phiSectorCentre_ = phiSectorWidth_ * double(l1track3D.iPhiSec()) - phiCentreSec0; 
+
+  if(digitize_) phiSectorCentre_ = floor(phiSectorCentre_*phiTMult_)/phiTMult_;
 
   // Inizialise track fit parameters
   double qOverPt = 0.;
@@ -336,7 +339,7 @@ L1fittedTrack SimpleLR::fit( const L1track3D& l1track3D) {
     tanLambda = numeratorLambda*reciprocalZ/pow(2., dividerBitsHelixZ_ + shiftingBitsDenRZ_ - shiftingBitsLambda_);
     zT = numeratorZ0*reciprocalZ/pow(2., dividerBitsHelixZ_ + shiftingBitsDenRZ_ - shiftingBitsz0_);
 
-    phi0 = phiSectorCentre + phiT - qOverPt*settings_->chosenRofPhi();
+    phi0 = phiSectorCentre_ + phiT - qOverPt*settings_->chosenRofPhi();
     z0 = zT - tanLambda*settings_->chosenRofPhi();
 
     qOverPt = floor(qOverPt*qOverPtMult_)/qOverPtMult_;

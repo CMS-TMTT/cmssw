@@ -49,8 +49,11 @@ void Sector::init(const Settings* settings, unsigned int iPhiSec, unsigned int i
   */
 
   //=== Characteristics of this phi region.
-
-  phiCentre_ = 2.*M_PI * (0.5 + float(iPhiSec)) / float(settings->numPhiSectors()) - M_PI; // Centre of sector in phi
+  unsigned int numPhiSecPerNonant = (settings->numPhiSectors()) / (settings->numPhiNonants()); 
+  // Centre of phi (tracking) nonant zero must be along x-axis to be consistent with tracker cabling map.
+  // Define phi sector zero  to start at lower end of phi range in nonant 0.
+  float phiCentreSec0 = -M_PI/float(settings->numPhiNonants()) + M_PI/float(settings->numPhiSectors());
+  phiCentre_ = 2.*M_PI * float(iPhiSec) / float(settings->numPhiSectors()) + phiCentreSec0; // Centre of sector in phi
   sectorHalfWidth_ = M_PI / float(settings->numPhiSectors()); // Sector half width excluding overlaps.
   chosenRofPhi_     = settings->chosenRofPhi();
   useStubPhi_       = settings->useStubPhi();
@@ -256,23 +259,6 @@ Long64_t Sector::forceBitWidth( const float value, const UInt_t nBits) const {
 //=== Modified to configurable number of rT and z digisation bits by Ian, with advice from Luis.
 
 vector<bool> Sector::subEtaFwCalc(const int rT, const int z) const {
-
-  // Hard-wired constants from Kristian (from GP firmware) - no longer used in C++.
-  // HACK BEGIN
-  /*
-  float numPhiSecPerNon = 2.;
-  float numPhiSec = 8* numPhiSecPerNon;
-  float cBins = 64.;
-  float cBinBase = 2.0 * M_PI / numPhiSec / cBins; // 6.13592315e-3
-  float Bfield = 3.8112;
-  float Bconv = Bfield*0.00015;
-  float ptCut = 3.0;
-  float mBins = 32.;
-  float mBinBase = 2.0*Bconv /ptCut/mBins; // 1.191e-5
-  float rTBase = cBinBase/mBinBase / (1<<9); // 2.012464299
-  float zBase = 1./0.64;
-  */
-  // HACK END
 
   // Note number of reference bits used to digitize rT and z, used when GP authors determined some constants below.
   unsigned int rtBitsRef = 10;

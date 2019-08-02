@@ -125,7 +125,8 @@ void DigitalStub::makeGPinput(unsigned int iPhiSec) {
   rt_orig_ = r_orig_ - chosenRofPhi_;
 
   // Phi coord. of stub relative to centre of nonant.
-  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiNon)) - M_PI;
+  double phiNonantCentre = phiNonantWidth_ * double(iPhiNon);
+
   phiO_orig_ = reco::deltaPhi(phi_orig_, phiNonantCentre);
 
   //--- Digitize variables used exclusively in GP.
@@ -171,7 +172,9 @@ void DigitalStub::makeHTinput(unsigned int iPhiSec) {
   //--- Shift axes of coords. if required.
 
   // Centre of this sector in phi
-  double phiSectorCentre = phiSectorWidth_ * (0.5 + double(iPhiSec)) - M_PI; 
+  double phiCentreSec0 = -M_PI/float(numPhiNonants_) + M_PI/float(numPhiSectors_);
+  double phiSectorCentre = phiSectorWidth_ * float(iPhiSec) + phiCentreSec0; 
+
   // Point in sector from which stub phiS should be measured.
   double phiSectorRef = phiSectorCentre;
 
@@ -302,7 +305,7 @@ void DigitalStub::quickMakeGPinput(int iPhiSec) {
 
   // Phi coord. of stub relative to centre of nonant.
   unsigned int iPhiNon = floor(iPhiSec*numPhiNonants_/numPhiSectors_);
-  double phiNonantCentre = phiNonantWidth_ * (0.5 + double(iPhiNon)) - M_PI;
+  double phiNonantCentre = phiNonantWidth_ * double(iPhiNon);
   phiO_orig_ = reco::deltaPhi(phi_orig_, phiNonantCentre);
 
   //--- Digitize variables used exclusively in GP.
@@ -322,7 +325,9 @@ void DigitalStub::quickMakeHTinput(int iPhiSec) {
   //--- Shift axes of coords. if required.
 
   // Centre of this sector in phi
-  double phiSectorCentre = phiSectorWidth_ * (0.5 + double(iPhiSec)) - M_PI; 
+  double phiCentreSec0 = -M_PI/float(numPhiNonants_) + M_PI/float(numPhiSectors_);
+  double phiSectorCentre = phiSectorWidth_ * float(iPhiSec) + phiCentreSec0; 
+
   // Point in sector from which stub phiS should be measured.
   double phiSectorRef = phiSectorCentre;
 

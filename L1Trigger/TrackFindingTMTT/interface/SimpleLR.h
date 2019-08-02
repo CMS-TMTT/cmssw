@@ -33,7 +33,8 @@ protected:
 	const Settings* settings_;
 
 	float phiSectorWidth_;
-	float phiSectorCentre;
+	float phiSectorCentre_;
+	float phiNonantWidth_;
 
 	float phiMult_;
 	float rTMult_;

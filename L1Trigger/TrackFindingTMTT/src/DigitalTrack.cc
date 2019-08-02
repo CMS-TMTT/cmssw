@@ -99,7 +99,8 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
   // Get digitisation parameters for this particular track fitter.
   this->getDigiCfg(fitterName);
 
-  phiSectorCentre_ = phiSectorWidth_ * (0.5 + double(iPhiSec)) - M_PI; 
+  double phiCentreSec0 = -M_PI/float(numPhiNonants_) + M_PI/float(numPhiSectors_);
+  phiSectorCentre_ = phiSectorWidth_ * float(iPhiSec) + phiCentreSec0; 
 
   qOverPt_orig_   = qOverPt_orig;
   oneOver2r_orig_ = qOverPt_orig*invPtToDPhi_;
