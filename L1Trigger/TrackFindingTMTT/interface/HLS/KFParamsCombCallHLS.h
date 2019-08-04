@@ -12,10 +12,10 @@
 #define __KFPARAMSCOMBCALLHLS__
  
 #include "L1Trigger/TrackFindingTMTT/interface/KFParamsComb.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSpragmaOpts.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSconstants.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFpragmaOpts.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFconstants.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstub.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstate.h"
 
 using namespace std;
 
@@ -31,9 +31,9 @@ public:
 
   KFParamsCombCallHLS(const Settings* settings, const uint nPar, const string &fitterName ) : KFParamsComb(settings, nPar, fitterName) {
 #ifdef PT_2GEV
-    if (settings->houghMinPt() > 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit HLSpragmaOpts.h to undefine PT_2GEV");
+    if (settings->houghMinPt() > 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit KFpragmaOpts.h to undefine PT_2GEV");
 #else
-    if (settings->houghMinPt() < 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit HLSpragmaOpts.h to define PT_2GEV");
+    if (settings->houghMinPt() < 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit KFpragmaOpts.h to define PT_2GEV");
 #endif
   }
 
@@ -54,25 +54,25 @@ protected:
 private:
 
   // Get digital stub info that the KF VHDL injects into the KF state updater (Maxeller/HLS)
-  KalmanHLS::StubHLS    getDigiStub(const StubCluster* stubCluster, const KalmanState* state);
+  KalmanHLS::KFstubC    getDigiStub(const StubCluster* stubCluster, const KalmanState* state);
 
   // Get digitised KF state info that the KF VHDL injects into the KF state updater (Maxeller/HLS),
   // both for NPAR = 4 & 5 param helix states.
   template <unsigned int NPAR> 
-  KalmanHLS::KFstateHLS<NPAR> getDigiStateIn(unsigned int skipped, unsigned int layer, const KalmanState* state) const;
+  KalmanHLS::KFstate<NPAR> getDigiStateIn(unsigned int skipped, unsigned int layer, const KalmanState* state) const;
 
   // Implement NPAR-specific code called by getDigiStateIn(...).
   template <unsigned int NPAR>
-  void getDigiStateInUtil(const vector<double>& helixParams, const TMatrixD& cov, KalmanHLS::KFstateHLS<NPAR>& stateDigi) const;
+  void getDigiStateInUtil(const vector<double>& helixParams, const TMatrixD& cov, KalmanHLS::KFstate<NPAR>& stateDigi) const;
 
   // Convert digitized ourput KF state to floating point,
   // both for NPAR = 4 & 5 param helix states.
   template <unsigned int NPAR>
-  const KalmanState* getStateOut(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstateHLS<NPAR>& stateOutDigi, const KalmanHLS::ExtraOutHLS<NPAR>& extraOut);
+  const KalmanState* getStateOut(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstate<NPAR>& stateOutDigi, const KalmanHLS::KFcuts<NPAR>& cutsOutDigi);
 
   // Implement NPAR-specific code call by getStateOut(...).
   template <unsigned int NPAR>
-  void getStateOutUtil(const KalmanHLS::KFstateHLS<NPAR>& stateOutDigi, const KalmanHLS::ExtraOutHLS<NPAR>& extraOut, vector<double>& x, TMatrixD& pxx);
+  void getStateOutUtil(const KalmanHLS::KFstate<NPAR>& stateOutDigi, const KalmanHLS::KFcuts<NPAR>& cutsOutDigi, vector<double>& x, TMatrixD& pxx);
 
   // This is identical to version in KFParamsComb, deciding if a state passes cuts,
   // except that it also checks the cut decisions produced by the HLS KalmanUpdate.
@@ -91,23 +91,23 @@ private:
   unsigned int numEtaRegions_;
 
   // Store the extra info provided by the HLS updator about whether the state passes cuts.
-  KalmanHLS::ExtraOutHLS<4> extraOut4_;
-  KalmanHLS::ExtraOutHLS<5> extraOut5_;
+  KalmanHLS::KFcuts<4> cutsOutDigi4_;
+  KalmanHLS::KFcuts<5> cutsOutDigi5_;
 };
 
 // Fully specialized templates must be declared outside class, but inside .h file, to ensure they are found.
 
 template <>
-void KFParamsCombCallHLS::getDigiStateInUtil<4>(const vector<double>& helixParams, const TMatrixD& cov, KalmanHLS::KFstateHLS<4>& stateDigi) const;
+void KFParamsCombCallHLS::getDigiStateInUtil<4>(const vector<double>& helixParams, const TMatrixD& cov, KalmanHLS::KFstate<4>& stateDigi) const;
 
 template <>
-void KFParamsCombCallHLS::getDigiStateInUtil<5>(const vector<double>& helixParams, const TMatrixD& cov, KalmanHLS::KFstateHLS<5>& stateDigi) const;
+void KFParamsCombCallHLS::getDigiStateInUtil<5>(const vector<double>& helixParams, const TMatrixD& cov, KalmanHLS::KFstate<5>& stateDigi) const;
 
 template <>
-void KFParamsCombCallHLS::getStateOutUtil<4>(const KalmanHLS::KFstateHLS<4>& stateOutDigi, const KalmanHLS::ExtraOutHLS<4>& extraOut, vector<double>& x, TMatrixD& pxx);
+void KFParamsCombCallHLS::getStateOutUtil<4>(const KalmanHLS::KFstate<4>& stateOutDigi, const KalmanHLS::KFcuts<4>& cutsOutDigi, vector<double>& x, TMatrixD& pxx);
 
 template <>
-void KFParamsCombCallHLS::getStateOutUtil<5>(const KalmanHLS::KFstateHLS<5>& stateOutDigi, const KalmanHLS::ExtraOutHLS<5>& extraOut, vector<double>& x, TMatrixD& pxx);
+void KFParamsCombCallHLS::getStateOutUtil<5>(const KalmanHLS::KFstate<5>& stateOutDigi, const KalmanHLS::KFcuts<5>& cutsOutDigi, vector<double>& x, TMatrixD& pxx);
 }
 
 #endif

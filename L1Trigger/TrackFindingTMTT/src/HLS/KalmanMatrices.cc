@@ -8,13 +8,13 @@
  */
 
 #ifdef CMSSW_GIT_HASH
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS4.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS5.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices4.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices5.h"
 #else
-#include "KalmanMatricesHLS.h"
-#include "KalmanMatricesHLS4.h"
-#include "KalmanMatricesHLS5.h"
+#include "KalmanMatrices.h"
+#include "KalmanMatrices4.h"
+#include "KalmanMatrices5.h"
 #endif
 
 #ifdef PRINT_SUMMARY
@@ -36,7 +36,7 @@ template MatrixInverseR<5>::MatrixInverseR(const MatrixR<5>& R);
 
 // Covariance matrix of stub coords.
 
-MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>::TR& inv2R, const KFstateHLS<4>::TT& tanL, const AP_INT(BHT_M)& mBin) : _01(0), _10(_01) {
+MatrixV::MatrixV(const KFstubN::TR& r, const KFstubN::TZ& z, const KFstateN::TR& inv2R, const KFstateN::TT& tanL, const KFstateN::TM& mBin) : _01(0), _10(_01) {
 
   // Numbers from http://ghugo.web.cern.ch/ghugo/layouts/July/OT613_200_IT4025/layout.html
   // Module pitch for tilted tracker geometry divided by sqrt(12) to get resolution.
@@ -50,13 +50,6 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
   //static const TM lengthPS   = rMult*invRoot12*0.15;
   static const TM lengthPS   = 1.41*rMult*invRoot12*0.15; 
   static const TM length2S   = rMult*invRoot12*5.02;       // < 16
-
-  // These boundaries are for tilted tracker geometry.
-  static const StubHLS::TZ zBarrel     = rMult*125.; // Largest z in barrel.
-  static const StubHLS::TZ zWheel12    = rMult*170.; // Largest z of endcap wheels 1 or 2.
-  static const StubHLS::TR rPSbarrel   = rMult*60.0;  // r of PS-2S transition in barrel.
-  static const StubHLS::TR rPSwheel12  = rMult*66.4; // r below which stub certain to be PS if in endcap wheels 1 or 2.
-  static const StubHLS::TR rPSwheel345 = rMult*64.6; // r below which stub certain to be PS if in endcap wheels 3, 4 or 5.
 
   // Initialise pitch/r ROMs.
   static const PitchOverR_2 calcPitchPSoverR_2(pitchPS);
@@ -73,9 +66,9 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
 #endif
 
 #ifdef CMSSW_GIT_HASH
-  StubHLS::TZ absZ = fabs(float(z));  
+  KFstubN::TZ absZ = fabs(float(z));  
 #else
-  StubHLS::TZ absZ = hls::abs(z);  
+  KFstubN::TZ absZ = hls::abs(z);  
 #endif
 
   // Use same granularity for resolution as for residuals.
@@ -132,7 +125,7 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
   TVPP sigmaPhiScat2 = calcScatTerm2.getIt(mBin);
 
   // IRT - check if using DSPs gives better accuracy that LUT
-  //static const float junk = 2*rMult*kalmanMultScatTerm/invPtToInvR;
+  //static const float junk = rMult*kalmanMultScatTerm/invPtToInv2R;
   //static const float junk2 = junk*junk;
   //TVPP sigmaPhiScat2 = junk2*float(inv2R*inv2R); 
 
@@ -141,15 +134,15 @@ MatrixV::MatrixV(const StubHLS::TR& r, const StubHLS::TZ& z, const KFstateHLS<4>
 
 #ifdef PRINT_SUMMARY
   CHECK_AP::checkCalc("sigmaPhiScat2", sigmaPhiScat2,
-    pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2), 0.2, pow(0.0002*phiMult,2));
+    pow(kalmanMultScatTerm*double(rMult)*double(inv2R)/invPtToInv2R, 2), 0.2, pow(0.0002*phiMult,2));
   CHECK_AP::checkCalc("V00", _00,
-		      double(sigmaPhi2) + double(sigmaPhiExtra2) + pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2), 0.4, 30.); // Very inaccurate as mBin not identical to fitted inv2R?
+		      double(sigmaPhi2) + double(sigmaPhiExtra2) + pow(kalmanMultScatTerm*double(rMult)*double(inv2R)/invPtToInv2R, 2), 0.4, 30.); // Very inaccurate as mBin not identical to fitted inv2R?
   CHECK_AP::checkCalc("V11", _11, pow(double(sigmaZ), 2));
 #endif
 #ifdef PRINT
   std::cout<<"2S="<<_2Smodule<<" ENDCAP="<<(absZ > zBarrel)<<" (r,z)=("<<r<<", "<<z<<")"<<std::endl;
   std::cout<<"SIGMA RPHI="<<sqrt(double(_00))/double(phiMult)<<" SIGMA_RZ="<<sqrt(double(_11))/double(rMult)<<" EXTRA="<<sqrt(double(sigmaPhiExtra2))/double(phiMult)<<" SCAT="<<sqrt(double(sigmaPhiScat2))/double(phiMult)<<std::endl;
-  std::cout<<"SCAT CHECK: "<<mBin<<" "<<double(inv2R)/double(inv2Rcut)<<" RESULT: DIGI="<<double(sigmaPhiScat2)<<" FLOAT="<<pow(kalmanMultScatTerm*2.*double(rMult)*double(inv2R)/invPtToInvR, 2)<<std::endl;
+  std::cout<<"SCAT CHECK: "<<mBin<<" "<<double(inv2R)/double(inv2Rcut)<<" RESULT: DIGI="<<double(sigmaPhiScat2)<<" FLOAT="<<pow(kalmanMultScatTerm*double(rMult)*double(inv2R)/invPtToInv2R, 2)<<std::endl;
   std::cout<<"  V00="<<_00<<"   V11="<<_11<<std::endl;
 #endif
 

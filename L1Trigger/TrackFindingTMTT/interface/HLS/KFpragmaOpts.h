@@ -1,5 +1,5 @@
-#ifndef __HLSpragmaOpts__
-#define __HLSpragmaOpts__
+#ifndef __KFpragmaOpts__
+#define __KFpragmaOpts__
 
 /**
  * Define options specified by pragma statements.

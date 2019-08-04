@@ -6,9 +6,9 @@
 ///=== Written by: Ian Tomalin
 
 #ifdef CMSSW_GIT_HASH
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS5.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices5.h"
 #else
-#include "KalmanMatricesHLS5.h"
+#include "KalmanMatrices5.h"
 #endif
 
 #ifdef PRINT_SUMMARY
@@ -23,7 +23,7 @@ namespace KalmanHLS {
 
 // Calculate matrix of derivatives of predicted stub coords w.r.t. helix params.
 
-MatrixH<5>::THD MatrixH<5>::setH04(const StubHLS::TR& r) {
+MatrixH<5>::THD MatrixH<5>::setH04(const KFstubN::TR& r) {
   static const MinusOneOverR calcMinusOneOverR; // Get -1/r   
   THD h04 = calcMinusOneOverR.get[r.to_uint() >> MinusOneOverR::BRED];
   return h04;
@@ -165,17 +165,17 @@ VectorX<5>::VectorX(const VectorX<5>& x, const MatrixK<5>& K, const VectorRes<5>
   typedef MatrixK<5>::TK31_short TK31_short;
   typedef MatrixK<5>::TK40_short TK40_short;
   typedef MatrixK<5>::T0         T0;
-  _0 = x._0 + KFstateHLS<5>::TR(TK00_short(K._00) * res._0 + T0        (K._01) * res._1);
-  _1 = x._1 + KFstateHLS<5>::TP(TK10_short(K._10) * res._0 + T0        (K._11) * res._1);
-  _2 = x._2 + KFstateHLS<5>::TT(T0        (K._20) * res._0 + TK21_short(K._21) * res._1);
-  _3 = x._3 + KFstateHLS<5>::TZ(T0        (K._30) * res._0 + TK31_short(K._31) * res._1);
-  _4 = x._4 + KFstateHLS<5>::TD(TK40_short(K._40) * res._0 + T0        (K._41) * res._1);
+  _0 = x._0 + KFstateN::TR(TK00_short(K._00) * res._0 + T0        (K._01) * res._1);
+  _1 = x._1 + KFstateN::TP(TK10_short(K._10) * res._0 + T0        (K._11) * res._1);
+  _2 = x._2 + KFstateN::TT(T0        (K._20) * res._0 + TK21_short(K._21) * res._1);
+  _3 = x._3 + KFstateN::TZ(T0        (K._30) * res._0 + TK31_short(K._31) * res._1);
+  _4 = x._4 + KFstateN::TD(TK40_short(K._40) * res._0 + T0        (K._41) * res._1);
 #else
-  _0 = x._0 + KFstateHLS<5>::TR(K._00 * SW_FLOAT(res._0) + K._01 * SW_FLOAT(res._1)); 
-  _1 = x._1 + KFstateHLS<5>::TP(K._10 * SW_FLOAT(res._0) + K._11 * SW_FLOAT(res._1)); 
-  _2 = x._2 + KFstateHLS<5>::TT(K._20 * SW_FLOAT(res._0) + K._21 * SW_FLOAT(res._1)); 
-  _3 = x._3 + KFstateHLS<5>::TZ(K._30 * SW_FLOAT(res._0) + K._31 * SW_FLOAT(res._1)); 
-  _4 = x._4 + KFstateHLS<5>::TD(K._40 * SW_FLOAT(res._0) + K._41 * SW_FLOAT(res._1)); 
+  _0 = x._0 + KFstateN::TR(K._00 * SW_FLOAT(res._0) + K._01 * SW_FLOAT(res._1)); 
+  _1 = x._1 + KFstateN::TP(K._10 * SW_FLOAT(res._0) + K._11 * SW_FLOAT(res._1)); 
+  _2 = x._2 + KFstateN::TT(K._20 * SW_FLOAT(res._0) + K._21 * SW_FLOAT(res._1)); 
+  _3 = x._3 + KFstateN::TZ(K._30 * SW_FLOAT(res._0) + K._31 * SW_FLOAT(res._1)); 
+  _4 = x._4 + KFstateN::TD(K._40 * SW_FLOAT(res._0) + K._41 * SW_FLOAT(res._1)); 
 #endif
 }
 
@@ -188,25 +188,25 @@ MatrixC<5>::MatrixC(const MatrixC<5>& C, const MatrixK<5>& K, const MatrixS<5>& 
 {
   // Covariance matrix is symmetric & some elements can be neglected.
 #ifdef USE_FIXED
-  _00 =  C._00 - KFstateHLS<5>::TC00(K._00 * S._00 + K._01 * S._10);
-  _11 =  C._11 - KFstateHLS<5>::TC11(K._10 * S._01 + K._11 * S._11);
-  _22 =  C._22 - KFstateHLS<5>::TC22(K._20 * S._02 + K._21 * S._12);
-  _33 =  C._33 - KFstateHLS<5>::TC33(K._30 * S._03 + K._31 * S._13);
-  _44 =  C._44 - KFstateHLS<5>::TC44(K._40 * S._04 + K._41 * S._14);
-  _01 =  C._01 - KFstateHLS<5>::TC01(K._00 * S._01 + K._01 * S._11);
-  _23 =  C._23 - KFstateHLS<5>::TC23(K._20 * S._03 + K._21 * S._13);
-  _04 =  C._04 - KFstateHLS<5>::TC04(K._00 * S._04 + K._01 * S._14);
-  _14 =  C._14 - KFstateHLS<5>::TC14(K._10 * S._04 + K._11 * S._14);
+  _00 =  C._00 - KFstateN::TC00(K._00 * S._00 + K._01 * S._10);
+  _11 =  C._11 - KFstateN::TC11(K._10 * S._01 + K._11 * S._11);
+  _22 =  C._22 - KFstateN::TC22(K._20 * S._02 + K._21 * S._12);
+  _33 =  C._33 - KFstateN::TC33(K._30 * S._03 + K._31 * S._13);
+  _44 =  C._44 - KFstateN::TC44(K._40 * S._04 + K._41 * S._14);
+  _01 =  C._01 - KFstateN::TC01(K._00 * S._01 + K._01 * S._11);
+  _23 =  C._23 - KFstateN::TC23(K._20 * S._03 + K._21 * S._13);
+  _04 =  C._04 - KFstateN::TC04(K._00 * S._04 + K._01 * S._14);
+  _14 =  C._14 - KFstateN::TC14(K._10 * S._04 + K._11 * S._14);
 #else
-  _00 =  C._00 - KFstateHLS<5>::TC00(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
-  _11 =  C._11 - KFstateHLS<5>::TC11(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
-  _22 =  C._22 - KFstateHLS<5>::TC22(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
-  _33 =  C._33 - KFstateHLS<5>::TC33(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
-  _44 =  C._44 - KFstateHLS<5>::TC44(K._40 * SW_FLOAT(S._04) + K._41 * SW_FLOAT(S._14));
-  _01 =  C._01 - KFstateHLS<5>::TC01(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
-  _23 =  C._23 - KFstateHLS<5>::TC23(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
-  _04 =  C._04 - KFstateHLS<5>::TC04(K._00 * SW_FLOAT(S._04) + K._01 * SW_FLOAT(S._14));
-  _14 =  C._14 - KFstateHLS<5>::TC14(K._10 * SW_FLOAT(S._04) + K._11 * SW_FLOAT(S._14));
+  _00 =  C._00 - KFstateN::TC00(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
+  _11 =  C._11 - KFstateN::TC11(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
+  _22 =  C._22 - KFstateN::TC22(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
+  _33 =  C._33 - KFstateN::TC33(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
+  _44 =  C._44 - KFstateN::TC44(K._40 * SW_FLOAT(S._04) + K._41 * SW_FLOAT(S._14));
+  _01 =  C._01 - KFstateN::TC01(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
+  _23 =  C._23 - KFstateN::TC23(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
+  _04 =  C._04 - KFstateN::TC04(K._00 * SW_FLOAT(S._04) + K._01 * SW_FLOAT(S._14));
+  _14 =  C._14 - KFstateN::TC14(K._10 * SW_FLOAT(S._04) + K._11 * SW_FLOAT(S._14));
 #endif
 
 #ifdef PRINT_SUMMARY

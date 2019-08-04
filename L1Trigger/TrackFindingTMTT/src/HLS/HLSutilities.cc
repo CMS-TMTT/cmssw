@@ -10,10 +10,6 @@
 #include "HLSutilities.h"
 #endif
 
-#ifdef PRINT_SUMMARY
-#include <iostream>
-#endif
-
 #ifdef CMSSW_GIT_HASH
 namespace TMTT {
 

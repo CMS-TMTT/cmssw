@@ -9,23 +9,23 @@
  */
 
  
-#ifndef __KalmanUpdateHLS__
-#define __KalmanUpdateHLS__
+#ifndef __KalmanUpdate__
+#define __KalmanUpdate__
 
 #ifdef CMSSW_GIT_HASH
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSutilities.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS4.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS5.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstub.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstate.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices4.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices5.h"
 #else
 #include "HLSutilities.h"
-#include "StubHLS.h"
-#include "KFstateHLS.h"
-#include "KalmanMatricesHLS.h"
-#include "KalmanMatricesHLS4.h"
-#include "KalmanMatricesHLS5.h"
+#include "KFstub.h"
+#include "KFstate.h"
+#include "KalmanMatrices.h"
+#include "KalmanMatrices4.h"
+#include "KalmanMatrices5.h"
 #endif
  
 #ifdef CMSSW_GIT_HASH
@@ -37,7 +37,7 @@ namespace KalmanHLS {
 // Internal interface.
 // Add stub to old KF helix state to get new KF helix state for NPAR = 4 or 5 param helix fits.
 template <unsigned int NPAR>
-void kalmanUpdateHLS(const StubHLS& stub, const KFstateHLS<NPAR>& stateIn, KFstateHLS<NPAR>& stateOut, ExtraOutHLS<NPAR>& extraOut);
+void kalmanUpdateHLS(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPAR>& stateOut, KFcuts<NPAR>& cutsOut);
 
 // Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
 template <unsigned int NPAR>
@@ -46,7 +46,7 @@ TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& R
 // Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.
 // (Relevant only to 5-param helix fit)
 template <unsigned int NPAR>
-void setOutputsD0(const VectorX<NPAR>& x_new, const MatrixC<NPAR>& C_new, const AP_UINT(3)& nStubs, KFstateHLS<NPAR>& stateOut, ExtraOutHLS<NPAR>& extraOut);
+void setOutputsD0(const VectorX<NPAR>& x_new, const MatrixC<NPAR>& C_new, const AP_UINT(3)& nStubs, KFstate<NPAR>& stateOut, KFcuts<NPAR>& cutsOut);
 
 // Fully specialized function templates must also be declared to ensure they are found.
 

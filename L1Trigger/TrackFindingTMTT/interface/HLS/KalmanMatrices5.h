@@ -7,24 +7,24 @@
  * Author: Ian Tomalin
  */
  
-#ifndef __KalmanMatricesHLS5__
-#define __KalmanMatricesHLS5__
+#ifndef __KalmanMatrices5__
+#define __KalmanMatrices5__
 
-// Defines StateHLS & KFstateHLS. Also defines finite bit integers & floats.
+// Defines StateHLS & KFstate. Also defines finite bit integers & floats.
 #ifdef CMSSW_GIT_HASH
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSutilities.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/StubHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstateHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/HLSconstants.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS.h"
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS4.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstub.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFstate.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFconstants.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices4.h"
 #else
 #include "HLSutilities.h"
-#include "StubHLS.h"
-#include "KFstateHLS.h"
-#include "HLSconstants.h"
-#include "KalmanMatricesHLS.h"
-#include "KalmanMatricesHLS5.h"
+#include "KFstub.h"
+#include "KFstate.h"
+#include "KFconstants.h"
+#include "KalmanMatrices.h"
+#include "KalmanMatrices5.h"
 #endif
  
 #ifdef CMSSW_GIT_HASH
@@ -38,9 +38,9 @@ namespace KalmanHLS {
 class MinusOneOverR {
 public:
   enum {BRED = 4}; // To save ROM resources, reduce granularity in r by this number of bits.
-  enum {MAXN = 1 << (BSR - BRED)}; // pow(2,BSR) // Max. value of [r / pow(2,BRED)].
+  enum {MAXN = 1 << (KFstubN::BR - BRED)}; // pow(2,BR) // Max. value of [r / pow(2,BRED)].
   enum {BIR = -8}; // Chosen using CheckCalc output.
-  typedef AP_FIXED(BSR+1,BIR) TIR;
+  typedef AP_FIXED(1+KFstubN::BR,BIR) TIR;
 public:
 
   MinusOneOverR() {
@@ -58,12 +58,12 @@ public:
 template <>
 class MatrixH<5> {
 public:
-  enum {BH=BSR+1};
+  enum {BH=1+KFstubN::BR};
   enum {BHD=MinusOneOverR::BIR};
   typedef AP_FIXED(BH,BH)  TH;  // One extra bit, since "-r" can be -ve.
   typedef AP_FIXED(BH,BHD) THD; // For d0 elements (which have size -1/r)
   typedef AP_UFIXED(1,1)   T1;
-  MatrixH(const StubHLS::TR& r) : _00(-r),         _12(r),         _04(this->setH04(r)),
+  MatrixH(const KFstubN::TR& r) : _00(-r),         _12(r),         _04(this->setH04(r)),
                                            _01(1), _02(0), _03(0),
                                   _10(0),  _11(0),         _13(1), _14(0) {
 #ifdef PRINT_SUMMARY
@@ -72,7 +72,7 @@ public:
   }
 
   // Set element _04 to -1/r.
-  static THD setH04(const StubHLS::TR& r);
+  static THD setH04(const KFstubN::TR& r);
 
 public:
   TH       _00, _12;
@@ -89,11 +89,11 @@ public:
   enum {BH=MatrixH<5>::BH, BHD=MatrixH<5>::BHD,
   // Calculate number of integer bits required for all non-zero elements of S.
   // (Assumes that some elements of C & H are zero and that all non-trivial elements of H have BH or BHD bits).
-        BS00=MAX3(BH+BHC00, BHC01, BHD+BHC04) - BODGE<5>::S,  // H00*C00 + H01*C10 + (H02*C20 + H03*C30 = zero) + H04*C40.
-        BS01=MAX3(BH+BHC01, BHC11, BHD+BHC14) - BODGE<5>::S,  // H00*C01 + H01*C11 + (H02*C21 + H03*C31 = zero) + H04*C41.
-        BS12=MAX2(BH+BHC22, BHC23)            - BODGE<5>::S,  // (H10*C02 + H11*C12 = zero) + H12*C22 + H13*C32 + (H14*C42 = zero).
-	BS13=MAX2(BH+BHC23, BHC33)            - BODGE<5>::S,  // (H10*C03 + H11*C13 = zero) + H12*C23 + H13*C33 + (H14*C43 = zero);
-        BS04=MAX3(BH+BHC04, BHC14, BHD+BHC44) - BODGE<5>::S  // H00*C04 + H01*C14 + (H02*C24 + H03*C34 = zero) + H04*C44.
+        BS00=MAX3(BH+KFstateN::BC00, KFstateN::BC01, BHD+KFstateN::BC04) - BODGE<5>::S,  // H00*C00 + H01*C10 + (H02*C20 + H03*C30 = zero) + H04*C40.
+        BS01=MAX3(BH+KFstateN::BC01, KFstateN::BC11, BHD+KFstateN::BC14) - BODGE<5>::S,  // H00*C01 + H01*C11 + (H02*C21 + H03*C31 = zero) + H04*C41.
+        BS12=MAX2(BH+KFstateN::BC22, KFstateN::BC23)            - BODGE<5>::S,  // (H10*C02 + H11*C12 = zero) + H12*C22 + H13*C32 + (H14*C42 = zero).
+	BS13=MAX2(BH+KFstateN::BC23, KFstateN::BC33)            - BODGE<5>::S,  // (H10*C03 + H11*C13 = zero) + H12*C23 + H13*C33 + (H14*C43 = zero);
+        BS04=MAX3(BH+KFstateN::BC04, KFstateN::BC14, BHD+KFstateN::BC44) - BODGE<5>::S  // H00*C04 + H01*C14 + (H02*C24 + H03*C34 = zero) + H04*C44.
        };
   typedef AP_FIXED(B27,BS00)  TS00;
   typedef AP_FIXED(B27,BS01)  TS01;
@@ -125,7 +125,7 @@ public:
   typedef AP_UFIXED(1,1)      T0; // HLS doesn't like zero bit variables.
 
   // Determine input helix coviaraiance matrix.
-  MatrixC(const KFstateHLS<5>& stateIn) :
+  MatrixC(const KFstate<5>& stateIn) :
              _00(stateIn.cov_00), _11(stateIn.cov_11), _22(stateIn.cov_22), _33(stateIn.cov_33), _44(stateIn.cov_44),
 	     _01(stateIn.cov_01), _23(stateIn.cov_23), _04(stateIn.cov_04), _14(stateIn.cov_14),
              _02(0), _03(0), _12(0), _13(0), _42(0), _43(0),
@@ -137,22 +137,22 @@ public:
 public:
   // Elements that are finite
   // VHDL interface wierdly uses signed 25 bits for these, but makes more sense to use unsigned 24 instead.
-  AP_UFIXED(B24,BHC00-1) _00; // One less integer bit as no sign required.
-  AP_UFIXED(B24,BHC11-1) _11;
-  AP_UFIXED(B24,BHC22-1) _22;
-  AP_UFIXED(B24,BHC33-1) _33;
-  AP_UFIXED(B24,BHC44-1) _44;
-  KFstateHLS<5>::TC01 _01; // (inv2R, phi0) -- other off-diagonal elements assumed negligeable.
-  KFstateHLS<5>::TC23 _23; // (tanL,  z0)   -- other off-diagonal elements assumed negligeable.
-  KFstateHLS<5>::TC04 _04; // (inv2R, d0)   -- other off-diagonal elements assumed negligeable.
-  KFstateHLS<5>::TC14 _14; // (phi0,  d0)   -- other off-diagonal elements assumed negligeable.
+  AP_UFIXED(B24,-1+KFstateN::BC00) _00; // One less integer bit as no sign required.
+  AP_UFIXED(B24,-1+KFstateN::BC11) _11;
+  AP_UFIXED(B24,-1+KFstateN::BC22) _22;
+  AP_UFIXED(B24,-1+KFstateN::BC33) _33;
+  AP_UFIXED(B24,-1+KFstateN::BC44) _44;
+  KFstateN::TC01 _01; // (inv2R, phi0) -- other off-diagonal elements assumed negligeable.
+  KFstateN::TC23 _23; // (tanL,  z0)   -- other off-diagonal elements assumed negligeable.
+  KFstateN::TC04 _04; // (inv2R, d0)   -- other off-diagonal elements assumed negligeable.
+  KFstateN::TC14 _14; // (phi0,  d0)   -- other off-diagonal elements assumed negligeable.
   // Elements that are zero.
   const T0 _02, _03, _12, _13, _42, _43;
   // Elements below the diagonal of this symmetric matrix.
-  const KFstateHLS<5>::TC01 &_10;
-  const KFstateHLS<5>::TC23 &_32;
-  const KFstateHLS<5>::TC04 &_40;
-  const KFstateHLS<5>::TC14 &_41;
+  const KFstateN::TC01 &_10;
+  const KFstateN::TC23 &_32;
+  const KFstateN::TC04 &_40;
+  const KFstateN::TC14 &_41;
   const T0 &_20, &_30, &_21, &_31, &_24, &_34;
 };
 
@@ -265,8 +265,8 @@ public:
   // Use higher granularity for residuals than for stubs.
   // BODGE<5>::RES should be slightly larger than BODGE_V as hits can be several sigma wrong.
   // Add one extra fractional bit relative to stub, to avoid additional precision loss.
-  typedef AP_FIXED(B18-BODGE<5>::RES+1,BSP-BODGE<5>::RES) TRP;
-  typedef AP_FIXED(B18-BODGE<5>::RES+1,BSZ-BODGE<5>::RES) TRZ;
+  typedef AP_FIXED(B18-BODGE<5>::RES+1,KFstubN::BPHI -BODGE<5>::RES) TRP;
+  typedef AP_FIXED(B18-BODGE<5>::RES+1,KFstubN::BZ1-BODGE<5>::RES) TRZ;
 
 public:
   VectorRes(const VectorM& m, const MatrixH<5>& H, const VectorX<5>& x);
@@ -282,17 +282,17 @@ template <>
 class VectorX<5> {
 public:
   // Determine input helix params.
-  VectorX(const KFstateHLS<5>& stateIn) : _0(stateIn.inv2R), _1(stateIn.phi0), _2(stateIn.tanL), _3(stateIn.z0), _4(stateIn.d0) {} 
+  VectorX(const KFstate<5>& stateIn) : _0(stateIn.inv2R), _1(stateIn.phi0), _2(stateIn.tanL), _3(stateIn.z0), _4(stateIn.d0) {} 
 
   // Calculate output helix params: x' = x + K*res
   VectorX(const VectorX<5>& x, const MatrixK<5>& K, const VectorRes<5>& res);
 
 public:
-  KFstateHLS<5>::TR _0;
-  KFstateHLS<5>::TP _1;  
-  KFstateHLS<5>::TT _2;  
-  KFstateHLS<5>::TZ _3;  
-  KFstateHLS<5>::TD _4;  
+  KFstateN::TR _0;
+  KFstateN::TP _1;  
+  KFstateN::TT _2;  
+  KFstateN::TZ _3;  
+  KFstateN::TD _4;  
 };
 
 #ifdef CMSSW_GIT_HASH

@@ -6,9 +6,9 @@
 ///=== Written by: Ian Tomalin
 
 #ifdef CMSSW_GIT_HASH
-#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatricesHLS4.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanMatrices4.h"
 #else
-#include "KalmanMatricesHLS4.h"
+#include "KalmanMatrices4.h"
 #endif
 
 #ifdef PRINT_SUMMARY
@@ -140,15 +140,15 @@ VectorX<4>::VectorX(const VectorX<4>& x, const MatrixK<4>& K, const VectorRes<4>
   typedef MatrixK<4>::TK21_short TK21_short;
   typedef MatrixK<4>::TK31_short TK31_short;
   typedef MatrixK<4>::T0         T0;
-  _0 = x._0 + KFstateHLS<4>::TR(TK00_short(K._00) * res._0 + T0        (K._01) * res._1);
-  _1 = x._1 + KFstateHLS<4>::TP(TK10_short(K._10) * res._0 + T0        (K._11) * res._1);
-  _2 = x._2 + KFstateHLS<4>::TT(T0        (K._20) * res._0 + TK21_short(K._21) * res._1);
-  _3 = x._3 + KFstateHLS<4>::TZ(T0        (K._30) * res._0 + TK31_short(K._31) * res._1);
+  _0 = x._0 + KFstateN::TR(TK00_short(K._00) * res._0 + T0        (K._01) * res._1);
+  _1 = x._1 + KFstateN::TP(TK10_short(K._10) * res._0 + T0        (K._11) * res._1);
+  _2 = x._2 + KFstateN::TT(T0        (K._20) * res._0 + TK21_short(K._21) * res._1);
+  _3 = x._3 + KFstateN::TZ(T0        (K._30) * res._0 + TK31_short(K._31) * res._1);
 #else
-  _0 = x._0 + KFstateHLS<4>::TR(K._00 * SW_FLOAT(res._0) + K._01 * SW_FLOAT(res._1)); 
-  _1 = x._1 + KFstateHLS<4>::TP(K._10 * SW_FLOAT(res._0) + K._11 * SW_FLOAT(res._1)); 
-  _2 = x._2 + KFstateHLS<4>::TT(K._20 * SW_FLOAT(res._0) + K._21 * SW_FLOAT(res._1)); 
-  _3 = x._3 + KFstateHLS<4>::TZ(K._30 * SW_FLOAT(res._0) + K._31 * SW_FLOAT(res._1)); 
+  _0 = x._0 + KFstateN::TR(K._00 * SW_FLOAT(res._0) + K._01 * SW_FLOAT(res._1)); 
+  _1 = x._1 + KFstateN::TP(K._10 * SW_FLOAT(res._0) + K._11 * SW_FLOAT(res._1)); 
+  _2 = x._2 + KFstateN::TT(K._20 * SW_FLOAT(res._0) + K._21 * SW_FLOAT(res._1)); 
+  _3 = x._3 + KFstateN::TZ(K._30 * SW_FLOAT(res._0) + K._31 * SW_FLOAT(res._1)); 
 #endif
 }
 
@@ -161,19 +161,19 @@ MatrixC<4>::MatrixC(const MatrixC<4>& C, const MatrixK<4>& K, const MatrixS<4>& 
 {
   // Covariance matrix is symmetric & some elements can be neglected.
 #ifdef USE_FIXED
-  _00 =  C._00 - KFstateHLS<4>::TC00(K._00 * S._00 + K._01 * S._10);
-  _11 =  C._11 - KFstateHLS<4>::TC11(K._10 * S._01 + K._11 * S._11);
-  _22 =  C._22 - KFstateHLS<4>::TC22(K._20 * S._02 + K._21 * S._12);
-  _33 =  C._33 - KFstateHLS<4>::TC33(K._30 * S._03 + K._31 * S._13);
-  _01 =  C._01 - KFstateHLS<4>::TC01(K._00 * S._01 + K._01 * S._11);
-  _23 =  C._23 - KFstateHLS<4>::TC23(K._20 * S._03 + K._21 * S._13);
+  _00 =  C._00 - KFstateN::TC00(K._00 * S._00 + K._01 * S._10);
+  _11 =  C._11 - KFstateN::TC11(K._10 * S._01 + K._11 * S._11);
+  _22 =  C._22 - KFstateN::TC22(K._20 * S._02 + K._21 * S._12);
+  _33 =  C._33 - KFstateN::TC33(K._30 * S._03 + K._31 * S._13);
+  _01 =  C._01 - KFstateN::TC01(K._00 * S._01 + K._01 * S._11);
+  _23 =  C._23 - KFstateN::TC23(K._20 * S._03 + K._21 * S._13);
 #else
-  _00 =  C._00 - KFstateHLS<4>::TC00(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
-  _11 =  C._11 - KFstateHLS<4>::TC11(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
-  _22 =  C._22 - KFstateHLS<4>::TC22(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
-  _33 =  C._33 - KFstateHLS<4>::TC33(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
-  _01 =  C._01 - KFstateHLS<4>::TC01(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
-  _23 =  C._23 - KFstateHLS<4>::TC23(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
+  _00 =  C._00 - KFstateN::TC00(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
+  _11 =  C._11 - KFstateN::TC11(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
+  _22 =  C._22 - KFstateN::TC22(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
+  _33 =  C._33 - KFstateN::TC33(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
+  _01 =  C._01 - KFstateN::TC01(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
+  _23 =  C._23 - KFstateN::TC23(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
 #endif
 
 #ifdef PRINT_SUMMARY
