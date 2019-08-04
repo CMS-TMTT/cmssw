@@ -172,7 +172,7 @@ private:
 
   // Number of phi sectors and phi nonants.
   unsigned int         numPhiSectors_;
-  unsigned int         numPhiNonants_;   // (=8)
+  unsigned int         numPhiNonants_;  
   // Phi sector and phi nonant width (radians)
   double               phiSectorWidth_;
   double               phiNonantWidth_;
