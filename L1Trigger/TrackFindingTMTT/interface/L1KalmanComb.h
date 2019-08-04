@@ -48,7 +48,8 @@ class L1KalmanComb : public TrackFitGeneric{
 
 	double sectorPhi()const
 	{
-	    return 2.*M_PI * (0.5 + float(iCurrentPhiSec_)) / float(getSettings()->numPhiSectors()) - M_PI; // Centre of sector in phi
+          float phiCentreSec0 = -M_PI/float(getSettings()->numPhiNonants()) + M_PI/float(getSettings()->numPhiSectors());
+          return 2.*M_PI * float(iCurrentPhiSec_) / float(getSettings()->numPhiSectors()) + phiCentreSec0; 
 	}
         //bool kalmanUpdate( const StubCluster *stubCluster, KalmanState &state, KalmanState &new_state, const TP *tpa );
 	virtual const KalmanState *kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster* stubCluster, const KalmanState &state, const TP *);
