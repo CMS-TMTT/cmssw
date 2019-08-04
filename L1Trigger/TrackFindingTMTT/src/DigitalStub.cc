@@ -255,18 +255,11 @@ void DigitalStub::makeSForTFinput(string SForTF) {
 
     if (SForTF.find("KF") != string::npos) { 
       // Digitize variables that are exclusive to Kalman filter.
-      if (numPhiNonants_ == 8) {
-	// Data format for nonants redigitizes z to give it same multiplier as r.
-        iDigi_Z_KF_ = std::round(float(iDigi_Z_) * (rtMult_/zMult_));
-        // Determine floating point variable from digitized one, now using r multiplier.
-        z_          = (iDigi_Z_KF_ + 0.5)/rtMult_;
-      } else {
-	// Data format for nonants uses z directly from HT, as its multiplier is exactly a factor 2
-	// smaller than for r, which is easy to fix in VHDL-HLS interface.
-	iDigi_Z_KF_ = iDigi_Z_;
-        // Determine floating point variable from digitized one, using z multiplier.
-        z_          = (iDigi_Z_KF_ + 0.5)/zMult_;
-      }
+      // Data format uses z directly from HT, as its multiplier is exactly a factor 2
+      // smaller than for r, which is easy to fix in VHDL-HLS interface.
+      iDigi_Z_KF_ = iDigi_Z_;
+      // Determine floating point variable from digitized one, using z multiplier.
+      z_          = (iDigi_Z_KF_ + 0.5)/zMult_;
     } else {
       // If not using KF, then restore z value from HT.
       iDigi_Z_KF_ = 0;  // Shoudln't be used in this case.
