@@ -388,7 +388,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     bool consistentHLS = false;
     if (this->isHLS()) {
       unsigned int mBinHelixHLS, cBinHelixHLS;
-      cand->getHLScuts(mBinHelixHLS, cBinHelixHLS, consistentHLS);
+      cand->getHLSselect(mBinHelixHLS, cBinHelixHLS, consistentHLS);
       if( getSettings()->kalmanDebugLevel() >= 3 ){
         // Check if (m,c) corresponding to helix params are correctly calculated by HLS code.
         bool HLS_OK = ((mBinHelixHLS == returnTrk.getCellLocationFit().first) && (cBinHelixHLS == returnTrk.getCellLocationFit().second));

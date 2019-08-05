@@ -26,7 +26,7 @@ namespace TMTT {
 namespace KalmanHLS {
 #endif
 
-void kalmanUpdate_top(const KFstubC& stub, const KFstate<N_HELIX_PAR>& stateIn, KFstate<N_HELIX_PAR>& stateOut, KFcuts<N_HELIX_PAR>& cutsOut);
+void kalmanUpdate_top(const KFstubC& stub, const KFstate<N_HELIX_PAR>& stateIn, KFstate<N_HELIX_PAR>& stateOut, KFselect<N_HELIX_PAR>& selectOut);
 
 #ifdef CMSSW_GIT_HASH
 }

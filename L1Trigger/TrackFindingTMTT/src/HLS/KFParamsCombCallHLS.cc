@@ -29,9 +29,9 @@ template KalmanHLS::KFstate<4> KFParamsCombCallHLS::getDigiStateIn(unsigned int 
 
 template KalmanHLS::KFstate<5> KFParamsCombCallHLS::getDigiStateIn(unsigned int skipped, unsigned int layer, const KalmanState* state) const;
 
-template const KalmanState* KFParamsCombCallHLS::getStateOut<4>(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstate<4>& stateOutDigi, const KalmanHLS::KFcuts<4>& cutsOutDigi);
+template const KalmanState* KFParamsCombCallHLS::getStateOut<4>(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstate<4>& stateOutDigi, const KalmanHLS::KFselect<4>& selectOutDigi);
 
-template const KalmanState* KFParamsCombCallHLS::getStateOut<5>(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstate<5>& stateOutDigi, const KalmanHLS::KFcuts<5>& cutsOutDigi);
+template const KalmanState* KFParamsCombCallHLS::getStateOut<5>(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstate<5>& stateOutDigi, const KalmanHLS::KFselect<5>& selectOutDigi);
 
 //--- Normal code below ...
 
@@ -67,11 +67,11 @@ const KalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned
 
     // Call HLS code to add stub to helix state.
     KalmanHLS::KFstate<4> stateOutDigi;
-    KalmanHLS::KFcuts<4> cutsOutDigi;
-    KalmanHLS::kalmanUpdateHLS(stubDigi, stateInDigi, stateOutDigi, cutsOutDigi);
+    KalmanHLS::KFselect<4> selectOutDigi;
+    KalmanHLS::kalmanUpdate(stubDigi, stateInDigi, stateOutDigi, selectOutDigi);
 
     // Convert digitized ourput KF state to floating point.
-    const KalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, cutsOutDigi);
+    const KalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, selectOutDigi);
 
     return newState;
 
@@ -82,11 +82,11 @@ const KalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned
 
     // Call HLS code to add stub to helix state.
     KalmanHLS::KFstate<5> stateOutDigi;
-    KalmanHLS::KFcuts<5> cutsOutDigi;
-    KalmanHLS::kalmanUpdateHLS(stubDigi, stateInDigi, stateOutDigi, cutsOutDigi);
+    KalmanHLS::KFselect<5> selectOutDigi;
+    KalmanHLS::kalmanUpdate(stubDigi, stateInDigi, stateOutDigi, selectOutDigi);
 
     // Convert digitized ourput KF state to floating point.
-    const KalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, cutsOutDigi);
+    const KalmanState* newState = this->getStateOut(&stateIn, stubCluster, stateOutDigi, selectOutDigi);
 
     return newState;
   }
@@ -268,7 +268,7 @@ void KFParamsCombCallHLS::getDigiStateInUtil<5>(const vector<double>& helixParam
 //=== Convert digitized ourput KF state to floating point for both NPAR = 4 & 5 param helix fits.
 
 template<unsigned int NPAR>
-const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstate<NPAR>& stateOutDigi, const KalmanHLS::KFcuts<NPAR>& cutsOutDigi) {
+const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, const StubCluster* stubCluster, const KalmanHLS::KFstate<NPAR>& stateOutDigi, const KalmanHLS::KFselect<NPAR>& selectOutDigi) {
   // Convert digitized helix state to floating point one.
   // Also copy some info directly from input floating point to output floating point state, if unchanged.
 
@@ -296,7 +296,7 @@ const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, 
   pxx[2][3] = (double(stateOutDigi.cov_23) + 0.5 / pow(2, stateOutDigi.cov_23.width - stateOutDigi.cov_23.iwidth)) / (rMult_);
   pxx[3][2] = pxx[2][3];
 
-  this->getStateOutUtil(stateOutDigi, cutsOutDigi, x, pxx);
+  this->getStateOutUtil(stateOutDigi, selectOutDigi, x, pxx);
 
   TMatrixD K(nPar_,2); // KF gain matrix - don't provide, as can't be used?
   TMatrixD dcov(2,2);  // Stub (phi,z) position covariance matrix - don't provide as can't be used?
@@ -306,7 +306,7 @@ const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, 
   const KalmanState* ks = this->mkState(candidate, n_skipped, kLayer_next, layerId, last_state,
 				        x, pxx, K, dcov, stubcl, chi2);
 
-  (const_cast<KalmanState*>(ks))->setHLScuts(int(cutsOutDigi.mBin_fit) + getSettings()->houghNbinsPt()/2, int(cutsOutDigi.cBin_fit) + getSettings()->houghNbinsPhi()/2, bool(cutsOutDigi.consistent));
+  (const_cast<KalmanState*>(ks))->setHLSselect(int(selectOutDigi.mBin_fit) + getSettings()->houghNbinsPt()/2, int(selectOutDigi.cBin_fit) + getSettings()->houghNbinsPhi()/2, bool(selectOutDigi.consistent));
 
 #ifdef IRT_DEBUG
   if (ks->candidate().getMatchedTP() != nullptr) {
@@ -328,13 +328,13 @@ const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, 
 //=== Implement NPAR-specific code call by getStateOut(...).
 
 template <>
-void KFParamsCombCallHLS::getStateOutUtil<4>(const KalmanHLS::KFstate<4>& stateOutDigi, const KalmanHLS::KFcuts<4>& cutsOutDigi, vector<double>& x, TMatrixD& pxx) {
+void KFParamsCombCallHLS::getStateOutUtil<4>(const KalmanHLS::KFstate<4>& stateOutDigi, const KalmanHLS::KFselect<4>& selectOutDigi, vector<double>& x, TMatrixD& pxx) {
   // Store the extra info provided by the HLS updator about whether the state passes cuts.
-  cutsOutDigi4_ = cutsOutDigi;
+  selectOutDigi4_ = selectOutDigi;
 }
 
 template <>
-void KFParamsCombCallHLS::getStateOutUtil<5>(const KalmanHLS::KFstate<5>& stateOutDigi, const KalmanHLS::KFcuts<5>& cutsOutDigi, vector<double>& x, TMatrixD& pxx) {
+void KFParamsCombCallHLS::getStateOutUtil<5>(const KalmanHLS::KFstate<5>& stateOutDigi, const KalmanHLS::KFselect<5>& selectOutDigi, vector<double>& x, TMatrixD& pxx) {
   x[4] = (double(stateOutDigi.d0) + 0.5 / pow(2, stateOutDigi.d0.width - stateOutDigi.d0.iwidth)) / d0_Mult_;
 
   pxx[4][4] = (double(stateOutDigi.cov_44) + 0.5 / pow(2, stateOutDigi.cov_44.width - stateOutDigi.cov_44.iwidth)) / (d0_Mult_ * d0_Mult_);
@@ -342,7 +342,7 @@ void KFParamsCombCallHLS::getStateOutUtil<5>(const KalmanHLS::KFstate<5>& stateO
   pxx[1][4] = (double(stateOutDigi.cov_14) + 0.5 / pow(2, stateOutDigi.cov_14.width - stateOutDigi.cov_14.iwidth)) / (phiMult_ * d0_Mult_);
 
   // Store the extra info provided by the HLS updator about whether the state passes cuts.
-  cutsOutDigi5_ = cutsOutDigi;
+  selectOutDigi5_ = selectOutDigi;
 }
 
 //=== This is identical to version in KFParamsComb, deciding if a state passes cuts,
@@ -363,9 +363,9 @@ bool KFParamsCombCallHLS::isGoodState( const KalmanState &state ) const
   // Check if this state passes cuts using HLS KF xode.
   bool goodState_HLS;
   if (nPar_ == 4) {
-    goodState_HLS = cutsOutDigi4_.z0Cut && cutsOutDigi4_.ptCut && cutsOutDigi4_.chiSquaredCut && cutsOutDigi4_.sufficientPScut;
+    goodState_HLS = selectOutDigi4_.z0Cut && selectOutDigi4_.ptCut && selectOutDigi4_.chiSquaredCut && selectOutDigi4_.sufficientPScut;
   } else {
-    goodState_HLS = cutsOutDigi5_.z0Cut && cutsOutDigi5_.ptCut && cutsOutDigi5_.chiSquaredCut && cutsOutDigi5_.sufficientPScut && cutsOutDigi5_.d0Cut;
+    goodState_HLS = selectOutDigi5_.z0Cut && selectOutDigi5_.ptCut && selectOutDigi5_.chiSquaredCut && selectOutDigi5_.sufficientPScut && selectOutDigi5_.d0Cut;
   }
 
   unsigned nStubLayers = state.nStubLayers();
@@ -376,15 +376,15 @@ bool KFParamsCombCallHLS::isGoodState( const KalmanState &state ) const
   // (Approximate since it negelects "rescue" step of Algo50).
   //bool algo50_HLS = true;
   if (nStubLayers > 3) {
-    // algo50_HLS = (cutsOutDigi_.consistent && cutsOutDigi_.sectorCut);
+    // algo50_HLS = (selectOutDigi_.consistent && selectOutDigi_.sectorCut);
     // Debug printout to debug Algo50. To be used with "Cheat" cfg option. 
     // And print fittedTrack.consistent() from TMTrackProducer.cc.
     //
-    // cout<<"algo50: HT consistent="<<cutsOutDigi_.consistent<<" sector consistent="<<cutsOutDigi_.sectorCut
+    // cout<<"algo50: HT consistent="<<selectOutDigi_.consistent<<" sector consistent="<<selectOutDigi_.sectorCut
     //   <<" mbin = "<<(state.candidate().getCellLocationHT().first-floor(getSettings()->houghNbinsPt()/2))
-    //   <<" vs "<<cutsOutDigi_.mBin_fit
+    //   <<" vs "<<selectOutDigi_.mBin_fit
     //   <<" cbin = "<<state.candidate().getCellLocationHT().second-floor(getSettings()->houghNbinsPhi()/2)
-    //   <<" vs "<<cutsOutDigi_.cBin_fit<<endl;
+    //   <<" vs "<<selectOutDigi_.cBin_fit<<endl;
   }
 
   // Check if HLS & C++ KF agree ...
@@ -392,16 +392,16 @@ bool KFParamsCombCallHLS::isGoodState( const KalmanState &state ) const
   if (goodState && not goodState_HLS) {
     // Errors caused by small precision errors in chi2 cut value.
     if (nPar_ == 4) {
-      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<cutsOutDigi4_.z0Cut<<" "<<cutsOutDigi4_.ptCut<<" "<<cutsOutDigi4_.chiSquaredCut<<" "<<cutsOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
+      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<selectOutDigi4_.z0Cut<<" "<<selectOutDigi4_.ptCut<<" "<<selectOutDigi4_.chiSquaredCut<<" "<<selectOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
     } else {
-      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<cutsOutDigi5_.z0Cut<<" "<<cutsOutDigi5_.ptCut<<" "<<cutsOutDigi5_.chiSquaredCut<<" "<<cutsOutDigi5_.sufficientPScut<<" "<<cutsOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
+      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<selectOutDigi5_.z0Cut<<" "<<selectOutDigi5_.ptCut<<" "<<selectOutDigi5_.chiSquaredCut<<" "<<selectOutDigi5_.sufficientPScut<<" "<<selectOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
     }
   } else if (not goodState && goodState_HLS) {
     // Failures here usually caused by failing chi2 cut by miniscule amount.
     if (nPar_ == 4) {
-      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<cutsOutDigi4_.z0Cut<<" "<<cutsOutDigi4_.ptCut<<" "<<cutsOutDigi4_.chiSquaredCut<<" "<<cutsOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
+      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<selectOutDigi4_.z0Cut<<" "<<selectOutDigi4_.ptCut<<" "<<selectOutDigi4_.chiSquaredCut<<" "<<selectOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
     } else {
-      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<cutsOutDigi5_.z0Cut<<" "<<cutsOutDigi5_.ptCut<<" "<<cutsOutDigi5_.chiSquaredCut<<" "<<cutsOutDigi5_.sufficientPScut<<" "<<cutsOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
+      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<selectOutDigi5_.z0Cut<<" "<<selectOutDigi5_.ptCut<<" "<<selectOutDigi5_.chiSquaredCut<<" "<<selectOutDigi5_.sufficientPScut<<" "<<selectOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
     }
 #ifdef IRT_DEBUG
   } else {

@@ -49,7 +49,8 @@ namespace KFstubN {
 enum {BR = 12+1, BZ = 14, BPHI=14, BR1 = BR - 1, BZ1 = BZ + 1, // For stub coords.
       BEV   = 3,        // Allows up to 8 events to be interleaved inside KF
       NEV   = (1 << BEV),
-      BTRK  = 5,        // Allows up to 32 tracks cand IDs (compare TM*(320MHz/40MHz)/(5 stubs) = 29) from HT per KF worker per event.
+      //      BTRK  = 5,        // Allows up to 32 tracks cand IDs (compare TM*(320MHz/40MHz)/(5 stubs) = 29) from HT per KF worker per event.
+      BTRK  = 6,        // Allows up to 64 tracks cand IDs (bigger than needed, but avoids changing output data format of KF VHDL)
       NTRK  = (1 << BTRK),
       BLAY  = 3,        // Allows up to 7+1 KF layer IDs (where +1 is for invalid layer)
       NLAY  = (1 << BLAY),

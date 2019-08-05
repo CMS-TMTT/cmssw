@@ -5,7 +5,7 @@
  * This defines Helix States for the Kalman Filter HLS code.
  * N.B. It therefore can't use the Settings class or any external libraries! Nor can it be a C++ class.
  *
- * Only the KFstateN, KFstate & KFcuts classes are used in the implementation of the KF maths block.
+ * Only the KFstateN, KFstate & KFselect classes are used in the implementation of the KF maths block.
  * The other classes are used in the (failed) attempt at a full KF HLS implementation.
  *
  * All variable names & equations come from Fruhwirth KF paper
@@ -253,9 +253,9 @@ public:
 //--- Additional output parameters returned by KF updated, for both 4 & 5 param helix fits.
 //--- https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/firmware/trunk/cactusupgrades/projects/tracktrigger/kalmanfit/firmware/hdl/KalmanFilter/KalmanWorker.vhd?peg=4914
 
-template <unsigned int NPAR> class KFcuts;
+template <unsigned int NPAR> class KFselect;
 
-template <> class KFcuts<4> {
+template <> class KFselect<4> {
 public:
   // Must use AP_UINT(1) instead of bool, due to bug in HLS IP export.
   AP_UINT(1)      z0Cut; // Did updated state pass cut on z0 etc.
@@ -277,7 +277,7 @@ public:
 #endif
 };
 
-template <> class KFcuts<5> : public KFcuts<4> {
+template <> class KFselect<5> : public KFselect<4> {
 public:
   AP_UINT(1)    d0Cut;
 };

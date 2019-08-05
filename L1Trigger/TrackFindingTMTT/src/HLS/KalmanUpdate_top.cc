@@ -19,16 +19,16 @@ namespace TMTT {
 namespace KalmanHLS {
 #endif
 
-void kalmanUpdate_top(const KFstubC& stub, const KFstate<N_HELIX_PAR>& stateIn, KFstate<N_HELIX_PAR>& stateOut, KFcuts<N_HELIX_PAR>& cutsOut) {
+void kalmanUpdate_top(const KFstubC& stub, const KFstate<N_HELIX_PAR>& stateIn, KFstate<N_HELIX_PAR>& stateOut, KFselect<N_HELIX_PAR>& selectOut) {
 
 #pragma HLS PIPELINE II=1
 #pragma HLS INTERFACE ap_ctrl_hs register port=return
-#pragma HLS INTERFACE ap_none port=stub     register 
-#pragma HLS INTERFACE ap_none port=stateIn  register 
-#pragma HLS INTERFACE ap_none port=stateOut register 
-#pragma HLS INTERFACE ap_none port=cutsOut  register 
+#pragma HLS INTERFACE ap_none port=stub       register 
+#pragma HLS INTERFACE ap_none port=stateIn    register 
+#pragma HLS INTERFACE ap_none port=stateOut   register 
+#pragma HLS INTERFACE ap_none port=selectOut  register 
 
-  kalmanUpdateHLS<N_HELIX_PAR>(stub, stateIn, stateOut, cutsOut);
+  kalmanUpdate<N_HELIX_PAR>(stub, stateIn, stateOut, selectOut);
 }
 
 #ifdef CMSSW_GIT_HASH
