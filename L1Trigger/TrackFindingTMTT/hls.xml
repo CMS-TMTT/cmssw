@@ -1,14 +1,15 @@
+
 <!-- USED TO ADD HLS LIBRARIES AND HEADER FILES TO CMSSW -->
 <!-- TO USE IT, DO: 'scram setup /path/to/hls.xml -->
 <!-- THEN ADD <use name="hls"/> to BuildFile.xml -->
 
-<tool name="hls" version="2018.1">
+<tool name="hls" version="2019.1">
    <!-- Add libraries needed from HLS -->
    <lib name="Ip_floating_point_v7_0_bitacc_cmodel"/>
    <!--lib name="libmpfr.so.4"/-->
    <!--lib name="libgmp.so.7"/-->
    <client>
-     <environment name="HLS_BASE" default="/opt/ppd/tools/xilinx/Vivado/2018.1"/>
+     <environment name="HLS_BASE" default="/opt/ppd/tools/xilinx/Vivado/2019.1"/>
      <environment name="LIBDIR" default="$HLS_BASE/lnx64/tools/fpo_v7_0/"/>
      <environment name="INCLUDE" default="$HLS_BASE/include"/>
    </client>
