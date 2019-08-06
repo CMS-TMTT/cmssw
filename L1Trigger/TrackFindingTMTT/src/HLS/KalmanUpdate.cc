@@ -45,6 +45,7 @@ template TCHI_INT calcDeltaChi2(const VectorRes<5>& res, const MatrixInverseR<5>
 
 template <unsigned int NPAR>
 void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPAR>& stateOut, KFselect<NPAR>& selectOut) {
+
   stateOut.cBin_ht = stateIn.cBin_ht;
   stateOut.mBin_ht = stateIn.mBin_ht;
   stateOut.layerID = stateIn.layerID;

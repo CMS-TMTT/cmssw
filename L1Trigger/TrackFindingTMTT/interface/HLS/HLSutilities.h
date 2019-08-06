@@ -35,7 +35,7 @@
 // Copied from /opt/ppd/tools/xilinx/Vivado_HLS/2016.4/include/
 #include "ap_int.h"
 #include "ap_fixed.h"
-#include "hls_half.h"
+//#include "hls_half.h"
 // Gives access to fp_struct used to cast half to ap_fixed.
 //#include "hls/utils/x_hls_utils.h"
 
