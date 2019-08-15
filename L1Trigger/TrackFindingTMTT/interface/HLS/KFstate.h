@@ -130,7 +130,9 @@ class ProtoInfo {
 
 public:
 
-  ProtoInfo() : numStubsPerLay() {}
+  ProtoInfo() { 
+    for (unsigned int i = 0; i < KFstubN::NLAY; i++) numStubsPerLay[i] = 0;
+  }
 
 public:
 
