@@ -218,9 +218,10 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
   // where A is a LUT approximation to 1/a. So x = A*(1 - A*a - A*b), and (A+x) = A*(2 - A*a - A*b). 
 
   // This is inverse determinant, aside from shift factor SHIFT.
-  // First line uses one less clock cycle than second line, but one more DSP ...
-  SW_UFIXED(B18, OneOverInt::BOI) invDet_short = invDet_veryshort * (SW_UFIXED(1,2)(2.) - invDet_veryshort * det_short); 
-  //SW_UFIXED(B18, OneOverInt::BOI) invDet_short = 2 * invDet_veryshort - (invDet_veryshort * invDet_veryshort) * det_short;
+  //SW_UFIXED(B18, OneOverInt::BOI) invDet_short = invDet_veryshort * (SW_UFIXED(1,2)(2.) - invDet_veryshort * det_short); 
+
+  // This eqn. has 3 multiplications instead of 2, but provides work-around for HLS Cosim bug.
+  SW_UFIXED(B18, OneOverInt::BOI) invDet_short = SW_UFIXED(1,2)(2.)*invDet_veryshort - (invDet_veryshort * invDet_veryshort) * det_short; 
  
   AP_INT(B7) SHIFT = lsb - (BDW - BDI); // Bit shift to be applied to inverse determinant.
 
