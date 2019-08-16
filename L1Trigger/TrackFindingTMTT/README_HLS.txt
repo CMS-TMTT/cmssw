@@ -16,6 +16,10 @@ You should then:
 5) Set the TMTT cfg parameter:
     TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF4ParamsCombHLS")
 
+N.B. If using with the Demonstrator SW, also edit BuildFile.xml, to:
+
+i) Delete: <flags CXXFLAGS="-DCOV_EXTRA_BITS"/> 
+ii) Add: <flags CXXFLAGS="-DPRINT_HLSARGS"/> 
 
 Notes:
 
