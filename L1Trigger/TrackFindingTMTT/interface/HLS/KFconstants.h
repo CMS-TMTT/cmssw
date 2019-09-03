@@ -21,6 +21,10 @@ namespace TMTT {
 namespace KalmanHLS {
 #endif
 
+//--- Number of helix parameters for track fit (ignored if running inside CMSSW, aside from z0 cut below).
+
+static const unsigned int N_HELIX_PAR = 4;
+
 //=== Configuration of KF data-handling ===
 
 // These params are not used in the KF maths block, but only in the failed attempt at a 
@@ -53,12 +57,6 @@ static const unsigned int maxStubsPerFitTrack  = 4;
 
 // Return number of bits needed to contain variable.
 //int width(float x){return 1 + hls::ilogb(x);} 
-
-//--- Number of helix parameters for track fit (ignored if running inside CMSSW).
-
-static const unsigned int N_HELIX_PAR = 4;
-
-//-- Copied from Maxeller code Constants.maxj
 
 // Digitisation multipliers (from data format doc).
 // KF uses same multiplier for r as for stubs in DTC, but one extra bit to accomodate larger range,
@@ -167,7 +165,7 @@ static const KFstateN::TR inv2Rcut[]      = {0, 0,  inv2Rcut_loose,  inv2Rcut_lo
 static const KFstateN::TR inv2RcutMinus[] = {0, 0, -inv2Rcut_loose, -inv2Rcut_loose, -inv2Rcut_tight, -inv2Rcut_tight, -inv2Rcut_tight};
 
 // z0 cut
-static const KFstateN::TZ z0Cut_tight = rMult*beamSpotLength; // r multiplier used for z in KF. 
+static const KFstateN::TZ z0Cut_tight = (N_HELIX_PAR == 4) ? rMult*beamSpotLength : 1.7*rMult*beamSpotLength; // r multiplier used for z in KF. 
 static const KFstateN::TZ z0Cut[]      = {0, 0,  z0Cut_tight,  z0Cut_tight,  z0Cut_tight,  z0Cut_tight,  z0Cut_tight}; 
 static const KFstateN::TZ z0CutMinus[] = {0, 0, -z0Cut_tight, -z0Cut_tight, -z0Cut_tight, -z0Cut_tight, -z0Cut_tight}; 
 

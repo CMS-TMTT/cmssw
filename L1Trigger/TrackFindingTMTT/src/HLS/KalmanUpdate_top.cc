@@ -22,11 +22,17 @@ namespace KalmanHLS {
 void kalmanUpdate_top(const KFstubC& stub, const KFstate<N_HELIX_PAR>& stateIn, KFstate<N_HELIX_PAR>& stateOut, KFselect<N_HELIX_PAR>& selectOut) {
 
 #pragma HLS PIPELINE II=1
-#pragma HLS INTERFACE ap_ctrl_hs register port=return
-#pragma HLS INTERFACE ap_none port=stub       register 
-#pragma HLS INTERFACE ap_none port=stateIn    register 
-#pragma HLS INTERFACE ap_none port=stateOut   register 
-#pragma HLS INTERFACE ap_none port=selectOut  register 
+  //#pragma HLS INTERFACE ap_ctrl_hs register port=return
+  //#pragma HLS INTERFACE ap_none port=stub       register 
+  //#pragma HLS INTERFACE ap_none port=stateIn    register 
+  //#pragma HLS INTERFACE ap_none port=stateOut   register 
+  //#pragma HLS INTERFACE ap_none port=selectOut  register 
+
+#pragma HLS INTERFACE ap_ctrl_hs  port=return
+#pragma HLS INTERFACE ap_none port=stub        
+#pragma HLS INTERFACE ap_none port=stateIn     
+#pragma HLS INTERFACE ap_none port=stateOut    
+#pragma HLS INTERFACE ap_none port=selectOut   
 
   kalmanUpdate<N_HELIX_PAR>(stub, stateIn, stateOut, selectOut);
 }

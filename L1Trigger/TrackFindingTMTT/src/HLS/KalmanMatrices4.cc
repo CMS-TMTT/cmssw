@@ -161,19 +161,19 @@ MatrixC<4>::MatrixC(const MatrixC<4>& C, const MatrixK<4>& K, const MatrixS<4>& 
 {
   // Covariance matrix is symmetric & some elements can be neglected.
 #ifdef USE_FIXED
-  _00 =  C._00 - KFstateN::TC00(K._00 * S._00 + K._01 * S._10);
-  _11 =  C._11 - KFstateN::TC11(K._10 * S._01 + K._11 * S._11);
-  _22 =  C._22 - KFstateN::TC22(K._20 * S._02 + K._21 * S._12);
-  _33 =  C._33 - KFstateN::TC33(K._30 * S._03 + K._31 * S._13);
-  _01 =  C._01 - KFstateN::TC01(K._00 * S._01 + K._01 * S._11);
-  _23 =  C._23 - KFstateN::TC23(K._20 * S._03 + K._21 * S._13);
+  _00 =  C._00 - KFstateN::TC00EX(K._00 * S._00 + K._01 * S._10);
+  _11 =  C._11 - KFstateN::TC11EX(K._10 * S._01 + K._11 * S._11);
+  _22 =  C._22 - KFstateN::TC22EX(K._20 * S._02 + K._21 * S._12);
+  _33 =  C._33 - KFstateN::TC33EX(K._30 * S._03 + K._31 * S._13);
+  _01 =  C._01 - KFstateN::TC01EX(K._00 * S._01 + K._01 * S._11);
+  _23 =  C._23 - KFstateN::TC23EX(K._20 * S._03 + K._21 * S._13);
 #else
-  _00 =  C._00 - KFstateN::TC00(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
-  _11 =  C._11 - KFstateN::TC11(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
-  _22 =  C._22 - KFstateN::TC22(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
-  _33 =  C._33 - KFstateN::TC33(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
-  _01 =  C._01 - KFstateN::TC01(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
-  _23 =  C._23 - KFstateN::TC23(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
+  _00 =  C._00 - KFstateN::TC00EX(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
+  _11 =  C._11 - KFstateN::TC11EX(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
+  _22 =  C._22 - KFstateN::TC22EX(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
+  _33 =  C._33 - KFstateN::TC33EX(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
+  _01 =  C._01 - KFstateN::TC01EX(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
+  _23 =  C._23 - KFstateN::TC23EX(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
 #endif
 
 #ifdef PRINT_SUMMARY
@@ -183,15 +183,16 @@ MatrixC<4>::MatrixC(const MatrixC<4>& C, const MatrixK<4>& K, const MatrixS<4>& 
   double c33new = double(C._33) - (double(K._30) * double(S._03) + double(K._31) * double(S._13));
   double c01new = double(C._01) - (double(K._00) * double(S._01) + double(K._01) * double(S._11));
   double c23new = double(C._23) - (double(K._20) * double(S._03) + double(K._21) * double(S._13));
-  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.01);
-  CHECK_AP::checkCalc("C11_new", _11, c11new, 0.01);
-  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.01);
-  CHECK_AP::checkCalc("C33_new", _33, c33new, 0.01);
-  CHECK_AP::checkCalc("C01_new", _01, c01new, 0.01);
-  CHECK_AP::checkCalc("C23_new", _23, c23new, 0.01);
+  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.02);
+  CHECK_AP::checkCalc("C11_new", _11, c11new, 0.02);
+  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.02);
+  CHECK_AP::checkCalc("C33_new", _33, c33new, 0.02);
+  CHECK_AP::checkCalc("C01_new", _01, c01new, 0.02);
+  CHECK_AP::checkCalc("C23_new", _23, c23new, 0.02);
   CHECK_AP::checkDet("C_new(rphi)",_00,_11,_01);
   CHECK_AP::checkDet("C_new(rz)"  ,_22,_33,_23);
 #endif
+
 }
 
 #ifdef CMSSW_GIT_HASH

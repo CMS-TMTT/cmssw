@@ -188,25 +188,25 @@ MatrixC<5>::MatrixC(const MatrixC<5>& C, const MatrixK<5>& K, const MatrixS<5>& 
 {
   // Covariance matrix is symmetric & some elements can be neglected.
 #ifdef USE_FIXED
-  _00 =  C._00 - KFstateN::TC00(K._00 * S._00 + K._01 * S._10);
-  _11 =  C._11 - KFstateN::TC11(K._10 * S._01 + K._11 * S._11);
-  _22 =  C._22 - KFstateN::TC22(K._20 * S._02 + K._21 * S._12);
-  _33 =  C._33 - KFstateN::TC33(K._30 * S._03 + K._31 * S._13);
-  _44 =  C._44 - KFstateN::TC44(K._40 * S._04 + K._41 * S._14);
-  _01 =  C._01 - KFstateN::TC01(K._00 * S._01 + K._01 * S._11);
-  _23 =  C._23 - KFstateN::TC23(K._20 * S._03 + K._21 * S._13);
-  _04 =  C._04 - KFstateN::TC04(K._00 * S._04 + K._01 * S._14);
-  _14 =  C._14 - KFstateN::TC14(K._10 * S._04 + K._11 * S._14);
+  _00 =  C._00 - KFstateN::TC00EX(K._00 * S._00 + K._01 * S._10);
+  _11 =  C._11 - KFstateN::TC11EX(K._10 * S._01 + K._11 * S._11);
+  _22 =  C._22 - KFstateN::TC22EX(K._20 * S._02 + K._21 * S._12);
+  _33 =  C._33 - KFstateN::TC33EX(K._30 * S._03 + K._31 * S._13);
+  _44 =  C._44 - KFstateN::TC44EX(K._40 * S._04 + K._41 * S._14);
+  _01 =  C._01 - KFstateN::TC01EX(K._00 * S._01 + K._01 * S._11);
+  _23 =  C._23 - KFstateN::TC23EX(K._20 * S._03 + K._21 * S._13);
+  _04 =  C._04 - KFstateN::TC04EX(K._00 * S._04 + K._01 * S._14);
+  _14 =  C._14 - KFstateN::TC14EX(K._10 * S._04 + K._11 * S._14);
 #else
-  _00 =  C._00 - KFstateN::TC00(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
-  _11 =  C._11 - KFstateN::TC11(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
-  _22 =  C._22 - KFstateN::TC22(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
-  _33 =  C._33 - KFstateN::TC33(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
-  _44 =  C._44 - KFstateN::TC44(K._40 * SW_FLOAT(S._04) + K._41 * SW_FLOAT(S._14));
-  _01 =  C._01 - KFstateN::TC01(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
-  _23 =  C._23 - KFstateN::TC23(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
-  _04 =  C._04 - KFstateN::TC04(K._00 * SW_FLOAT(S._04) + K._01 * SW_FLOAT(S._14));
-  _14 =  C._14 - KFstateN::TC14(K._10 * SW_FLOAT(S._04) + K._11 * SW_FLOAT(S._14));
+  _00 =  C._00 - KFstateN::TC00EX(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
+  _11 =  C._11 - KFstateN::TC11EX(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
+  _22 =  C._22 - KFstateN::TC22EX(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
+  _33 =  C._33 - KFstateN::TC33EX(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
+  _44 =  C._44 - KFstateN::TC44EX(K._40 * SW_FLOAT(S._04) + K._41 * SW_FLOAT(S._14));
+  _01 =  C._01 - KFstateN::TC01EX(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
+  _23 =  C._23 - KFstateN::TC23EX(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
+  _04 =  C._04 - KFstateN::TC04EX(K._00 * SW_FLOAT(S._04) + K._01 * SW_FLOAT(S._14));
+  _14 =  C._14 - KFstateN::TC14EX(K._10 * SW_FLOAT(S._04) + K._11 * SW_FLOAT(S._14));
 #endif
 
 #ifdef PRINT_SUMMARY
@@ -219,15 +219,15 @@ MatrixC<5>::MatrixC(const MatrixC<5>& C, const MatrixK<5>& K, const MatrixS<5>& 
   double c23new = double(C._23) - (double(K._20) * double(S._03) + double(K._21) * double(S._13));
   double c04new = double(C._04) - (double(K._00) * double(S._04) + double(K._01) * double(S._14));
   double c14new = double(C._14) - (double(K._10) * double(S._04) + double(K._11) * double(S._14));
-  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.01);
-  CHECK_AP::checkCalc("C11_new", _11, c11new, 0.01);
-  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.01);
-  CHECK_AP::checkCalc("C33_new", _33, c33new, 0.01);
-  CHECK_AP::checkCalc("C44_new", _44, c44new, 0.01);
-  CHECK_AP::checkCalc("C01_new", _01, c01new, 0.01);
-  CHECK_AP::checkCalc("C23_new", _23, c23new, 0.01);
-  CHECK_AP::checkCalc("C04_new", _04, c04new, 0.01);
-  CHECK_AP::checkCalc("C14_new", _14, c14new, 0.01);
+  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.02);
+  CHECK_AP::checkCalc("C11_new", _11, c11new, 0.02);
+  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.02);
+  CHECK_AP::checkCalc("C33_new", _33, c33new, 0.02);
+  CHECK_AP::checkCalc("C44_new", _44, c44new, 0.02);
+  CHECK_AP::checkCalc("C01_new", _01, c01new, 0.02);
+  CHECK_AP::checkCalc("C23_new", _23, c23new, 0.02);
+  CHECK_AP::checkCalc("C04_new", _04, c04new, 0.02);
+  CHECK_AP::checkCalc("C14_new", _14, c14new, 0.02);
   CHECK_AP::checkDet("C_new(rphi)",_00,_11,_44, _01, _04, _14);
   CHECK_AP::checkDet("C_new(rz)"  ,_22,_33,_23);
 #endif

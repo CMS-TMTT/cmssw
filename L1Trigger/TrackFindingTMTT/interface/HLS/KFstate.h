@@ -42,16 +42,12 @@ namespace TMTT {
 namespace KalmanHLS {
 #endif
 
-// Virtex7 DSP = (18 bits * 25 bits = 48 bits); Ultrascale DSP = (18 bits * 27 bits = 48 bits).
+// Ultrascale DSP = (18 bits * 27 bits = 48 bits).
 // Though if multiplying unsigned variables, must use 1 bit less than this.
 
 enum B_DSP {
-  // Number of bits used by DSP for multiplication of signed numbers in FPGA.
-#ifdef ULTRASCALE
+  // Number of bits used by DSP for multiplication of signed numbers in FPGA (Ultrascale).
   B18=18, B27=27, B35=2*B18-1, B48=48,
-#else
-  B18=18, B27=27-2, B35=2*B18-1, B48=48,
-#endif
   // Number of bits used by DSP for multiplication of unsigned numbers in FPGA.
   B17=B18-1, B26=B27-1, B34=B35-1,
   // Number of bits used for interface to VHDL (historic, but increasing may increase VHDL BRAM use).
@@ -65,21 +61,20 @@ namespace KFstateN {
 // extra precision desired for the helix params goes after the decimal point.
 // e.g. 15 bits for 1/2R, as is factor pow(2,15) more grenular than stub phi/r. 
 //      3 bits for phi0, as is factor pow(2,3) more granular than stub phi.
-//      7 bits for z0, as is factor pow(2,8) more granular than stub r. EXPLAIN 1 DIFF!
+//      7 bits for z0, as is factor pow(2,7) more granular than stub r. 
 // TanL & chi2 have multiplier 1, so no. of integer bits must cover their range.
 
-// Can change, but remember to change protostate cov. matrix in VHDL.
+// Cov. mat. bits can change, but remember to change protostate cov. matrix in VHDL.
 
 // Number of integer+sign bits for helix params & chi2.
 enum {BH0 = 3, BH1 = 15, BH2 = 5, BH3 = 11, BH4=25, BCHI = 10};
-// Number of bits needed for integer part of helix covariance matrix & their sign.
-enum {BC00 = -5, BC11 = 17, BC22 = 0, BC33=17, BC44=42+2, BC01=6, BC23=8, BC04=18, BC14=20+8+2};
-// Total number of bits needed for off-diagonal elements of helix covariance matrix.
-#ifdef COV_EXTRA_BITS 
-enum {B18or25 = B25};
-#else
-enum {B18or25 = B18};
-#endif
+// Number of bits needed for integer part of helix covariance matrix
+//enum {BC00 = -6, BC11 = 16, BC22 = -1, BC33=16, BC44=41+2, BC01=6, BC23=8, BC04=18, BC14=20+8+2};
+enum {BC00 = -6, BC11 = 16, BC22 = -1, BC33=16, BC44=41, BC01=5, BC23=7, BC04=17, BC14=29};
+
+// Total number of bits (integer + fractional) needed for helix covariance matrix.
+// Increasing to 26/27 doesn't increase DSP use, but does increase BRAM use in KF VHDL.
+enum {BLENCOV = 20};
 
 enum {BEV   = KFstubN::BEV, 
       BTRK  = KFstubN::BTRK,  
@@ -98,15 +93,26 @@ typedef AP_FIXED(B18,BH2) TT;
 typedef AP_FIXED(B18,BH3) TZ;   
 typedef AP_FIXED(B18,BH4) TD;   
 
-typedef AP_FIXED(B25,BC00)     TC00; // Seems silly that this is signed with 25 bits, rather than unsigned with 24.
-typedef AP_FIXED(B25,BC11)     TC11;
-typedef AP_FIXED(B25,BC22)     TC22;
-typedef AP_FIXED(B25,BC33)     TC33;
-typedef AP_FIXED(KFstateN::B18or25,BC01) TC01;
-typedef AP_FIXED(KFstateN::B18or25,BC23) TC23;
-typedef AP_FIXED(B25,BC44)     TC44;
-typedef AP_FIXED(KFstateN::B18or25,BC04) TC04;
-typedef AP_FIXED(KFstateN::B18or25,BC14) TC14;
+typedef AP_UFIXED(BLENCOV,BC00)  TC00; 
+typedef AP_UFIXED(BLENCOV,BC11)  TC11;
+typedef AP_UFIXED(BLENCOV,BC22)  TC22;
+typedef AP_UFIXED(BLENCOV,BC33)  TC33;
+typedef AP_FIXED (BLENCOV,BC01)  TC01;
+typedef AP_FIXED (BLENCOV,BC23)  TC23;
+typedef AP_UFIXED(BLENCOV,BC44)  TC44;
+typedef AP_FIXED (BLENCOV,BC04)  TC04;
+typedef AP_FIXED (BLENCOV,BC14)  TC14;
+
+// Additional type with extra bit, for internal use.
+typedef AP_UFIXED(1+BLENCOV,BC00)  TC00EX; 
+typedef AP_UFIXED(1+BLENCOV,BC11)  TC11EX;
+typedef AP_UFIXED(1+BLENCOV,BC22)  TC22EX;
+typedef AP_UFIXED(1+BLENCOV,BC33)  TC33EX;
+typedef AP_FIXED (1+BLENCOV,BC01)  TC01EX;
+typedef AP_FIXED (1+BLENCOV,BC23)  TC23EX;
+typedef AP_UFIXED(1+BLENCOV,BC44)  TC44EX;
+typedef AP_FIXED (1+BLENCOV,BC04)  TC04EX;
+typedef AP_FIXED (1+BLENCOV,BC14)  TC14EX;
 
 typedef AP_UFIXED(B17,BCHI) TCHI;
 
@@ -202,19 +208,19 @@ public:
 	   <<" etaSectID="<<etaSectID<<" etaSectZsign="<<etaSectZsign
 	   <<" HT (m,c)=("<<mBin_ht<<","<<cBin_ht<<")"
            <<" layers (ID, skip)=("<<layerID<<","<<nSkippedLayers<<")"
-           <<" 1/2R="<<ap_fixed<B18,B18>(inv2R.range( B18 - 1, 0))
-	   <<" phi0="<<ap_fixed<B18,B18>(phi0.range( B18 - 1, 0))
-	   <<" tanL="<<ap_fixed<B18,B18>(tanL.range( B18 - 1, 0))
-	   <<" z0="  <<ap_fixed<B18,B18>(z0.range( B18 - 1, 0))
-	   <<" chi2="<<ap_ufixed<B17,B17>(chiSquared.range( B17 - 1, 0))
+	   <<" 1/2R="<<ap_int<B18>(inv2R.range())
+	   <<" phi0="<<ap_int<B18>(phi0.range())
+	   <<" tanL="<<ap_int<B18>(tanL.range())
+	   <<" z0="  <<ap_int<B18>(z0.range())
+	   <<" chi2="<<ap_uint<B17>(chiSquared.range())
 	   <<std::endl;
       std::cout<<"      "<<std::dec
-           <<" cov00="<<ap_fixed<B25,B25>(cov_00.range( B25 - 1, 0))
-           <<" cov11="<<ap_fixed<B25,B25>(cov_11.range( B25 - 1, 0))
-           <<" cov22="<<ap_fixed<B25,B25>(cov_22.range( B25 - 1, 0))
-           <<" cov33="<<ap_fixed<B25,B25>(cov_33.range( B25 - 1, 0))
-           <<" cov01="<<ap_fixed<KFstateN::B18or25,KFstateN::B18or25>(cov_01.range( KFstateN::B18or25 - 1, 0))
-	   <<" cov23="<<ap_fixed<KFstateN::B18or25,KFstateN::B18or25>(cov_23.range( KFstateN::B18or25 - 1, 0))
+           <<" cov00="<<ap_uint<KFstateN::BLENCOV>(cov_00.range())
+	   <<" cov11="<<ap_uint<KFstateN::BLENCOV>(cov_11.range())
+           <<" cov22="<<ap_uint<KFstateN::BLENCOV>(cov_22.range())
+           <<" cov33="<<ap_uint<KFstateN::BLENCOV>(cov_33.range())
+           <<" cov01="<<ap_int<KFstateN::BLENCOV>(cov_01.range())
+	   <<" cov23="<<ap_int<KFstateN::BLENCOV>(cov_23.range())
  	   <<std::endl;
 #ifdef ALL_HLS
       std::cout<<"       Proto #stubs/layer:";
@@ -243,10 +249,10 @@ public:
   void print(const char* text) const {
     this->KFstate<4>::print(text);
     if (valid) std::cout<<text
-             <<" d0="<<ap_fixed<B18,B18>(d0.range( B18 - 1, 0))
-             <<" cov44="<<ap_fixed<B25,B25>(cov_44.range( B25 - 1, 0))
-             <<" cov04="<<ap_fixed<KFstateN::B18or25,KFstateN::B18or25>(cov_04.range( KFstateN::B18or25 - 1, 0))
-             <<" cov14="<<ap_fixed<KFstateN::B18or25,KFstateN::B18or25>(cov_14.range( KFstateN::B18or25 - 1, 0))
+             <<" d0="<<ap_int<B18>(d0.range())
+             <<" cov44="<<ap_uint<KFstateN::BLENCOV>(cov_44.range())
+             <<" cov04="<<ap_int<KFstateN::BLENCOV>(cov_04.range())
+	     <<" cov14="<<ap_int<KFstateN::BLENCOV>(cov_14.range())
              <<std::endl;
   }
 #endif

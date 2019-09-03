@@ -219,8 +219,13 @@ bool checkCalc(std::string varName, C res_fix, double res_float, double reltol =
     double relerr = err/fabs(res_float);
     if (relerr > reltol && err > tol) {
       OK = false;
-      if (nErrors < NPRINTMAX) std::cout<<"checkCalc PRECISION LOSS ("<<cName<<"): "<<varName<<" relerr="<<relerr<<" err="<<err<<" fix="<<res_fix<<" flt="<<res_float<<std::endl;
-      if (intBitsSeen > intBitsCfg) if (nErrors < NPRINTMAX) std::cout<<"checkCalc TOO FEW INT BITS ("<<cName<<"): "<<varName<<" "<<intBitsSeen<<" > "<<intBitsCfg<<std::endl;
+      if (nErrors < NPRINTMAX) {
+        if (intBitsSeen > intBitsCfg) {
+	  std::cout<<"checkCalc TOO FEW INT BITS ("<<cName<<"): "<<varName<<" "<<intBitsSeen<<" > "<<intBitsCfg<<std::endl;
+	} else {
+  	  std::cout<<"checkCalc PRECISION LOSS ("<<cName<<"): "<<varName<<" relerr="<<relerr<<" err="<<err<<" fix="<<res_fix<<" flt="<<res_float<<std::endl;
+	}
+      }
     }
   }
   if (not OK) nErrors++;

@@ -382,7 +382,7 @@ bool KFParamsComb::isGoodState( const KalmanState &state )const
   d0Cut       = { 999.,  999.,     999.,      10.,      10.,      10.,       10.}; // Only used for 5 param fit.
   if (nPar_ == 5) { // specific cuts for displaced tracking case.
     //  Layer   =    0      1        2         3         4         5           6
-    z0Cut       = { 999.,  999.,  1.8*15.,  1.8*15.,  1.8*15.,  1.8*15.,   1.8*15.};
+    z0Cut       = { 999.,  999.,  1.7*15.,  1.7*15.,  1.7*15.,  1.7*15.,   1.7*15.}; // Larger values require digisation change.
     chi2Cut     = { 999.,  999.,      10.,      30.,      80.,     120.,      160.}; // Maybe loosen for high d0 ?
   } else {         // specific cuts for prompt tracking case.
     //  Layer   =    0      1      2     3     4      5      6

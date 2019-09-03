@@ -54,13 +54,15 @@ enum BIT_ADJUST_PLAY {BODGE_V=5, BODGE_CHI2=12};
 template<>
 class BODGE<4> {
 public:
-  enum BIT_ADJUST {V=BODGE_V, S=2+1, R=5-S, IR=10+R+S, DET=15-2*R-2*S, K=23-IR+R, RES=2, CHI2=BODGE_CHI2};
+  //enum BIT_ADJUST {V=BODGE_V, S=2+1, R=5-S, IR=10+R+S, DET=15-2*R-2*S, K=23-IR+R, RES=2, CHI2=BODGE_CHI2};
+  enum BIT_ADJUST {V=BODGE_V, S=1+1, R=5-S, IR=10+R+S, DET=13-2*R-2*S, K=23-IR+R, RES=2, CHI2=BODGE_CHI2};
 };
 
 template<>
 class BODGE<5> {
 public:
-  enum BIT_ADJUST {V=BODGE_V, S=2+2, R=5-S+2, IR=10+R+S-3, DET=15-2*R-2*S+2, K=23-IR+R-2, RES=2, CHI2=BODGE_CHI2};
+  //enum BIT_ADJUST {V=BODGE_V, S=2+2, R=5-S+2, IR=10+R+S-3, DET=15-2*R-2*S+2, K=23-IR+R-2, RES=2, CHI2=BODGE_CHI2};
+  enum BIT_ADJUST {V=BODGE_V, S=2, R=4-S, IR=10+R+S-3, DET=13-2*R-2*S, K=23-IR+R-2, RES=2, CHI2=BODGE_CHI2};
 };
 
 // Allow some bits for correlation in helix params between r-phi and r-z planes.

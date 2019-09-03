@@ -95,25 +95,32 @@ public:
              _00(stateIn.cov_00), _11(stateIn.cov_11), _22(stateIn.cov_22), _33(stateIn.cov_33), 
 	     _01(stateIn.cov_01), _23(stateIn.cov_23), 
              _02(0), _03(0), _12(0), _13(0),
-             _10(_01), _32(_23), _20(_02), _30(_03), _21(_12), _31(_13) {}
+             _10(_01), _32(_23), _20(_02), _30(_03), _21(_12), _31(_13) 
+  {
+    _00[0] = 1;
+    _11[0] = 1;
+    _22[0] = 1;
+    _33[0] = 1;
+    _01[0] = 1;
+    _23[0] = 1;
+  }
 
   // Calculate output helix covariance matrix: C' = C - K*H*C = C - K*S.
   MatrixC(const MatrixC<4>& C, const MatrixK<4>& K, const MatrixS<4>& S);
 
 public:
   // Elements that are finite
-  // VHDL interface wierdly uses signed 25 bits for these, but makes more sense to use unsigned 24 instead.
-  AP_UFIXED(B24,-1+KFstateN::BC00) _00; // One less integer bit as no sign required.
-  AP_UFIXED(B24,-1+KFstateN::BC11) _11;
-  AP_UFIXED(B24,-1+KFstateN::BC22) _22;
-  AP_UFIXED(B24,-1+KFstateN::BC33) _33;
-  KFstateN::TC01 _01; // (inv2R, phi0) -- other off-diagonal elements assumed negligeable.
-  KFstateN::TC23 _23; // (tanL,  z0)   -- other off-diagonal elements assumed negligeable.
+  KFstateN::TC00EX _00; 
+  KFstateN::TC11EX _11; 
+  KFstateN::TC22EX _22; 
+  KFstateN::TC33EX _33; 
+  KFstateN::TC01EX  _01; // (inv2R, phi0) -- other off-diagonal elements assumed negligeable.
+  KFstateN::TC23EX  _23; // (tanL,  z0)   -- other off-diagonal elements assumed negligeable.
   // Elements that are zero.
   const T0 _02, _03, _12, _13;
   // Elements below the diagonal of this symmetric matrix.
-  const KFstateN::TC01 &_10;
-  const KFstateN::TC23 &_32;
+  const KFstateN::TC01EX &_10;
+  const KFstateN::TC23EX &_32;
   const T0 &_20, &_30, &_21, &_31;
 };
 
