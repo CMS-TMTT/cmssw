@@ -5,7 +5,7 @@
 
 namespace TMTT {
 
-StubCluster::StubCluster( std::vector<const Stub *> stubs, double SectorPhi, int lres_dr ) 
+StubCluster::StubCluster( std::vector<const Stub *> stubs, double SectorPhi, int lres_dr ) : layerKF_(999)
 {
     r_=0; phi_=0; z_=0; eta_=0;
     sigmaX_=0; sigmaZ_=0;

@@ -17,7 +17,7 @@ void L1fittedTrack::digitizeTrack(const string& fitterName){
 
       if(matchedTP_ != nullptr){
         digitalTrack_.init(fitterName, nHelixParam_,
-         iPhiSec_, iEtaReg_, mBinHT, cBinHT, mbinhelix, cbinhelix, 
+	 iPhiSec_, iEtaReg_, mBinHT, cBinHT, mbinhelix, cbinhelix, hitPattern_,
 	 qOverPt_, d0_, phi0_,tanLambda_, z0_, chi2_,
 	 qOverPt_bcon_, phi0_bcon_, chi2_bcon_,
 	 nLayers_, consistent, this->accepted(),
@@ -25,7 +25,7 @@ void L1fittedTrack::digitizeTrack(const string& fitterName){
 	 matchedTP_->index(), matchedTP_->useForAlgEff(), matchedTP_->useForEff(), matchedTP_->pdgId());
       } else {
         digitalTrack_.init(fitterName, nHelixParam_,
-         iPhiSec_, iEtaReg_, mBinHT, cBinHT, mbinhelix, cbinhelix,       
+	 iPhiSec_, iEtaReg_, mBinHT, cBinHT, mbinhelix, cbinhelix, hitPattern_,     
 	 qOverPt_, d0_, phi0_, tanLambda_, z0_, chi2_, 
 	 qOverPt_bcon_, phi0_bcon_, chi2_bcon_,
 	 nLayers_, consistent, this->accepted(), 

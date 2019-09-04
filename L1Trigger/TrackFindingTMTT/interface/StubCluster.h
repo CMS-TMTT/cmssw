@@ -18,37 +18,41 @@ class StubCluster{
     public :
 	StubCluster( std::vector<const Stub *> stubs, double SectorPhi, int lres_dr = 1 );
 	~StubCluster(){}
-	unsigned nStubs()const{ return nstubs_; }
-        std::vector<const Stub *> stubs()const{ return stubs_; } // Returns original stubs that were usefd to make StubCluster.
-	double r()const{ return r_; }
-	double phi()const{ return phi_; }
-	double z()const{ return z_; }
-	double eta()const{ return eta_; }
-	std::set<const TP *> assocTPs()const{ return assocTPs_; } 
-	unsigned layerId()const{ return layerId_; }
-        unsigned layerIdReduced()const{ return layerIdReduced_; }
-	unsigned endcapRing()const{ return endcapRing_; }
-	bool barrel()const{ return barrel_; }
-        bool tiltedBarrel()const{ return tiltedBarrel_;}
-        bool psModule()const{ return psModule_;}
+
+        void setLayerKF(unsigned int lay){layerKF_=lay;} // KF encoded tracker layer
+        unsigned int layerKF() const {return layerKF_;}
+
+	unsigned nStubs() const { return nstubs_; }
+        std::vector<const Stub *> stubs() const { return stubs_; } // Returns original stubs that were usefd to make StubCluster.
+	double r() const { return r_; }
+	double phi() const { return phi_; }
+	double z() const { return z_; }
+	double eta() const { return eta_; }
+	std::set<const TP *> assocTPs() const { return assocTPs_; } 
+	unsigned layerId() const { return layerId_; }
+        unsigned layerIdReduced() const { return layerIdReduced_; }
+	unsigned endcapRing() const { return endcapRing_; }
+	bool barrel() const { return barrel_; }
+        bool tiltedBarrel() const { return tiltedBarrel_;}
+        bool psModule() const { return psModule_;}
 	//quadratic sum of the short side error of sensors and RMS of the sensor positions along the short side.
-	double sigmaX()const{ return sigmaX_; }
+	double sigmaX() const { return sigmaX_; }
 	//quadratic sum of the long side error of sensors and RMS of the sensor positions along the long side.
-	double sigmaZ()const{ return sigmaZ_; }
+	double sigmaZ() const { return sigmaZ_; }
 	//phi error from strip pitch
-	double dphi_dl()const{ return dphi_dl_; }
+	double dphi_dl() const { return dphi_dl_; }
 	//phi error from strip length in the endcap
-	double dphi_dr()const{ return dphi_dr_; }
+	double dphi_dr() const { return dphi_dr_; }
 	//total phi error
-	double dphi()const{ return dphi_; }
+	double dphi() const { return dphi_; }
 	//strip distance in cm from the center of the sensor.
-	double deltal()const{ return deltal_; }
+	double deltal() const { return deltal_; }
 	//strip distance from the center of the sensor.
-	double deltai()const{ return deltai_; }
+	double deltai() const { return deltai_; }
         //alpha correction for non-radial strips in endcap 2S modules.
-        double alpha()const{ return alpha_;}
+        double alpha() const { return alpha_;}
         // Angle between normal to module and beam-line along +ve z axis. (In range -PI/2 to PI/2).
-        double moduleTilt()const{ return moduleTilt_;} 
+        double moduleTilt() const { return moduleTilt_;} 
 
     private:
 	std::vector<const Stub *> stubs_;
@@ -61,6 +65,7 @@ class StubCluster{
 	unsigned layerId_;
 	unsigned layerIdReduced_;
 	unsigned endcapRing_;
+        unsigned layerKF_;
 	bool barrel_;
 	bool tiltedBarrel_;
         bool psModule_;
@@ -73,7 +78,6 @@ class StubCluster{
 	double deltai_;
         double alpha_;
         double moduleTilt_;
-
 };
 
 }

@@ -225,6 +225,7 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
 
   stateDigi.trackID = 0; // Not used by KF updator.
   stateDigi.eventID = 0; // Not used by KF updator.
+  stateDigi.hitPattern = 0; // Not used by KF updator.
 
   unsigned int iEtaReg = state->candidate().iEtaReg(); // Although this comes from the state, it is actually the eta region of the stub.
   // This is encoded in tortuous way copied from Maxeller code (lines 127-133).

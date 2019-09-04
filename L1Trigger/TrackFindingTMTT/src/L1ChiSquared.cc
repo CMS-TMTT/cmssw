@@ -11,6 +11,7 @@
  
 #include <algorithm>
 #include <functional>
+#include <set>
  
 namespace TMTT {
 
@@ -109,7 +110,7 @@ L1fittedTrack L1ChiSquared::fit(const L1track3D& l1track3D){
 	bool valid = nLayers >= minStubLayersRed_;
 
 	if ( ! valid ){
-	  return L1fittedTrack (getSettings(), l1track3D, stubs_, l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid);
+	  return L1fittedTrack (getSettings(), l1track3D, stubs_, set<unsigned int>(), l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid);
 	}
       }
 
@@ -134,10 +135,10 @@ L1fittedTrack L1ChiSquared::fit(const L1track3D& l1track3D){
   bool valid4par = nLayers >= minStubLayersRed_;
 
   if ( valid4par ){
-    return L1fittedTrack(getSettings(), l1track3D, stubs_, tp["qOverPt"], 0, tp["phi0"], tp["z0"], tp["t"], chiSq_, nPar_, valid4par);
+    return L1fittedTrack(getSettings(), l1track3D, stubs_, set<unsigned int>(), tp["qOverPt"], 0, tp["phi0"], tp["z0"], tp["t"], chiSq_, nPar_, valid4par);
   }
   else{ 
-    return L1fittedTrack (getSettings(), l1track3D, stubs_, l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid4par);
+    return L1fittedTrack (getSettings(), l1track3D, stubs_, set<unsigned int>(), l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid4par);
   }
 }
  

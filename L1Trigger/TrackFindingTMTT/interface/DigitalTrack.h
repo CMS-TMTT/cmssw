@@ -4,6 +4,7 @@
 #include "FWCore/Utilities/interface/Exception.h"
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
 #include <string>
+#include <set>
 
 using namespace std;
 
@@ -34,6 +35,7 @@ public:
   /// Initialize track with original, floating point coords
   void init(const string& fitterName, unsigned int nHelixParams,
 	    unsigned int iPhiSec, unsigned int iEtaReg, int mbin, int cbin, int mBinhelix, int cBinhelix, 
+	    set<unsigned int> hitPattern,
 	    float qOverPt_orig, float d0_orig, float phi0_orig, float tanLambda_orig, float z0_orig, float chisquared_orig, 
 	    float qOverPt_bcon_orig, float phi0_bcon_orig, float chisquared_bcon_orig, // beam-spot constrained values. 
 	    unsigned int nLayers, bool consistent, bool accepted, 
@@ -58,6 +60,9 @@ public:
   int          iDigi_oneOver2r_bcon()     const {this->ok(); return iDigi_oneOver2r_bcon_;} // half inverse curvature of track.
   int          iDigi_phi0rel_bcon()       const {this->ok(); return iDigi_phi0rel_bcon_;} // measured relative to centre of sector
   unsigned int iDigi_chisquared_bcon()    const {this->ok(); return iDigi_chisquared_bcon_;}
+
+  // Get bit-encoded hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
+  unsigned int iDigi_hitPattern()         const  {return iDigi_hitPattern_;}
 
   // Floating point track params derived from digitized info (so with degraded resolution).
   float        qOverPt()                  const {this->ok(); return qOverPt_;} 
@@ -195,6 +200,8 @@ private:
 
   //--- Original floating point stub coords before digitization.
 
+  set<unsigned int>    hitPattern_orig_;
+
   float                qOverPt_orig_;
   float                oneOver2r_orig_;
   float                d0_orig_;
@@ -222,6 +229,8 @@ private:
   int                  iDigi_oneOver2r_bcon_;
   int                  iDigi_phi0rel_bcon_;
   unsigned int         iDigi_chisquared_bcon_;
+
+  unsigned int         iDigi_hitPattern_;
 
   //--- Floating point track coords derived from digitized info (so with degraded resolution). 
 

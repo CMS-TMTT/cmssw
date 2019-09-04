@@ -383,7 +383,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     // Get track helix params.
     std::map<std::string, double> trackParams = getTrackParams(cand);
 
-    L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
+    L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), cand->hitKFlayers(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
 
     bool consistentHLS = false;
     if (this->isHLS()) {
@@ -418,7 +418,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     // Fitted track params must lie in same sector as HT originally found track in.
     if (! getSettings()->hybrid() ) { // consistentSector() function not yet working for Hybrid.
       if (! returnTrk.consistentSector()) {
-        L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
+        L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), cand->hitKFlayers(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
         if(this->isHLS() && nPar_ == 4) {
           failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_, consistentHLS );
         } else {
@@ -444,7 +444,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 			
     //fill histograms for the selected state with TP for algEff
     if( getSettings()->kalmanFillInternalHists() ) fillCandHists( *cand, tpa );
-			
+
     return returnTrk;
 
   } else {
@@ -472,7 +472,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 					const KalmanState *state = *it_last;
 				
 					//std::map<std::string, double> trackParams = getTrackParams(state);
-					//L1fittedTrack returnTrk(getSettings(), l1track3D, state->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state->chi2(), nPar_, true);
+					//L1fittedTrack returnTrk(getSettings(), l1track3D, state->stubs(), state->hitKFlayers(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state->chi2(), nPar_, true);
 				
 				
 					std::vector<const Stub *> sstubs = state->stubs();
@@ -502,7 +502,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
       }
     }
 
-    L1fittedTrack returnTrk(getSettings(), l1track3D, l1track3D.getStubs(), l1track3D.qOverPt(), 0, l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 9999, nPar_, false);
+    L1fittedTrack returnTrk(getSettings(), l1track3D, l1track3D.getStubs(), std::set<unsigned int>(), l1track3D.qOverPt(), 0, l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 9999, nPar_, false);
     returnTrk.setInfoKF( 0, numUpdateCalls_ );
     return returnTrk;
   }
@@ -527,7 +527,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   TMatrixD K( nPar_, 2 );
   TMatrixD dcov( 2, 2 );
 	
-  const KalmanState *state0 = mkState( l1track3D, 0, 0, 0, 0, x0, pxx0, K, dcov, 0, 0 );
+  const KalmanState *state0 = mkState( l1track3D, 0, 0, 0, nullptr, x0, pxx0, K, dcov, 0, 0 );
 	
   if( getSettings()->kalmanFillInternalHists() ) fillSeedHists( state0, tpa );
 	
@@ -603,7 +603,10 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     }
 		
     if (layerStubs[kalmanLayer].size() < getSettings()->kalmanMaxStubsPerLayer()) {
-      if (kalmanLayer != 7) layerStubs[kalmanLayer].push_back( stubCluster );
+      if (kalmanLayer != 7) {
+	const_cast<StubCluster*>(stubCluster)->setLayerKF(kalmanLayer); // Ugly trick to store KF layer inside stub cluster.
+	layerStubs[kalmanLayer].push_back( stubCluster );
+      }
     }
   }
 
@@ -623,7 +626,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       const KalmanState *the_state = *i_state;
 			
 
-      unsigned layer = the_state->nextLayer();
+      unsigned int layer = the_state->nextLayer();
       unsigned skipped = the_state->nSkippedLayers();
 
       // If this layer is known to be dead, skip to the next layer (layer+1)
@@ -639,7 +642,6 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       // containers for updated state+stub combinations
       std::vector<const KalmanState *> next_states;
       std::vector<const KalmanState *> next_states_skipped;
-
 			
       // find stubs for this layer
       std::vector<const StubCluster *> stubs = layerStubs[layer]; // If layer > 6, this will return empty vector, so safe.
@@ -824,7 +826,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 			
       if( tpa && tpa->useForAlgEff() ) {
       std::map<std::string, double> trackParams = getTrackParams(best_state);
-      L1fittedTrack returnTrk(getSettings(), l1track3D, best_state->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], best_state->chi2(), nPar_, true);
+      L1fittedTrack returnTrk(getSettings(), l1track3D, best_state->stubs(), best_state->hitKFlayers(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], best_state->chi2(), nPar_, true);
       if (returnTrk.getNumMatchedLayers()>=4) {
       //temp_states.push_back(best_state);
       if(i==0) found = true;

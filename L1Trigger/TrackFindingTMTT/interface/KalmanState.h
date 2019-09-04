@@ -5,6 +5,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/Stub.h"
 #include "L1Trigger/TrackFindingTMTT/interface/L1KalmanComb.h"
 #include <map>
+#include <set>
 
 namespace TMTT {
 
@@ -47,7 +48,8 @@ class KalmanState{
 	const StubCluster* stubCluster()const{ return     stubCluster_; }
 	double                    chi2()const{ return            chi2_; }
 	unsigned           nStubLayers()const{ return         n_stubs_; }
-    L1track3D            candidate()const{ return       l1track3D_; }
+        L1track3D            candidate()const{ return       l1track3D_; }
+        std::set<unsigned int> hitKFlayers()const{ return hitKFlayers_;} // KF layers the fitted track has stubs in.
 
 	bool                            good( const TP *tp )const;
 	double                   reducedChi2()const;
@@ -88,6 +90,7 @@ class KalmanState{
 	unsigned               n_skipped_;
 	double                         z_;
         L1track3D              l1track3D_;
+        std::set<unsigned int>  hitKFlayers_;
 
        // Additional output from HLS if using it.
        unsigned int mBinHelixHLS_; 

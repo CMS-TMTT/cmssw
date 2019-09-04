@@ -86,6 +86,7 @@ void DigitalTrack::getDigiCfg(const string& fitterName) {
 
 void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
 			unsigned int iPhiSec, unsigned int iEtaReg, int mbin, int cbin, int mBinhelix, int cBinhelix, 
+			set<unsigned int> hitPattern,
 			float qOverPt_orig, float d0_orig, float phi0_orig, float tanLambda_orig, float z0_orig, float chisquared_orig, 
 			float qOverPt_bcon_orig, float phi0_bcon_orig, float chisquared_bcon_orig, // beam-spot constrained values. 
 			unsigned int nLayers, bool consistent, bool accepted, 
@@ -118,27 +119,28 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
   phi0rel_bcon_orig_   = reco::deltaPhi(phi0_bcon_orig_, phiSectorCentre_);
   chisquared_bcon_orig_= chisquared_bcon_orig;
 
-  nlayers_        = nLayers;
-  iPhiSec_        = iPhiSec;
-  iEtaReg_        = iEtaReg;
-  mBin_           = mbin;
-  cBin_           = cbin;
-  mBinhelix_      = mBinhelix;
-  cBinhelix_      = cBinhelix;
+  nlayers_         = nLayers;
+  iPhiSec_         = iPhiSec;
+  iEtaReg_         = iEtaReg;
+  mBin_            = mbin;
+  cBin_            = cbin;
+  mBinhelix_       = mBinhelix;
+  cBinhelix_       = cBinhelix;
+  hitPattern_orig_ = hitPattern;
 
-  consistent_     = consistent;
-  accepted_       = accepted;
-  tp_tanLambda_   = tp_tanLambda;
-  tp_qoverpt_     = tp_qOverPt;
-  tp_pt_          = 1./(1.0e-6 + fabs(tp_qOverPt));
-  tp_d0_          = tp_d0;
-  tp_eta_         = tp_eta;
-  tp_phi0_        = tp_phi0;
-  tp_z0_          = tp_z0;
-  tp_index_       = tp_index;
-  tp_useForAlgEff_= tp_useForAlgEff;
-  tp_useForEff_   = tp_useForEff;
-  tp_pdgId_       = tp_pdgId;
+  consistent_      = consistent;
+  accepted_        = accepted;
+  tp_tanLambda_    = tp_tanLambda;
+  tp_qoverpt_      = tp_qOverPt;
+  tp_pt_           = 1./(1.0e-6 + fabs(tp_qOverPt));
+  tp_d0_           = tp_d0;
+  tp_eta_          = tp_eta;
+  tp_phi0_         = tp_phi0;
+  tp_z0_           = tp_z0;
+  tp_index_        = tp_index;
+  tp_useForAlgEff_ = tp_useForAlgEff;
+  tp_useForEff_    = tp_useForEff;
+  tp_pdgId_        = tp_pdgId;
 }
 
 //=== Digitize track
@@ -228,6 +230,12 @@ void DigitalTrack::makeDigitalTrack() {
 
     // Check that digitization followed by undigitization doesn't change results too much.
     this->checkAccuracy();
+  }
+
+  // Bit-encode hit pattern.
+  iDigi_hitPattern_ = 0;
+  for (const unsigned int& lay : hitPattern_orig_) {
+    iDigi_hitPattern_ |= (1 << lay);
   }
 }
 
