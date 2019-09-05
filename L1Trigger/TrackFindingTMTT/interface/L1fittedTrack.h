@@ -33,12 +33,12 @@ class L1fittedTrack : public L1trackBase {
 public:
 
   // Store a new fitted track, specifying the input Hough transform track, the stubs used for the fit,
-  // hit layer pattern (numbered by increasing distance from origin),
+  // bit-encoded hit layer pattern (numbered by increasing distance from origin),
   // the fitted helix parameters & chi2,
   // and the number of helix parameters being fitted (=5 if d0 is fitted, or =4 if d0 is not fitted).
   // And if track fit declared this to be a valid track (enough stubs left on track after fit etc.).
   L1fittedTrack(const Settings* settings, const L1track3D& l1track3D, const vector<const Stub*>& stubs, 
-		const set<unsigned int>& hitPattern,
+		unsigned int hitPattern,
                 float qOverPt, float d0, float phi0, float z0, float tanLambda, 
                 float chi2, unsigned int nHelixParam, bool accepted = true) :
     L1trackBase(),
@@ -120,8 +120,8 @@ public:
   unsigned int                getNumLayers()          const  {return nLayers_;}
   // Get number of stubs deleted from track candidate by fitter (because they had large residuals)
   unsigned int                getNumKilledStubs()        const  {return l1track3D_.getNumStubs() - this->getNumStubs();}
-  // Get hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
-  set<unsigned int>           getHitPattern()        const  {return hitPattern_;}
+  // Get bit-encoded hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
+  unsigned int                getHitPattern()        const  {return hitPattern_;}
 
   // Get Hough transform cell locations in units of bin number, corresponding to the fitted helix parameters of the track.
   // Always uses the beam-spot constrained helix params if they are available.
@@ -271,8 +271,8 @@ private:
   vector<const Stub*>   stubs_;
   unsigned int          nLayers_;
 
-  //--- Hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
-  set<unsigned int>     hitPattern_;
+  //--- Bit-encoded hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
+  unsigned int          hitPattern_;
 
   //--- The fitted helix parameters and fit chi-squared.
   float qOverPt_;

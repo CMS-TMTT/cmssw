@@ -110,7 +110,8 @@ L1fittedTrack L1ChiSquared::fit(const L1track3D& l1track3D){
 	bool valid = nLayers >= minStubLayersRed_;
 
 	if ( ! valid ){
-	  return L1fittedTrack (getSettings(), l1track3D, stubs_, set<unsigned int>(), l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid);
+	  const unsigned int hitPattern = 0; // FIX: Needs setting
+	  return L1fittedTrack (getSettings(), l1track3D, stubs_, hitPattern, l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid);
 	}
       }
 
@@ -134,11 +135,12 @@ L1fittedTrack L1ChiSquared::fit(const L1track3D& l1track3D){
   unsigned int nLayers = Utility::countLayers( getSettings(), stubs_ ); // Count tracker layers with stubs
   bool valid4par = nLayers >= minStubLayersRed_;
 
+  const unsigned int hitPattern = 0; // FIX: Needs setting
   if ( valid4par ){
-    return L1fittedTrack(getSettings(), l1track3D, stubs_, set<unsigned int>(), tp["qOverPt"], 0, tp["phi0"], tp["z0"], tp["t"], chiSq_, nPar_, valid4par);
+    return L1fittedTrack(getSettings(), l1track3D, stubs_, hitPattern, tp["qOverPt"], 0, tp["phi0"], tp["z0"], tp["t"], chiSq_, nPar_, valid4par);
   }
   else{ 
-    return L1fittedTrack (getSettings(), l1track3D, stubs_, set<unsigned int>(), l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid4par);
+    return L1fittedTrack (getSettings(), l1track3D, stubs_, hitPattern, l1track3D.qOverPt(), 0., l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 999999., 4, valid4par);
   }
 }
  

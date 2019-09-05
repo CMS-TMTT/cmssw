@@ -153,6 +153,8 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
   stateDigi.mBin_ht = htCell.first   - floor(getSettings()->houghNbinsPt()/2); 
   stateDigi.cBin_ht = htCell.second  - floor(getSettings()->houghNbinsPhi()/2);
 
+  stateDigi.hitPattern = state->hitPattern();
+
   // Fitted helix parameters.
   vector<double> helixParams = state->xa();
   double inv2R = helixParams[0]; // Half inverse radius of curvature.
@@ -225,7 +227,6 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
 
   stateDigi.trackID = 0; // Not used by KF updator.
   stateDigi.eventID = 0; // Not used by KF updator.
-  stateDigi.hitPattern = 0; // Not used by KF updator.
 
   unsigned int iEtaReg = state->candidate().iEtaReg(); // Although this comes from the state, it is actually the eta region of the stub.
   // This is encoded in tortuous way copied from Maxeller code (lines 127-133).

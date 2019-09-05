@@ -86,7 +86,7 @@ void DigitalTrack::getDigiCfg(const string& fitterName) {
 
 void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
 			unsigned int iPhiSec, unsigned int iEtaReg, int mbin, int cbin, int mBinhelix, int cBinhelix, 
-			set<unsigned int> hitPattern,
+		        unsigned int hitPattern,
 			float qOverPt_orig, float d0_orig, float phi0_orig, float tanLambda_orig, float z0_orig, float chisquared_orig, 
 			float qOverPt_bcon_orig, float phi0_bcon_orig, float chisquared_bcon_orig, // beam-spot constrained values. 
 			unsigned int nLayers, bool consistent, bool accepted, 
@@ -126,7 +126,7 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
   cBin_            = cbin;
   mBinhelix_       = mBinhelix;
   cBinhelix_       = cBinhelix;
-  hitPattern_orig_ = hitPattern;
+  hitPattern_      = hitPattern;
 
   consistent_      = consistent;
   accepted_        = accepted;
@@ -230,12 +230,6 @@ void DigitalTrack::makeDigitalTrack() {
 
     // Check that digitization followed by undigitization doesn't change results too much.
     this->checkAccuracy();
-  }
-
-  // Bit-encode hit pattern.
-  iDigi_hitPattern_ = 0;
-  for (const unsigned int& lay : hitPattern_orig_) {
-    iDigi_hitPattern_ |= (1 << lay);
   }
 }
 

@@ -14,7 +14,6 @@
 #include "L1Trigger/TrackFindingTMTT/interface/DigitalTrack.h"
 
 #include <vector>
-#include <set>
 #include <utility>
 #include <string>
 
@@ -35,15 +34,16 @@ class KFTrackletTrack{
 public:
 
   // Store a new fitted track, specifying the input Hough transform track, the stubs used for the fit,
+  // bit-encoded hit layers,
   // the fitted helix parameters & chi2,
   // and the number of helix parameters being fitted (=5 if d0 is fitted, or =4 if d0 is not fitted).
   // Also specify phi sector and eta region used by track-finding code that this track was in.
   // And if track fit declared this to be a valid track (enough stubs left on track after fit etc.).
-  KFTrackletTrack(const L1track3D& l1track3D, const vector<const Stub*>& stubs, const set<unsigned int>& hitPattern,
-                float qOverPt, float d0, float phi0, float z0, float tanLambda,
-                float chi2, unsigned int nHelixParam,
-                unsigned int iPhiSec, unsigned int iEtaReg, bool accepted = true) :
-    
+  KFTrackletTrack(const L1track3D& l1track3D, const vector<const Stub*>& stubs, 
+		  unsigned int hitPattern,
+                  float qOverPt, float d0, float phi0, float z0, float tanLambda,
+                  float chi2, unsigned int nHelixParam,
+                  unsigned int iPhiSec, unsigned int iEtaReg, bool accepted = true) :
     l1track3D_(l1track3D), stubs_(stubs), hitPattern_(hitPattern),
     qOverPt_(qOverPt), d0_(d0), phi0_(phi0), z0_(z0), tanLambda_(tanLambda),
     chi2_(chi2), 
@@ -94,8 +94,8 @@ public:
   // Get number of stubs deleted from track candidate by fitter (because they had large residuals)
   unsigned int             getNumKilledStubs()        const  {return l1track3D_.getNumStubs() - this->getNumStubs();}
 
-  // Get hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
-  set<unsigned int>           getHitPattern()         const  {return hitPattern_;}
+  // Get bit-encoded hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
+  unsigned int                getHitPattern()         const  {return hitPattern_;}
 
 
   //--- Get the fitted track helix parameters.
@@ -193,8 +193,8 @@ private:
   vector<const Stub*>   stubs_;
   unsigned int          nLayers_;
 
-  //--- Hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
-  set<unsigned int>     hitPattern_;
+  //--- Bit-encoded hit pattern (where layer number assigned by increasing distance from origin, according to layers track expected to cross).
+  unsigned int          hitPattern_;
 
   //--- The fitted helix parameters and fit chi-squared.
   float qOverPt_;

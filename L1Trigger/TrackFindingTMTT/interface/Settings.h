@@ -65,7 +65,6 @@ public:
   //=== Optional stub digitization configuration
 
   bool                 enableDigitize()          const   {return enableDigitize_;}
-  unsigned int         firmwareType()            const   {return firmwareType_;}
   //--- Parameters available in MP board.
   unsigned int         phiSectorBits()           const   {return phiSectorBits_;}
   unsigned int         phiSBits()                const   {return phiSBits_;}
@@ -470,7 +469,6 @@ private:
 
   // Optional stub digitization.
   bool                 enableDigitize_;
-  unsigned int         firmwareType_;
   unsigned int         phiSectorBits_;
   unsigned int         phiSBits_;
   double               phiSRange_;
@@ -478,10 +476,6 @@ private:
   double               rtRange_;
   unsigned int         zBits_;
   double               zRange_;
-  unsigned int         dPhiBits_;
-  double               dPhiRange_;
-  unsigned int         rhoBits_;
-  double               rhoRange_;
   unsigned int         phiOBits_;
   double               phiORange_;
   unsigned int         bendBits_;

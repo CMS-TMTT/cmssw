@@ -61,7 +61,7 @@ static const unsigned int maxStubsPerFitTrack  = 4;
 // Digitisation multipliers (from data format doc).
 // KF uses same multiplier for r as for stubs in DTC, but one extra bit to accomodate larger range,
 // since KF measures r w.r.t. beamline. And it uses r multiplier for z too.
-static const float rMult = pow(2.,KFstubN::BR-1)/103.1103;
+static const float rMult = pow(2.,KFstubN::BR-1)/103.10944;
 static const float phiMult = pow(2.,KFstubN::BPHI)/0.698131700;
 static const float rphiMult = rMult*phiMult;
 static const float inv2R_Mult = (phiMult/rMult);
@@ -95,7 +95,7 @@ static const float kalmanMultScatTerm = 0.00075; // Same as cfg param of same na
 
 // Phi sectors
 static const float TWO_PI = 2*3.14159265;
-static const int numPhiSectors = 18;
+static const int   numPhiSectors = 18;
 static const float phiSectorWidth = TWO_PI / numPhiSectors;
 
 // Bit shift *_bitShift to calculate HT cell from ap_fixed (phi, inv2R) of helix params.

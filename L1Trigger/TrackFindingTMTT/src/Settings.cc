@@ -127,7 +127,6 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   //=== Optional stub digitization.
 
   enableDigitize_         ( stubDigitize_.getParameter<bool>                  ( "EnableDigitize"         ) ),
-  firmwareType_           ( stubDigitize_.getParameter<unsigned int>          ( "FirmwareType"           ) ),
 
   //--- Parameters available in MP board.
   phiSectorBits_          ( stubDigitize_.getParameter<unsigned int>          ( "PhiSectorBits"          ) ),
@@ -428,8 +427,6 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
 
   // Check Kalman fit params.
   if (kalmanMaxNumStubs_ < kalmanMinNumStubs_) throw cms::Exception("Settings.cc: Invalid cfg parameters - KalmanMaxNumStubs is less than KalmanMaxNumStubs.");
-
-  if (firmwareType_ != 1) throw cms::Exception("Settings.cc: Invalid cfg parameter - unknown FirmwareType.");
 }
 
 

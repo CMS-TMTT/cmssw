@@ -16,7 +16,6 @@ DigitalStub::DigitalStub(const Settings* settings) :
   ranMakeSForTFinput_(""),
 
   // Digitization configuration parameters
-  iFirmwareType_ (settings->firmwareType()),  // Firmware type
   phiSectorBits_ (settings->phiSectorBits()), // No. of bits to store phi sector number
   //--- Parameters available in HT board.
   phiSBits_      (settings->phiSBits()),      // No. of bits to store phiS coord.
@@ -363,7 +362,7 @@ void DigitalStub::checkAccuracy() const {
   static unsigned int nErr = 0;
   const  unsigned int maxErr = 20; // Print error message only this number of times.
   if (nErr < maxErr) {
-    if (fabs(TA) > 0.001 || fabs(TB) > 0.3 || (fabs(TC) > 0.25 && iFirmwareType_ != 8) || fabs(TD) > 0.005 || fabs(TE) > 0.01) {
+    if (fabs(TA) > 0.001 || fabs(TB) > 0.3 || fabs(TC) > 0.25 || fabs(TD) > 0.005 || fabs(TE) > 0.01) {
       nErr++;
       cout<<"WARNING: DigitalStub lost precision: "<<TA<<" "<<TB<<" "<<TC<<" "<<TD<<" "<<TE<<endl;
     }

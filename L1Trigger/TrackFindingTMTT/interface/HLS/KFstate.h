@@ -208,6 +208,7 @@ public:
 	   <<" etaSectID="<<etaSectID<<" etaSectZsign="<<etaSectZsign
 	   <<" HT (m,c)=("<<mBin_ht<<","<<cBin_ht<<")"
            <<" layers (ID, skip)=("<<layerID<<","<<nSkippedLayers<<")"
+	   <<std::hex<<" hitPattern="<<hitPattern<<std::dec
 	   <<" 1/2R="<<ap_int<B18>(inv2R.range())
 	   <<" phi0="<<ap_int<B18>(phi0.range())
 	   <<" tanL="<<ap_int<B18>(tanL.range())
