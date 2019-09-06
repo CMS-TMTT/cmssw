@@ -18,8 +18,7 @@ You should then:
 
 N.B. If using with the Demonstrator SW, also edit BuildFile.xml, to:
 
-i) Delete: <flags CXXFLAGS="-DCOV_EXTRA_BITS"/> 
-ii) Add: <flags CXXFLAGS="-DPRINT_HLSARGS"/> 
+i) Add: <flags CXXFLAGS="-DPRINT_HLSARGS"/> 
 
 Notes:
 
@@ -29,9 +28,4 @@ b) BuildFile_HLS.xml defines a pragma variable USE_HLS , which is used to switch
 C++ in TrackFitGeneric.cc that call the HLS code.
 
 c) In addition to the usual track performance summary, the HLS code prints a summary recording 
-if any finite bit HLS variables overflowed. This would print lots of warnings because we use slightly 
-too few bits for the off-diagonal elements of the helix covariance matrix (forced on us by Andy's KF
-VHDL). These warnings do not results in any significant loss of tracking performance, so are unimportant.
-So to silence them, it is convenient to add extra bits to these off-diagonal elements, which 
-BuildFile_HLS.xml does by defining pragma COV_EXTRA_BITS. You can disable this line to check that they
-aren't needed to improve the tracking performance.
+if any finite bit HLS variables overflowed. 
