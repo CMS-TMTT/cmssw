@@ -87,45 +87,45 @@ enum {BEV   = KFstubN::BEV,
       BSEC1 = KFstubN::BSEC1, 
       BM = KFstubN::BM, BC = KFstubN::BC};  
 
-typedef AP_FIXED(B18,BH0) TR;   
-typedef AP_FIXED(B18,BH1) TP;   
-typedef AP_FIXED(B18,BH2) TT;   
-typedef AP_FIXED(B18,BH3) TZ;   
-typedef AP_FIXED(B18,BH4) TD;   
+typedef ap_fixed<B18,BH0> TR;   
+typedef ap_fixed<B18,BH1> TP;   
+typedef ap_fixed<B18,BH2> TT;   
+typedef ap_fixed<B18,BH3> TZ;   
+typedef ap_fixed<B18,BH4> TD;   
 
-typedef AP_UFIXED(BLENCOV,BC00)  TC00; 
-typedef AP_UFIXED(BLENCOV,BC11)  TC11;
-typedef AP_UFIXED(BLENCOV,BC22)  TC22;
-typedef AP_UFIXED(BLENCOV,BC33)  TC33;
-typedef AP_FIXED (BLENCOV,BC01)  TC01;
-typedef AP_FIXED (BLENCOV,BC23)  TC23;
-typedef AP_UFIXED(BLENCOV,BC44)  TC44;
-typedef AP_FIXED (BLENCOV,BC04)  TC04;
-typedef AP_FIXED (BLENCOV,BC14)  TC14;
+typedef ap_ufixed<BLENCOV,BC00>  TC00; 
+typedef ap_ufixed<BLENCOV,BC11>  TC11;
+typedef ap_ufixed<BLENCOV,BC22>  TC22;
+typedef ap_ufixed<BLENCOV,BC33>  TC33;
+typedef ap_fixed <BLENCOV,BC01>  TC01;
+typedef ap_fixed <BLENCOV,BC23>  TC23;
+typedef ap_ufixed<BLENCOV,BC44>  TC44;
+typedef ap_fixed <BLENCOV,BC04>  TC04;
+typedef ap_fixed <BLENCOV,BC14>  TC14;
 
 // Additional type with extra bit, for internal use.
-typedef AP_UFIXED(1+BLENCOV,BC00)  TC00EX; 
-typedef AP_UFIXED(1+BLENCOV,BC11)  TC11EX;
-typedef AP_UFIXED(1+BLENCOV,BC22)  TC22EX;
-typedef AP_UFIXED(1+BLENCOV,BC33)  TC33EX;
-typedef AP_FIXED (1+BLENCOV,BC01)  TC01EX;
-typedef AP_FIXED (1+BLENCOV,BC23)  TC23EX;
-typedef AP_UFIXED(1+BLENCOV,BC44)  TC44EX;
-typedef AP_FIXED (1+BLENCOV,BC04)  TC04EX;
-typedef AP_FIXED (1+BLENCOV,BC14)  TC14EX;
+typedef ap_ufixed<1+BLENCOV,BC00>  TC00EX; 
+typedef ap_ufixed<1+BLENCOV,BC11>  TC11EX;
+typedef ap_ufixed<1+BLENCOV,BC22>  TC22EX;
+typedef ap_ufixed<1+BLENCOV,BC33>  TC33EX;
+typedef ap_fixed <1+BLENCOV,BC01>  TC01EX;
+typedef ap_fixed <1+BLENCOV,BC23>  TC23EX;
+typedef ap_ufixed<1+BLENCOV,BC44>  TC44EX;
+typedef ap_fixed <1+BLENCOV,BC04>  TC04EX;
+typedef ap_fixed <1+BLENCOV,BC14>  TC14EX;
 
-typedef AP_UFIXED(B17,BCHI) TCHI;
+typedef ap_ufixed<B17,BCHI> TCHI;
 
-typedef AP_UINT(BEV)     TEV;
-typedef AP_UINT(BTRK)    TTRK;
-typedef AP_UINT(BLAY)    TLAY;
-typedef AP_UINT(BID)     TID;
-typedef AP_UINT(NLAY)    TNLAY;
-typedef AP_UINT(BSEC)    TSEC;
-typedef AP_UINT(BSEC1)   TSEC1;
+typedef ap_uint<BEV>     TEV;
+typedef ap_uint<BTRK>    TTRK;
+typedef ap_uint<BLAY>    TLAY;
+typedef ap_uint<BID>     TID;
+typedef ap_uint<NLAY>    TNLAY;
+typedef ap_uint<BSEC>    TSEC;
+typedef ap_uint<BSEC1>   TSEC1;
 
-typedef AP_INT(BM)       TM;
-typedef AP_INT(BC)       TC;
+typedef ap_int<BM>       TM;
+typedef ap_int<BC>       TC;
 };
 
 #ifdef ALL_HLS // Used only for full KF implementation in HLS
@@ -186,14 +186,14 @@ public:
   // This is the KF layer that the KF updator next wants to take a stub from, encoded by L1KalmanComb::doKF(), which in any eta region increases from 0-7 as a particle goes through each layer in turn. It is updated by the StateStubAssociator.
   KFstateN::TLAY  layerID;  
   // This is the number of skipped layers assuming we find a stub in the layer the KF updator is currently searched. The KF updator in HLS/Maxeller does not incremement it.
-  AP_UINT(2)      nSkippedLayers;
+  ap_uint<2>      nSkippedLayers;
   // Hit pattern 
   KFstateN::TNLAY hitPattern;
   KFstateN::TTRK  trackID;    // Not used by KF updator. Just helps VHDL keep track of which state this is. 
   KFstateN::TEV   eventID;        // Not used by KF updator. Just helps VHDL keep track of which event this is.
   KFstateN::TSEC  etaSectID; // Eta sector ID, but counting away from 0 near theta=PI/2 & increasing to 8 near endcap. (Named SectorID in Maxeller).
-  AP_UINT(1)      etaSectZsign;  // True if eta sector is in +ve z side of tracker; False otherwise. (Named zSign in Maxeller).
-  AP_UINT(1)      valid; // Used by external code when calculation finished on valid input state & stub.
+  ap_uint<1>      etaSectZsign;  // True if eta sector is in +ve z side of tracker; False otherwise. (Named zSign in Maxeller).
+  ap_uint<1>      valid; // Used by external code when calculation finished on valid input state & stub.
 
 #ifdef ALL_HLS
   ProtoInfo protoInfo; // Extra info about proto state.
@@ -225,7 +225,7 @@ public:
  	   <<std::endl;
 #ifdef ALL_HLS
       std::cout<<"       Proto #stubs/layer:";
-      for (AP_UINT(1+KFstateN::BLAY) i = 0; i < KFstateN::NLAY; i++) {
+      for (ap_uint<1+KFstateN::BLAY> i = 0; i < KFstateN::NLAY; i++) {
 	if (protoInfo.numStubsPerLay[i] > 0) std::cout<<std::dec<<" (L"<<i<<",#S="<<protoInfo.numStubsPerLay[i]<<")";
       }
       std::cout<<std::endl;
@@ -266,29 +266,31 @@ template <unsigned int NPAR> class KFselect;
 
 template <> class KFselect<4> {
 public:
-  // Must use AP_UINT(1) instead of bool, due to bug in HLS IP export.
-  AP_UINT(1)      z0Cut; // Did updated state pass cut on z0 etc.
-  AP_UINT(1)      ptCut;
-  AP_UINT(1)      chiSquaredCut;
-  AP_UINT(1)      sufficientPScut; // Enough PS layers
-  KFstateN::TM    mBin_fit;    // HT bin that fitted helix params lie within.
-  KFstateN::TC    cBin_fit;
-  AP_UINT(1)      sectorCut;   // Helix parameters lie within Sector.
-  AP_UINT(1)      consistent;  // Duplicate removal -- helix parameters lie within original HT cell.
+  // Must use ap_uint<1> instead of bool, due to bug in HLS IP export.
+  ap_uint<1>      z0Cut; // Did updated state pass cut on z0 etc.
+  ap_uint<1>      ptCut;
+  ap_uint<1>      chiSquaredCut;
+  ap_uint<1>      sufficientPScut; // Enough PS layers
+
+  //-- The following are now calculated at end of KF VHDL, so no longer needed here.
+  //KFstateN::TM    mBin_fit;    // HT bin that fitted helix params lie within.
+  //KFstateN::TC    cBin_fit;
+  //ap_uint<1>      sectorCut;   // Helix parameters lie within Sector.
+  //ap_uint<1>      consistent;  // Duplicate removal -- helix parameters lie within original HT cell.
 
 #ifndef __SYNTHESIS__
 public:
   void print(const char* text) const {
-    std::cout<<"HLS OUTPUT EXTRA:"
-             <<" Helix (m,c)=("<<mBin_fit<<","<<cBin_fit<<")"
-    	     <<std::endl;
+    //    std::cout<<"HLS OUTPUT EXTRA:"
+    //             <<" Helix (m,c)=("<<mBin_fit<<","<<cBin_fit<<")"
+    //             <<std::endl;
   }
 #endif
 };
 
 template <> class KFselect<5> : public KFselect<4> {
 public:
-  AP_UINT(1)    d0Cut;
+  ap_uint<1>    d0Cut;
 };
 
 #ifdef CMSSW_GIT_HASH

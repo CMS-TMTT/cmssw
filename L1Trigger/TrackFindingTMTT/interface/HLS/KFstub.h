@@ -11,7 +11,7 @@
  * Author: Ian Tomalin
  */
 
-// Must use AP_UINT(1) instead of bool, due to bug in HLS IP export.
+// Must use ap_uint<1) instead of bool, due to bug in HLS IP export.
 
 #include "ap_int.h"
 #include "ap_fixed.h"
@@ -60,18 +60,18 @@ enum {BR = 12+1, BZ = 14, BPHI=14, BR1 = BR - 1, BZ1 = BZ + 1, // For stub coord
       BSEC1 = BSEC + 1, // To allow same number of sectors in raw stub format, where no zSign used.
       BM    = 6, BC = 6};  // Allow 64*64 HT array. 
 
-typedef AP_UFIXED(BR,BR)    TR;
-typedef AP_FIXED(BR1,BR1)   TR1;
-typedef AP_FIXED(BZ,BZ1)    TZ;  // Lowest integer bit has value zero.
-typedef AP_FIXED(BPHI,BPHI) TPHI;
-typedef AP_UINT(BEV)        TEV;
-typedef AP_UINT(BTRK)       TTRK;
-typedef AP_UINT(BLAY)       TLAY;
-typedef AP_UINT(BID)        TID;
-typedef AP_UINT(BSEC)       TSEC;
-typedef AP_UINT(BSEC1)      TSEC1;
-typedef AP_INT(BM)          TM;
-typedef AP_INT(BC)          TC;
+typedef ap_ufixed<BR,BR>    TR;
+typedef ap_fixed<BR1,BR1>   TR1;
+typedef ap_fixed<BZ,BZ1>    TZ;  // Lowest integer bit has value zero.
+typedef ap_fixed<BPHI,BPHI> TPHI;
+typedef ap_uint<BEV>        TEV;
+typedef ap_uint<BTRK>       TTRK;
+typedef ap_uint<BLAY>       TLAY;
+typedef ap_uint<BID>        TID;
+typedef ap_uint<BSEC>       TSEC;
+typedef ap_uint<BSEC1>      TSEC1;
+typedef ap_int<BM>          TM;
+typedef ap_int<BC>          TC;
 };
 
 //--- Class containing stub coords used by KF maths block.
@@ -79,7 +79,7 @@ typedef AP_INT(BC)          TC;
 class KFstubC {
 public:
 
-  KFstubC(const KFstubN::TR& r_, const KFstubN::TZ& z_, const KFstubN::TPHI& phi_, const AP_UINT(1)& valid_) : 
+  KFstubC(const KFstubN::TR& r_, const KFstubN::TZ& z_, const KFstubN::TPHI& phi_, const ap_uint<1>& valid_) : 
     r(r_), z(z_), phiS(phi_), valid(valid_) {}
 
   KFstubC() : KFstubC(0,0,0,false) {}
@@ -90,7 +90,7 @@ public:
   KFstubN::TZ     z;  // This is (rMult/zMult) larger than digitised z used by HT, so needs one more integer bit.
   KFstubN::TPHI   phiS;
 
-  AP_UINT(1)      valid; // Used by external code to indicate if input data is valid.
+  ap_uint<1>      valid; // Used by external code to indicate if input data is valid.
 
 #ifndef __SYNTHESIS__
 public:
@@ -128,8 +128,8 @@ public:
   KFstub(const KFstubN::TR& r_, const KFstubN::TZ& z_, const KFstubN::TPHI& phi_, 
 	 const KFstubN::TEV& event_, const KFstubN::TTRK& trk_, const KFstubN::TLAY& lay_, 
 	 const KFstubN::TID& id_, 
-	 const KFstubN::TSEC& sec_, const AP_UINT(1)& zs_, const KFstubN::TM& mb_, const KFstubN::TC& cb_,
-	 const AP_UINT(1)& final_, const AP_UINT(1)& valid_) :
+	 const KFstubN::TSEC& sec_, const ap_uint<1>& zs_, const KFstubN::TM& mb_, const KFstubN::TC& cb_,
+	 const ap_uint<1>& final_, const ap_uint<1>& valid_) :
          coord(r_, z_, phi_, valid_), addr(event_, trk_, lay_, id_),
 	 etaSectID(sec_), etaSectZsign(zs_), mBin_ht(mb_), cBin_ht(cb_), finalStubInTrk(final_) {}
 
@@ -142,10 +142,10 @@ public:
   KFstubA addr;
 
   KFstubN::TSEC  etaSectID;       // ID increases the further sector is from theta = 90 degrees.
-  AP_UINT(1)     etaSectZsign;    // True if eta sector in -ve z half of Tracker.
+  ap_uint<1>     etaSectZsign;    // True if eta sector in -ve z half of Tracker.
   KFstubN::TM    mBin_ht;     // HT cell location
   KFstubN::TC    cBin_ht;
-  AP_UINT(1)     finalStubInTrk;
+  ap_uint<1>     finalStubInTrk;
 
 #ifndef __SYNTHESIS__
 public:
@@ -161,8 +161,8 @@ class KFstubR {
 public:
 
   KFstubR(const KFstubN::TR& r_, const KFstubN::TZ& z_, const KFstubN::TPHI& phi_, 
-	 const KFstubN::TSEC& sec_, const AP_UINT(1)& zs_, const KFstubN::TM& mb_, const KFstubN::TC& cb_,
-	 const AP_UINT(1)& final_, const AP_UINT(1)& valid_) :
+	  const KFstubN::TSEC& sec_, const ap_uint<1>& zs_, const KFstubN::TM& mb_, const KFstubN::TC& cb_,
+	  const ap_uint<1>& final_, const ap_uint<1>& valid_) :
          coord(r_, z_, phi_, valid_), 
 	 etaSectID(sec_), etaSectZsign(zs_), mBin_ht(mb_), cBin_ht(cb_), finalStubInTrk(final_) {}
 
@@ -175,10 +175,10 @@ public:
   KFstubC coord;
 
   KFstubN::TSEC  etaSectID;       // ID increases the further sector is from theta = 90 degrees.
-  AP_UINT(1)     etaSectZsign;    // True if eta sector in -ve z half of Tracker.
+  ap_uint<1>     etaSectZsign;    // True if eta sector in -ve z half of Tracker.
   KFstubN::TM    mBin_ht;     // HT cell location
   KFstubN::TC    cBin_ht;
-  AP_UINT(1)     finalStubInTrk;
+  ap_uint<1>     finalStubInTrk;
 
 #ifndef __SYNTHESIS__
 public:

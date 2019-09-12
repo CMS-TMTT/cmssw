@@ -46,7 +46,7 @@ TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& R
 // Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.
 // (Relevant only to 5-param helix fit)
 template <unsigned int NPAR>
-void setOutputsD0(const VectorX<NPAR>& x_new, const MatrixC<NPAR>& C_new, const AP_UINT(3)& nStubs, KFstate<NPAR>& stateOut, KFselect<NPAR>& selectOut);
+void setOutputsD0(const VectorX<NPAR>& x_new, const MatrixC<NPAR>& C_new, const ap_uint<3>& nStubs, KFstate<NPAR>& stateOut, KFselect<NPAR>& selectOut);
 
 // Fully specialized function templates must also be declared to ensure they are found.
 

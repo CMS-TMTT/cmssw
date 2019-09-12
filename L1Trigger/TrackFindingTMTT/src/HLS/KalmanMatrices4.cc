@@ -76,7 +76,6 @@ MatrixR<4>::MatrixR(const MatrixV& V, const MatrixH<4>& H, const MatrixS_transpo
 // Kalman gain matrix K = S*R(inverse).
 
 MatrixK<4>::MatrixK(const MatrixS_transpose<4>& St, const MatrixInverseR<4>& RmatInv) {
-#ifdef USE_FIXED
   _00 =  St._00 * RmatInv._00 + St._01 * RmatInv._10;
   _10 =  St._10 * RmatInv._00 + St._11 * RmatInv._10;
   _20 =  St._20 * RmatInv._00 + St._21 * RmatInv._10;
@@ -85,16 +84,6 @@ MatrixK<4>::MatrixK(const MatrixS_transpose<4>& St, const MatrixInverseR<4>& Rma
   _11 =  St._10 * RmatInv._01 + St._11 * RmatInv._11;
   _21 =  St._20 * RmatInv._01 + St._21 * RmatInv._11;
   _31 =  St._30 * RmatInv._01 + St._31 * RmatInv._11;
-#else
-  _00 =  SW_FLOAT(St._00) * RmatInv._00 + SW_FLOAT(St._01) * RmatInv._10;
-  _10 =  SW_FLOAT(St._10) * RmatInv._00 + SW_FLOAT(St._11) * RmatInv._10;
-  _20 =  SW_FLOAT(St._20) * RmatInv._00 + SW_FLOAT(St._21) * RmatInv._10;
-  _30 =  SW_FLOAT(St._30) * RmatInv._00 + SW_FLOAT(St._31) * RmatInv._10;
-  _01 =  SW_FLOAT(St._00) * RmatInv._01 + SW_FLOAT(St._01) * RmatInv._11;
-  _11 =  SW_FLOAT(St._10) * RmatInv._01 + SW_FLOAT(St._11) * RmatInv._11;
-  _21 =  SW_FLOAT(St._20) * RmatInv._01 + SW_FLOAT(St._21) * RmatInv._11;
-  _31 =  SW_FLOAT(St._30) * RmatInv._01 + SW_FLOAT(St._31) * RmatInv._11;
-#endif
 
 #ifdef PRINT_SUMMARY
   double k00 =  double(St._00) * double(RmatInv._00) + double(St._01) * double(RmatInv._10);
@@ -134,7 +123,6 @@ VectorRes<4>::VectorRes(const VectorM& m, const MatrixH<4>& H, const VectorX<4>&
 // Calculate output helix params: x' = x + K*res
 
 VectorX<4>::VectorX(const VectorX<4>& x, const MatrixK<4>& K, const VectorRes<4>& res) {
-#ifdef USE_FIXED
   typedef MatrixK<4>::TK00_short TK00_short;
   typedef MatrixK<4>::TK10_short TK10_short;
   typedef MatrixK<4>::TK21_short TK21_short;
@@ -144,12 +132,6 @@ VectorX<4>::VectorX(const VectorX<4>& x, const MatrixK<4>& K, const VectorRes<4>
   _1 = x._1 + KFstateN::TP(TK10_short(K._10) * res._0 + T0        (K._11) * res._1);
   _2 = x._2 + KFstateN::TT(T0        (K._20) * res._0 + TK21_short(K._21) * res._1);
   _3 = x._3 + KFstateN::TZ(T0        (K._30) * res._0 + TK31_short(K._31) * res._1);
-#else
-  _0 = x._0 + KFstateN::TR(K._00 * SW_FLOAT(res._0) + K._01 * SW_FLOAT(res._1)); 
-  _1 = x._1 + KFstateN::TP(K._10 * SW_FLOAT(res._0) + K._11 * SW_FLOAT(res._1)); 
-  _2 = x._2 + KFstateN::TT(K._20 * SW_FLOAT(res._0) + K._21 * SW_FLOAT(res._1)); 
-  _3 = x._3 + KFstateN::TZ(K._30 * SW_FLOAT(res._0) + K._31 * SW_FLOAT(res._1)); 
-#endif
 }
 
 
@@ -160,21 +142,12 @@ MatrixC<4>::MatrixC(const MatrixC<4>& C, const MatrixK<4>& K, const MatrixS<4>& 
   _10(_01), _32(_23), _20(_02), _30(_03), _21(_12), _31(_13)
 {
   // Covariance matrix is symmetric & some elements can be neglected.
-#ifdef USE_FIXED
   _00 =  C._00 - KFstateN::TC00EX(K._00 * S._00 + K._01 * S._10);
   _11 =  C._11 - KFstateN::TC11EX(K._10 * S._01 + K._11 * S._11);
   _22 =  C._22 - KFstateN::TC22EX(K._20 * S._02 + K._21 * S._12);
   _33 =  C._33 - KFstateN::TC33EX(K._30 * S._03 + K._31 * S._13);
   _01 =  C._01 - KFstateN::TC01EX(K._00 * S._01 + K._01 * S._11);
   _23 =  C._23 - KFstateN::TC23EX(K._20 * S._03 + K._21 * S._13);
-#else
-  _00 =  C._00 - KFstateN::TC00EX(K._00 * SW_FLOAT(S._00) + K._01 * SW_FLOAT(S._10));
-  _11 =  C._11 - KFstateN::TC11EX(K._10 * SW_FLOAT(S._01) + K._11 * SW_FLOAT(S._11));
-  _22 =  C._22 - KFstateN::TC22EX(K._20 * SW_FLOAT(S._02) + K._21 * SW_FLOAT(S._12));
-  _33 =  C._33 - KFstateN::TC33EX(K._30 * SW_FLOAT(S._03) + K._31 * SW_FLOAT(S._13));
-  _01 =  C._01 - KFstateN::TC01EX(K._00 * SW_FLOAT(S._01) + K._01 * SW_FLOAT(S._11));
-  _23 =  C._23 - KFstateN::TC23EX(K._20 * SW_FLOAT(S._03) + K._21 * SW_FLOAT(S._13));
-#endif
 
 #ifdef PRINT_SUMMARY
   double c00new = double(C._00) - (double(K._00) * double(S._00) + double(K._01) * double(S._10));

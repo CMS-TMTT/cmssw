@@ -7,9 +7,6 @@
 #ifndef __HLSutilities__
 #define __HLSutilities__
 
-// Define macros to easily change between fixed bit & floating representations.
-#define USE_FIXED // Comment out to use floating point representation.
-
 #ifndef __SYNTHESIS__
 // Switch on short debug summary printout at end of job.
 #define PRINT_SUMMARY
@@ -48,63 +45,6 @@ namespace TMTT {
 
 namespace KalmanHLS {
 #endif
-
-// Specify which type to use in floating point representation (float, double ...)
-#define SW_FLOAT       float
-
-// Define macros to easily change default options for fixed bit floats.
-#define AP_OPTS        SC_TRN,SC_WRAP
-//#define AP_OPTS        SC_TRN,SC_SAT_SYM
-
-// Used where one definately wants to used fixed bit types.
-#define AP_FIXED(N,I)  ap_fixed<N,I,AP_OPTS>
-#define AP_UFIXED(N,I) ap_ufixed<N,I,AP_OPTS>
-#define AP_INT(N)      ap_int<N>   // Not needed, but pretty to have same style as for AP_FIXED.
-#define AP_UINT(N)     ap_uint<N>
-
-// Used where one is unsure whether to use fixed bit or float types.
-#ifdef USE_FIXED
-#define SW_FIXED(N,I)  ap_fixed<N,I,AP_OPTS>
-#define SW_UFIXED(N,I) ap_ufixed<N,I,AP_OPTS>
-#define SW_INT(N)      ap_int<N>
-#define SW_UINT(N)     ap_uint<N>
-#else
-#define SW_FIXED(N,I)  SW_FLOAT
-#define SW_UFIXED(N,I) SW_FLOAT
-#define SW_INT(N)      int
-#define SW_UINT(N)     unsigned int
-#endif
-
-// Casting between half & ap_fixed is slow. Use ap_fixed::to_half() to convert to half.
-// Use the following functions to convert from half. Only works in HLS 2017.X.
-/*
-template<int W, int I>
-ap_ufixed<W,I,AP_OPTS> to_ap_ufixed(half x_in) {
-  // Split input number into sign, mantissa & power of 2 exponent.
-  fp_struct<half> x_str(x_in);
-  int mantX   = x_str.mantissa();
-  int iExpX   = x_str.expv();
-  ap_ufixed<W,I,AP_OPTS> x_out_abs = ap_ufixed<W+I,I,AP_OPTS>(mantX) << iExpX;
-  return x_out_abs;
-}
-
-template<int W, int I>
-ap_fixed<W,I,AP_OPTS> to_ap_fixed(half x_in) {
-  // Split input number into sign, mantissa & power of 2 exponent.
-  fp_struct<half> x_str(x_in);
-  bool iSignX = x_str.__signbit();
-  int mantX   = x_str.mantissa();
-  int iExpX   = x_str.expv();
-  ap_ufixed<W-1,I-1,AP_OPTS> x_out_abs = ap_ufixed<W+I-1,I-1,AP_OPTS>(mantX) << iExpX;
-  ap_fixed<W,I,AP_OPTS> x_out;
-  if (iSignX) {
-	x_out = - x_out_abs;
-  } else {
-    x_out =   x_out_abs;
-  }
-  return x_out;
-}
-*/
 
 // Used to calculate number of required bits, (which are constants downloaded into FPGA).
 #define MAX2(a,b)     ((a) > (b) ? (a) : (b))
@@ -152,7 +92,7 @@ void printCheckMap();
 // (Two versions of this function, one for calculations in float which merely notes max & min
 // values of each variable for summary printout, & one for finite bit which also checks precision).
 
-bool checkCalc(std::string varName, SW_FLOAT res_fix, double res_float, double reltol = 0.1, double tol = 0.0);
+bool checkCalc(std::string varName, float res_fix, double res_float, double reltol = 0.1, double tol = 0.0);
 
 template <class C>
 bool checkCalc(std::string varName, C res_fix, double res_float, double reltol = 0.1, double tol = 0.0) {

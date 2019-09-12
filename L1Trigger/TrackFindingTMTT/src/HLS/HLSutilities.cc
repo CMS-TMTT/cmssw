@@ -56,7 +56,7 @@ void printCheckMap() {
 
 // Fill info for summary table & check if fixed bit calculation suffered precision loss.
 
-bool checkCalc(std::string varName, SW_FLOAT res_fix, double res_float, double reltol, double tol) {
+bool checkCalc(std::string varName, float res_fix, double res_float, double reltol, double tol) {
   double res_float_abs = fabs(res_float);
   bool   res_float_sign = (res_float >= 0);
   int  intBitsSeen = (res_float_abs > 0)  ?  std::ceil(log(res_float_abs)/log(2.))  :  -99;

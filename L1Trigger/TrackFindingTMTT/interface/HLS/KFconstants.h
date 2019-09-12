@@ -112,10 +112,10 @@ static const int numPtBins = 54;
 #else
 static const int numPtBins = 36;  
 #endif
-static const AP_INT(BCH) minPhiBin = -numPhiBins/2; // BCH & BMH should be larger than BC & BM to monitor overflow.
-static const AP_INT(BCH) maxPhiBin =  numPhiBins/2 - 1;
-static const AP_INT(BMH) minPtBin  = -numPtBins/2;
-static const AP_INT(BMH) maxPtBin  =  numPtBins/2 - 1;
+static const ap_int<BCH> minPhiBin = -numPhiBins/2; // BCH & BMH should be larger than BC & BM to monitor overflow.
+static const ap_int<BCH> maxPhiBin =  numPhiBins/2 - 1;
+static const ap_int<BMH> minPtBin  = -numPtBins/2;
+static const ap_int<BMH> maxPtBin  =  numPtBins/2 - 1;
 
 /*
 static const float dcBin = numPhiBins / phiSectorWidth; 

@@ -161,7 +161,7 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
 
   // Check if output helix passes cuts.
   // (Copied from Maxeller code KFWorker.maxj)
-  AP_UINT(3) nStubs = stateIn.layerID - stateIn.nSkippedLayers; // Number of stubs on state including current one.
+  ap_uint<3> nStubs = stateIn.layerID - stateIn.nSkippedLayers; // Number of stubs on state including current one.
 
   // IRT - feed in test helix params to debug cases seen in QuestaSim. (1/2r, phi, tanl, z0)
   //x_new._0 = float(-8163)/float(1 << (B18 - KFstateN::BH0));
@@ -186,16 +186,68 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
   //=== Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.
   //=== (Relevant only to 5-param helix fit) 
   setOutputsD0(x_new, C_new, nStubs, stateOut, selectOut);
+  
+#ifdef PRINT_HLSARGS
+  stub.print("HLS INPUT stub:");
+  stateIn.print("HLS INPUT state:");
+  stateOut.print("HLS OUTPUT state:");
+  selectOut.print("HLS OUTPUT extra:");
+#endif
+}
+
+//=== Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
+
+template <unsigned int NPAR>
+TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv) {
+  // Simplify calculation by noting that Rinv is symmetric.
+  typedef typename MatrixInverseR<NPAR>::TRI00_short TRI00_short;
+  typedef typename MatrixInverseR<NPAR>::TRI11_short TRI11_short;
+  typedef typename MatrixInverseR<NPAR>::TRI01_short TRI01_short;
+  TCHI_INT dChi2 = (res._0 * res._0) * TRI00_short(Rinv._00) +
+                   (res._1 * res._1) * TRI11_short(Rinv._11) +
+               2 * (res._0 * res._1) * TRI01_short(Rinv._01);
+#ifdef PRINT_SUMMARY
+  double chi2_phi = double(res._0) * double(res._0) * double(Rinv._00);
+  double chi2_z   = double(res._1) * double(res._1) * double(Rinv._11);
+  double chi2_c   = double(res._0) * double(res._1) * double(Rinv._01);
+  CHECK_AP::checkCalc("dchi2", dChi2, chi2_phi + chi2_z + 2*chi2_c, 0.1, 0.1);
+#ifdef PRINT
+  std::cout<<"Delta chi2 = "<<dChi2<<" res (phi,z) = "<<res._0<<" "<<res._1<<" chi2 (phi,z) = "<<chi2_phi<<" "<<chi2_z<<std::endl;
+#endif
+#endif
+  return dChi2;
+}
+
+//=== Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.
+//=== (Relevant only to 5-param helix fit)
+
+void setOutputsD0(const VectorX<4>& x_new, const MatrixC<4>& C_new, const ap_uint<3>& nStubs, KFstate<4>& stateOut, KFselect<4>& selectOut) {}
+
+void setOutputsD0(const VectorX<5>& x_new, const MatrixC<5>& C_new, const ap_uint<3>& nStubs, KFstate<5>& stateOut, KFselect<5>& selectOut) {
+  stateOut.d0 = x_new._4;
+  stateOut.cov_44 = C_new._44;
+  stateOut.cov_04 = C_new._04;
+  stateOut.cov_14 = C_new._14;
+  KFstateN::TD cut_d0        = d0Cut[nStubs];
+  KFstateN::TD cut_d0_minus  = d0CutMinus[nStubs];
+  selectOut.d0Cut = ((x_new._4 >= cut_d0_minus && x_new._4 <= cut_d0) || (cut_d0 == 0));
+}
+
+  // ----- The following code is now done in VHDL at end of KF, so no longer needed in HLS. -----
+  // ----- It used to be run at the end of kalmanUpdate(...)                                -----
+
+  /*
 
   typename KFstateN::TP phiAtRefR = x_new._1 - chosenRofPhi * x_new._0;
-  KFstubN::TZ              zAtRefR = x_new._3 + chosenRofZ * x_new._2; // Intentional use of KFstubN::TZ type
+  KFstubN::TZ             zAtRefR = x_new._3 + chosenRofZ * x_new._2; // Intentional use of KFstubN::TZ type
+
   // Constants BMH & BCH below set in KFconstants.h
   // Casting from ap_fixed to ap_int rounds to zero, not -ve infinity, so cast to ap_fixed with no fractional part first.
-  AP_INT(BMH) mBin_fit_tmp = AP_FIXED(BMH,BMH)( 
-				AP_FIXED(B18+inv2RToMbin_bitShift,KFstateN::BH0+inv2RToMbin_bitShift)(x_new._0) << inv2RToMbin_bitShift
+  ap_int<BMH> mBin_fit_tmp = ap_fixed<BMH,BMH>( 
+					       ap_fixed<B18+inv2RToMbin_bitShift,KFstateN::BH0+inv2RToMbin_bitShift>(x_new._0) << inv2RToMbin_bitShift
 					       );
-  AP_INT(BCH) cBin_fit_tmp = AP_FIXED(BCH,BCH)(
-						AP_FIXED(B18+phiToCbin_bitShift,KFstateN::BH1)(phiAtRefR) >> phiToCbin_bitShift
+  ap_int<BCH> cBin_fit_tmp = ap_fixed<BCH,BCH>(
+					       ap_fixed<B18+phiToCbin_bitShift,KFstateN::BH1>(phiAtRefR) >> phiToCbin_bitShift
 					       );
   bool cBinInRange = (cBin_fit_tmp >= minPhiBin && cBin_fit_tmp <= maxPhiBin);
 
@@ -216,6 +268,8 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
 
   static const EtaBoundaries etaBounds;
 
+  //for (unsigned int i = 0; i < 9+1; i++) std::cout<<"ETA "<<i<<" "<<int(etaBounds.z_[i])/2<<std::endl;
+
   // IRT -- feed in test helix params to debug cases seen in QuestaSim.
   //bool TMPSIGN = false;
   //if (TMPSIGN) zAtRefR = -zAtRefR;
@@ -227,11 +281,6 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
 
   selectOut.sectorCut = (cBinInRange && inEtaSector);
   selectOut.consistent = (mBin_fit_tmp_trunc == stateIn.mBin_ht && cBin_fit_tmp_trunc == stateIn.cBin_ht);
-  // The following long-winded calc. saves a clock cycle.
-  KFstateN::TM mPlus1  = stateIn.mBin_ht + (KFstateN::TM)(1);
-  KFstateN::TM mMinus1 = stateIn.mBin_ht - (KFstateN::TM)(1);
-  KFstateN::TC cPlus1  = stateIn.cBin_ht + (KFstateN::TC)(1);
-  KFstateN::TC cMinus1 = stateIn.cBin_ht - (KFstateN::TC)(1);
 
   //std::cout<<"ZCALC "<<x_new._3<<" "<<chosenRofZ<<" "<<x_new._2<<std::endl;
 
@@ -245,62 +294,12 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
   //std::cout<<"EXTRA: z0Cut="<<selectOut.z0Cut<<" ptCut="<<selectOut.ptCut<<" chi2Cut="<<selectOut.chiSquaredCut<<" PScut="<<selectOut.sufficientPScut<<std::endl;
   //std::cout<<"EXTRA: mBin="<<int(stateIn.mBin_ht)<<" "<<int(mBin_fit_tmp)<<" cBin="<<int(stateIn.cBin_ht)<<" "<<int(cBin_fit_tmp)<<" consistent="<<selectOut.consistent<<std::endl;
   //std::cout<<"EXTRA: in sector="<<selectOut.sectorCut<<" in eta="<<inEtaSector<<" phiAtR="<<phiAtRefR<<" zAtR="<<zAtRefR<<std::endl;
-  
-#ifdef PRINT_HLSARGS
-  stub.print("HLS INPUT stub:");
-  stateIn.print("HLS INPUT state:");
-  stateOut.print("HLS OUTPUT state:");
-  selectOut.print("HLS OUTPUT extra:");
-#endif
-}
 
-//=== Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
+  */
 
-template <unsigned int NPAR>
-TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv) {
-  // Simplify calculation by noting that Rinv is symmetric.
-#ifdef USE_FIXED
-  typedef typename MatrixInverseR<NPAR>::TRI00_short TRI00_short;
-  typedef typename MatrixInverseR<NPAR>::TRI11_short TRI11_short;
-  typedef typename MatrixInverseR<NPAR>::TRI01_short TRI01_short;
-  TCHI_INT dChi2 = (res._0 * res._0) * TRI00_short(Rinv._00) +
-                   (res._1 * res._1) * TRI11_short(Rinv._11) +
-               2 * (res._0 * res._1) * TRI01_short(Rinv._01);
-#else
-  TCHI_INT dChi2 = SW_FLOAT(res._0) * Rinv._00 * SW_FLOAT(res._0) + 
-                   SW_FLOAT(res._1) * Rinv._11 * SW_FLOAT(res._1) +
-	      2 * (SW_FLOAT(res._0) * Rinv._01 * SW_FLOAT(res._1));
-#endif
-#ifdef PRINT_SUMMARY
-  double chi2_phi = double(res._0) * double(res._0) * double(Rinv._00);
-  double chi2_z   = double(res._1) * double(res._1) * double(Rinv._11);
-  double chi2_c   = double(res._0) * double(res._1) * double(Rinv._01);
-  CHECK_AP::checkCalc("dchi2", dChi2, chi2_phi + chi2_z + 2*chi2_c, 0.1, 0.1);
-#ifdef PRINT
-  std::cout<<"Delta chi2 = "<<dChi2<<" res (phi,z) = "<<res._0<<" "<<res._1<<" chi2 (phi,z) = "<<chi2_phi<<" "<<chi2_z<<std::endl;
-#endif
-#endif
-  return dChi2;
-}
-
-//=== Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.
-//=== (Relevant only to 5-param helix fit)
-
-void setOutputsD0(const VectorX<4>& x_new, const MatrixC<4>& C_new, const AP_UINT(3)& nStubs, KFstate<4>& stateOut, KFselect<4>& selectOut) {}
-
-void setOutputsD0(const VectorX<5>& x_new, const MatrixC<5>& C_new, const AP_UINT(3)& nStubs, KFstate<5>& stateOut, KFselect<5>& selectOut) {
-  stateOut.d0 = x_new._4;
-  stateOut.cov_44 = C_new._44;
-  stateOut.cov_04 = C_new._04;
-  stateOut.cov_14 = C_new._14;
-  KFstateN::TD cut_d0        = d0Cut[nStubs];
-  KFstateN::TD cut_d0_minus  = d0CutMinus[nStubs];
-  selectOut.d0Cut = ((x_new._4 >= cut_d0_minus && x_new._4 <= cut_d0) || (cut_d0 == 0));
-}
 
 #ifdef CMSSW_GIT_HASH
 }
 
 }
 #endif
-

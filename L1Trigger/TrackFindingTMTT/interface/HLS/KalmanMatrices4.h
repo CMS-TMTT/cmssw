@@ -39,8 +39,8 @@ template <>
 class MatrixH<4> {
 public:
   enum {BH=KFstubN::BR+1};
-  typedef AP_FIXED(BH,BH)  TH;  // One extra bit, since "-r" can be -ve.
-  typedef AP_UFIXED(1,1)   T1;
+  typedef ap_fixed<BH,BH>  TH;  // One extra bit, since "-r" can be -ve.
+  typedef ap_ufixed<1,1>   T1;
   MatrixH(const KFstubN::TR& r) : _00(-r), _12(r),
                                            _01(1), _02(0), _03(0),
                                   _10(0),  _11(0),         _13(1) {}
@@ -63,11 +63,11 @@ public:
         BS12=MAX2(BH+KFstateN::BC22, KFstateN::BC23) - BODGE<4>::S,  // (H00*C02 + H01*C12 = zero) + H02*C22 + H03*C32.
 	BS13=MAX2(BH+KFstateN::BC23, KFstateN::BC33) - BODGE<4>::S   // (H00*C03 + H01*C13 = zero) + H02*C23 + H03*C33.
        }; 
-  typedef AP_FIXED(B27,BS00)  TS00;
-  typedef AP_FIXED(B27,BS01)  TS01;
-  typedef AP_FIXED(B27,BS12)  TS12;
-  typedef AP_FIXED(B27,BS13)  TS13;
-  typedef AP_FIXED(BCORR,0)   T0;     // Neglect correlation between r-phi & r-z planes for now. 
+  typedef ap_fixed<B27,BS00>  TS00;
+  typedef ap_fixed<B27,BS01>  TS01;
+  typedef ap_fixed<B27,BS12>  TS12;
+  typedef ap_fixed<B27,BS13>  TS13;
+  typedef ap_fixed<BCORR,0>   T0;     // Neglect correlation between r-phi & r-z planes for now. 
 
 public:
 
@@ -88,7 +88,7 @@ public:
 template <>
 class MatrixC<4> {
 public:
-  typedef AP_UFIXED(1,1)      T0; // HLS doesn't like zero bit variables.
+  typedef ap_ufixed<1,1>      T0; // HLS doesn't like zero bit variables.
 
   // Determine input helix coviaraiance matrix.
   MatrixC(const KFstate<4>& stateIn) :
@@ -162,9 +162,9 @@ public:
 	BR11 = MAX2(MatrixV::BVZZ, MAX2(BH+BS12, BS13)) - BODGE<4>::R, // (H10*St01 + H11*St11 = zero) + H12*St21 + H13*St31
 	BR01 = 0                                                       // (H00*St01 + H01*St11 + H02*St21 + H03*St31 = zero)
        };  
-  typedef SW_UFIXED(B34,BR00)   TR00;
-  typedef SW_UFIXED(B34,BR11)   TR11;
-  typedef SW_UFIXED(BCORR,BR01) TR01;
+  typedef ap_ufixed<B34,BR00>   TR00;
+  typedef ap_ufixed<B34,BR11>   TR11;
+  typedef ap_ufixed<BCORR,BR01> TR01;
 
 public:
   MatrixR(const MatrixV& V, const MatrixH<4>& H, const MatrixS_transpose<4>& St);
@@ -192,18 +192,18 @@ public:
         BK10=(BS01+BIR00) - BODGE<4>::K,  // St10*Rinv00 (+ St11*Rinv10 = zero)
         BK21=(BS12+BIR11) - BODGE<4>::K,  // (St20*Rinv01 = zero) + St21*Rinv11
         BK31=(BS13+BIR11) - BODGE<4>::K}; // (St30*Rinv01 = zero) + St31*Rinv11
-  typedef SW_FIXED(B35,BK00)  TK00;
-  typedef SW_FIXED(B35,BK10)  TK10;
-  typedef SW_FIXED(B35,BK21)  TK21;
-  typedef SW_FIXED(B35,BK31)  TK31;
-  typedef SW_FIXED(BCORR,0)   T0; // Neglect correlation between r-phi & r-z
+  typedef ap_fixed<B35,BK00>  TK00;
+  typedef ap_fixed<B35,BK10>  TK10;
+  typedef ap_fixed<B35,BK21>  TK21;
+  typedef ap_fixed<B35,BK31>  TK31;
+  typedef ap_fixed<BCORR,0>   T0; // Neglect correlation between r-phi & r-z
   MatrixK(const MatrixS_transpose<4>& St, const MatrixInverseR<4>& RmatInv);
 public:
   // Additional types used to cast this matrix to a lower precision one for updated helix param calculation.
-  typedef SW_FIXED(B27,BK00)  TK00_short;
-  typedef SW_FIXED(B27,BK10)  TK10_short;
-  typedef SW_FIXED(B27,BK21)  TK21_short;
-  typedef SW_FIXED(B27,BK31)  TK31_short;
+  typedef ap_fixed<B27,BK00>  TK00_short;
+  typedef ap_fixed<B27,BK10>  TK10_short;
+  typedef ap_fixed<B27,BK21>  TK21_short;
+  typedef ap_fixed<B27,BK31>  TK31_short;
 public:
   TK00  _00;
   TK10  _10;
@@ -224,8 +224,8 @@ public:
   // Use higher granularity for residuals than for stubs.
   // BODGE<4>::RES should be slightly larger than BODGE_V as hits can be several sigma wrong.
   // Add one extra fractional bit relative to stub, to avoid additional precision loss.
-  typedef AP_FIXED(B18-BODGE<4>::RES+1,KFstubN::BPHI -BODGE<4>::RES) TRP;
-  typedef AP_FIXED(B18-BODGE<4>::RES+1,KFstubN::BZ1-BODGE<4>::RES) TRZ;
+  typedef ap_fixed<B18-BODGE<4>::RES+1,KFstubN::BPHI -BODGE<4>::RES> TRP;
+  typedef ap_fixed<B18-BODGE<4>::RES+1,KFstubN::BZ1-BODGE<4>::RES> TRZ;
 
 public:
   VectorRes(const VectorM& m, const MatrixH<4>& H, const VectorX<4>& x);

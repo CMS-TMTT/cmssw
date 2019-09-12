@@ -74,7 +74,7 @@ MatrixV::MatrixV(const KFstubN::TR& r, const KFstubN::TZ& z, const KFstateN::TR&
   // Use same granularity for resolution as for residuals.
   // (Define as signed, so dont have to worry if tanL or inv2R are -ve).
   MatrixV::TVPP sigmaPhi2;  // Uncertainty squared in phi.
-  AP_FIXED(B18,BVZ) sigmaZ; // Uncertainty in z. 
+  ap_fixed<B18,BVZ> sigmaZ; // Uncertainty in z. 
   MatrixV::TVPP sigmaPhiExtra2;
 
   // Initialize ROM used to calculate contribution to phi uncertainty from (r,phi) to (z,phi) conversion in endcap.
@@ -147,15 +147,15 @@ MatrixV::MatrixV(const KFstubN::TR& r, const KFstubN::TZ& z, const KFstateN::TR&
 #endif
 
   //static const float rats = sqrt(2.9713); // FAIL
-  //static const AP_UFIXED(40,20) length2ST   = rats;
+  //static const ap_ufixed<40,20> length2ST   = rats;
   //_11 = length2ST;
 
   //static const float rats = 3./2.; // GOOD
-  //static const AP_UFIXED(40,20) length2ST   = rats;
+  //static const ap_ufixed<40,20) length2ST   = rats;
   //_11 = length2ST;
 
   //static const float rats = sqrt(2.9713); // GOOD
-  //const AP_UFIXED(40,20) length2ST   = rats;
+  //const ap_ufixed<40,20> length2ST   = rats;
   //_11 = length2ST;
 
   //static const float rats = sqrt(2.9713); // GOOD
@@ -170,7 +170,7 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
   // The determinant is positive, as the covariance matrix is almost diagonal.
   enum {BDW = B48, BDI = (MatrixR<NPAR>::BR00 + MatrixR<NPAR>::BR11) - BODGE<NPAR>::DET};
   enum {B7 = 7}; // Number of bits needed to describe a number in range 0 to B48 safely.
-  const AP_UFIXED(BDW,BDI) det = (R._00 * R._11 - R._01 * R._10);
+  const ap_ufixed<BDW,BDI> det = (R._00 * R._11 - R._01 * R._10);
 
   //--- Asking HLS to calculate 1/det is slow & expensive. So calculate it with home-made algorithm,
   //--- involving finding the leading non-zero bit, and then using a look up table to take the reciprocal.
@@ -178,25 +178,25 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
   // Find leading non-zero bit.
   enum {iMIN = 2*BDET}; // Increasing this reduces FPGA resources. But don't make so big that most significant bit of det is below this value. If reduced below 2*BDET, code below must be modified to allow for det_short being less than 2*BDET bits.
 
-  AP_UINT(B7) msb = iMIN; // most-significant bit counting from zero at the right-most bit.
+  ap_uint<B7> msb = iMIN; // most-significant bit counting from zero at the right-most bit.
 
   // This takes 5 clock cycles & uses 4 BRAM.
-  for (AP_UINT(B7) i = iMIN+1; i < BDW; i++) {
+  for (ap_uint<B7> i = iMIN+1; i < BDW; i++) {
     if (det[i]) msb = i;
   }
 
   // // This uses built-in C function to save 1 clock cycle, but at cost of 2 extra BRAM.
-  // AP_UINT(B7) lzero = __builtin_clz((unsigned int)(det.range(BDW-1,iMIN+1))); // Finds location of leading non-zero bit.
-  // AP_UINT(B7) msb = (32+iMIN)-lzero;
+  // ap_uint<B7> lzero = __builtin_clz((unsigned int)(det.range(BDW-1,iMIN+1))); // Finds location of leading non-zero bit.
+  // ap_uint<B7> msb = (32+iMIN)-lzero;
 
-  AP_UINT(B7) lsb = msb - BDET + 1;
-  const AP_UINT(BDET) det_veryshort = det.range(msb, lsb);
-  SW_UFIXED(2*BDET,BDET) det_short;
+  ap_uint<B7> lsb = msb - BDET + 1;
+  const ap_uint<BDET> det_veryshort = det.range(msb, lsb);
+  ap_ufixed<2*BDET,BDET> det_short;
   det_short.range(2*BDET-1, 0) = det.range(msb, lsb - BDET);
 
   // // This saves 2 clock cycles, at cost of 1 extra DSP. But it fails timing when compiled in Vivado.
-  // AP_FIXED(BDW,BDI) det_noLeadZeros = det;
-  // for (AP_UINT(B7) i = BDW - 1; i > iMIN; i--) {
+  // ap_fixed<BDW,BDI> det_noLeadZeros = det;
+  // for (ap_uint<B7> i = BDW - 1; i > iMIN; i--) {
   //   if (det_noLeadZeros[BDW-1]) {
   //     msb = i;
   //     break;
@@ -204,26 +204,26 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
   //     det_noLeadZeros = det_noLeadZeros << 1;
   //   }
   // }
-  // AP_UINT(B7) lsb = msb - BDET + 1;
-  // const AP_UINT(BDET) det_veryshort = det_noLeadZeros.range(BDW-1, BDW-BDET);
-  // SW_UFIXED(2*BDET,BDET) det_short;
+  // ap_uint<B7> lsb = msb - BDET + 1;
+  // const ap_uint<BDET> det_veryshort = det_noLeadZeros.range(BDW-1, BDW-BDET);
+  // ap_ufixed<2*BDET,BDET> det_short;
   // det_short.range(2*BDET-1, 0) = det_noLeadZeros.range(BDW-1, BDW-2*BDET);
 
   // Take reciprocal with lookup table.
   static const OneOverInt calcOneOverInt;
-  SW_UFIXED(BDET,OneOverInt::BOI) invDet_veryshort = calcOneOverInt.getIt(det_veryshort);
+  ap_ufixed<BDET,OneOverInt::BOI> invDet_veryshort = calcOneOverInt.getIt(det_veryshort);
 
   // Determine higher order corrections to reciprocal.
   // (If det = a + b, where b small, this solves for x, where x is small, (a + b) * (A + x) = 1,
   // where A is a LUT approximation to 1/a. So x = A*(1 - A*a - A*b), and (A+x) = A*(2 - A*a - A*b). 
 
   // This is inverse determinant, aside from shift factor SHIFT.
-  //SW_UFIXED(B18, OneOverInt::BOI) invDet_short = invDet_veryshort * (SW_UFIXED(1,2)(2.) - invDet_veryshort * det_short); 
+  //ap_ufixed<B18, OneOverInt::BOI> invDet_short = invDet_veryshort * (ap_ufixed<1,2>(2.) - invDet_veryshort * det_short); 
 
   // This eqn. has 3 multiplications instead of 2, but provides work-around for HLS Cosim bug.
-  SW_UFIXED(B18, OneOverInt::BOI) invDet_short = SW_UFIXED(1,2)(2.)*invDet_veryshort - (invDet_veryshort * invDet_veryshort) * det_short; 
+  ap_ufixed<B18, OneOverInt::BOI> invDet_short = ap_ufixed<1,2>(2.)*invDet_veryshort - (invDet_veryshort * invDet_veryshort) * det_short; 
  
-  AP_INT(B7) SHIFT = lsb - (BDW - BDI); // Bit shift to be applied to inverse determinant.
+  ap_int<B7> SHIFT = lsb - (BDW - BDI); // Bit shift to be applied to inverse determinant.
 
   // Calculate max & min values that SHIFT can take over all events.
   enum {MAX_LSB = (BDW - 1) - BDET + 1, MAX_SHIFT = MAX_LSB - (BDW - BDI),
@@ -240,12 +240,12 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
         NL_EXTRA = -MIN_SHIFT + MAX2(0,  MAX_SHIFT), IL_EXTRA = MAX2(0,  MAX_SHIFT)};
 
   // Invert matrix.
-  //  _00 =  SW_UFIXED(B34-MIN_SHIFT+MAX_SHIFT, BIR11+MAX_SHIFT) (invDet_short*R._11) >> SHIFT;
-  //  _11 =  SW_UFIXED(B34-MIN_SHIFT+MAX_SHIFT, BIR00+MAX_SHIFT) (invDet_short*R._00) >> SHIFT;
-  //  _01 =  SW_FIXED(BCORR-MIN_SHIFT+MAX_SHIFT, BIR01-B34+BCORR+MAX_SHIFT) (-(invDet_short*R._10)) >> SHIFT;
-  _00 =  SW_UFIXED(B34+NL_EXTRA, BIR11+IL_EXTRA) (invDet_short*R._11) >> SHIFT;
-  _11 =  SW_UFIXED(B34+NL_EXTRA, BIR00+IL_EXTRA) (invDet_short*R._00) >> SHIFT;
-  _01 =  SW_FIXED(BCORR+NL_EXTRA, BIR01+IL_EXTRA) (-(invDet_short*R._10)) >> SHIFT;
+  //  _00 =  ap_ufixed<B34-MIN_SHIFT+MAX_SHIFT, BIR11+MAX_SHIFT> (invDet_short*R._11) >> SHIFT;
+  //  _11 =  ap_ufixed<B34-MIN_SHIFT+MAX_SHIFT, BIR00+MAX_SHIFT> (invDet_short*R._00) >> SHIFT;
+  //  _01 =  ap_fixed<BCORR-MIN_SHIFT+MAX_SHIFT, BIR01-B34+BCORR+MAX_SHIFT> (-(invDet_short*R._10)) >> SHIFT;
+  _00 =  ap_ufixed<B34+NL_EXTRA, BIR11+IL_EXTRA> (invDet_short*R._11) >> SHIFT;
+  _11 =  ap_ufixed<B34+NL_EXTRA, BIR00+IL_EXTRA> (invDet_short*R._00) >> SHIFT;
+  _01 =  ap_fixed<BCORR+NL_EXTRA, BIR01+IL_EXTRA> (-(invDet_short*R._10)) >> SHIFT;
 
 #ifdef PRINT
   std::cout<<"MatrixInverseR: Det="<<det<<" det_veryshort="<<det_veryshort<<" invDet_veryshort="<<invDet_veryshort<<" det_range2="<<det_range2<<" invDet_short="<<invDet_short<<" det*invDet_short="<<double(det)*double(invDet_short)/double(1 << SHIFT)<<std::endl;
@@ -255,20 +255,20 @@ MatrixInverseR<NPAR>::MatrixInverseR(const MatrixR<NPAR>& R) : _10(_01)
   // Check assumed bit ranges are OK.
   CHECK_AP::checkIntRange("MSB", BDW-1, iMIN, msb);
   CHECK_AP::checkIntRange("SHIFT", MAX_SHIFT, MIN_SHIFT, SHIFT);
-  CHECK_AP::checkIntRange("Det[MSB]", 1, 1, det_veryshort[AP_UINT(B7)(BDET-1)]);
+  CHECK_AP::checkIntRange("Det[MSB]", 1, 1, det_veryshort[ap_uint<B7>(BDET-1)]);
   double trueDet = double(R._00)*double(R._11)-double(R._01)*double(R._10);
   double trueInvDet = 1./trueDet;
   double true_ri00 =  double(R._11)*trueInvDet;
   double true_ri11 =  double(R._00)*trueInvDet;
   double true_ri01 = -double(R._10)*trueInvDet;
-  //  double invDet = double(invDet_short)*double(AP_UFIXED(1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT)(1) >>  SHIFT);
-  double invDet = double(invDet_short)*double(AP_UFIXED(1+NR_EXTRA, 1+IR_EXTRA)(1) >>  SHIFT);
+  //  double invDet = double(invDet_short)*double(ap_ufixed<1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT>(1) >>  SHIFT);
+  double invDet = double(invDet_short)*double(ap_ufixed<1+NR_EXTRA, 1+IR_EXTRA>(1) >>  SHIFT);
   CHECK_AP::checkCalc("DET", det, trueDet, 0.00001);
   // Precision of this (controlled by BDET) is critical.
   //  CHECK_AP::checkCalc("INVDET", invDet_short,
-  //                  trueInvDet/double(AP_UFIXED(1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT)(1) >>  SHIFT), 0.0001);
+  //                  trueInvDet/double(ap_ufixed<1-MIN_SHIFT+MAX_SHIFT, 1-MIN_SHIFT>(1) >>  SHIFT), 0.0001);
   CHECK_AP::checkCalc("INVDET", invDet_short,
-                      trueInvDet/double(AP_UFIXED(1+NR_EXTRA, 1+IR_EXTRA)(1) >>  SHIFT), 0.0001);
+                      trueInvDet/double(ap_ufixed<1+NR_EXTRA, 1+IR_EXTRA>(1) >>  SHIFT), 0.0001);
   CHECK_AP::checkCalc("INVR00", _00, true_ri00, 0.001);
   CHECK_AP::checkCalc("INVR01", _01, true_ri01, 0.001);
   CHECK_AP::checkCalc("INVR11", _11, true_ri11, 0.001);
