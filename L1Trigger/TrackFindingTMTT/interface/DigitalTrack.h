@@ -56,6 +56,8 @@ public:
   int          iDigi_tanLambda()          const {this->ok(); return iDigi_tanLambda_;}
   unsigned int iDigi_chisquaredRphi()     const {this->ok(); return iDigi_chisquaredRphi_;}
   unsigned int iDigi_chisquaredRz()       const {this->ok(); return iDigi_chisquaredRz_;}
+  unsigned int iDigi_chisquaredRphiBin()  const {this->ok(); return iDigi_chisquaredRphiBin_;}
+  unsigned int iDigi_chisquaredRzBin()    const {this->ok(); return iDigi_chisquaredRzBin_;}
 
   // Digits corresponding to track params with post-fit beam-spot constraint.
   int          iDigi_oneOver2r_bcon()     const {this->ok(); return iDigi_oneOver2r_bcon_;} // half inverse curvature of track.
@@ -230,6 +232,8 @@ private:
   int                  iDigi_tanLambda_;
   unsigned int         iDigi_chisquaredRphi_;
   unsigned int         iDigi_chisquaredRz_;
+  unsigned int         iDigi_chisquaredRphiBin_;
+  unsigned int         iDigi_chisquaredRzBin_;
 
   int                  iDigi_oneOver2r_bcon_;
   int                  iDigi_phi0rel_bcon_;

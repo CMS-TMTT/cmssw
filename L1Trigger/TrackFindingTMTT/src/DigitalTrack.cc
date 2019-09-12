@@ -163,6 +163,8 @@ void DigitalTrack::makeDigitalTrack() {
     iDigi_z0_         = 0;
     iDigi_chisquaredRphi_ = 0;
     iDigi_chisquaredRz_ = 0;
+    iDigi_chisquaredRphiBin_ = 0;
+    iDigi_chisquaredRzBin_ = 0;
 
     iDigi_oneOver2r_bcon_  = 0;
     iDigi_phi0rel_bcon_    = 0;

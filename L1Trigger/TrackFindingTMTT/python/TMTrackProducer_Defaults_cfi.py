@@ -439,19 +439,25 @@ TMTrackProducer_params = cms.PSet(
     #====== Kalman Filter digi parameters ========
     KF_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     KF_oneOver2rBits = cms.uint32(15),
-    KF_oneOver2rRange = cms.double(0.0076171313), # pT > 1.5 GeV
-    KF_d0Bits = cms.uint32(12),
-    KF_d0Range  = cms.double(31.992876),
+    KF_oneOver2rRange = cms.double(0.0171),
+    KF_d0Bits = cms.uint32(13), # Made up by Ian as never yet discussed.
+    KF_d0Range  = cms.double(32.),
     KF_phi0Bits = cms.uint32(12),
-    KF_phi0Range = cms.double(0.6981317),  # phi0 is actually only digitised relative to centre of sector.
+    KF_phi0Range = cms.double(4.104),  # phi0 is actually only digitised relative to centre of sector.
     KF_z0Bits = cms.uint32(12),
-    KF_z0Range  = cms.double(45.826419),
+    KF_z0Range  = cms.double(60),
     KF_tanlambdaBits = cms.uint32(16),
     KF_tanlambdaRange = cms.double(16.),
     KF_chisquaredBits = cms.uint32(15), # N.B. 17 bits are used internally inside KF.
+    # KF_chisquaredBits = cms.uint32(4), // Number of bits when we move to binned chi2
     KF_chisquaredRange = cms.double(1024.),
     KF_chisquaredBinEdges = cms.vdouble(0, 0.5, 1, 2, 3, 5, 7, 10, 20, 40, 100, 200, 500, 1000, 3000 ), # Additional bin for >3000
+    KF_bendchisquaredBits = cms.uint32(3),
     KF_bendchisquaredBinEdges = cms.vdouble(0, 0.5, 1, 2, 3, 5, 10, 50 ), # Additional bin for >50
+    KF_hitpatternBits = cms.uint32(7),
+    KF_mvaTrackQualityBits = cms.uint32(3),
+    KF_mvareservedBits = cms.uint32(6),
+    KF_reservedBits = cms.uint32(5),
 
     #====== Other track fitter Digi params.
     # Currently equal to those for KF, although you can skip track digitisation for them with following.
