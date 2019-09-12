@@ -385,18 +385,18 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
     L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), cand->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
 
-    bool consistentHLS = false;
-    if (this->isHLS()) {
-      unsigned int mBinHelixHLS, cBinHelixHLS;
-      cand->getHLSselect(mBinHelixHLS, cBinHelixHLS, consistentHLS);
-      if( getSettings()->kalmanDebugLevel() >= 3 ){
-        // Check if (m,c) corresponding to helix params are correctly calculated by HLS code.
-        bool HLS_OK = ((mBinHelixHLS == returnTrk.getCellLocationFit().first) && (cBinHelixHLS == returnTrk.getCellLocationFit().second));
-        if (not HLS_OK) std::cout<<"WARNING HLS mBinHelix disagrees with C++:"
-                                 <<" (HLS,C++) m=("<<mBinHelixHLS<<","<<returnTrk.getCellLocationFit().first <<")"
-                                 <<" c=("<<cBinHelixHLS<<","<<returnTrk.getCellLocationFit().second<<")"<<endl;
-      }
-    }
+    bool consistentHLS = false;  // No longer used
+    //    if (this->isHLS()) {
+    //      unsigned int mBinHelixHLS, cBinHelixHLS;
+    //      cand->getHLSselect(mBinHelixHLS, cBinHelixHLS, consistentHLS);
+    //      if( getSettings()->kalmanDebugLevel() >= 3 ){
+    //        // Check if (m,c) corresponding to helix params are correctly calculated by HLS code.
+    //        bool HLS_OK = ((mBinHelixHLS == returnTrk.getCellLocationFit().first) && (cBinHelixHLS == returnTrk.getCellLocationFit().second));
+    //        if (not HLS_OK) std::cout<<"WARNING HLS mBinHelix disagrees with C++:"
+    //                                 <<" (HLS,C++) m=("<<mBinHelixHLS<<","<<returnTrk.getCellLocationFit().first <<")"
+    //                                 <<" c=("<<cBinHelixHLS<<","<<returnTrk.getCellLocationFit().second<<")"<<endl;
+    //      }
+    //    }
 
     // Store supplementary info, specific to KF fitter.
     if(this->isHLS() && nPar_ == 4) {
@@ -424,6 +424,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
         } else {
           failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
         }
+        if ( getSettings()->kalmanDebugLevel() >= 1 ) cout<<"Track rejected by sector consistency test"<<endl;
         return failedTrk;
       }
     }
@@ -841,7 +842,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     const KalmanState* stateFinal = best_state_by_nstubs.begin()->second; // First element has largest number of stubs.
     finished_states.push_back(stateFinal);
     if ( getSettings()->kalmanDebugLevel() >= 1 ) {
-      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" etaReg="<<l1track3D.iEtaReg();
+      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" hitPattern="<<std::hex<<stateFinal->hitPattern()<<std::dec<<" etaReg="<<l1track3D.iEtaReg()<<" HT(m,c)=("<<l1track3D.getCellLocationHT().first<<","<<l1track3D.getCellLocationHT().second<<")";
       std::map<std::string, double> y = getTrackParams( stateFinal );
       cout<<" q/pt="<<y["qOverPt"]<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
       if (nPar_==5) cout<<" d0="<<y["d0"];
