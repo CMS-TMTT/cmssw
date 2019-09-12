@@ -77,20 +77,17 @@ DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
                aFitTrk.digitaltrack().iDigi_phi0rel(),
                aFitTrk.digitaltrack().iDigi_tanLambda(),
                aFitTrk.digitaltrack().iDigi_z0(),
+               aFitTrk.digitaltrack().iDigi_d0(),
                aFitTrk.digitaltrack().iDigi_chisquared(),
-               aFitTrk.getHitPattern(),
-               aFitTrk.getNumLayers(),
-               0,
-               aFitTrk.getCellLocationHT().first - mSettings->houghNbinsPt() / 2,
-               aFitTrk.getCellLocationHT().second - mSettings->houghNbinsPhi() / 2,
-               aFitTrk.iPhiSec()%numPhiSecPerNon,
-               aFitTrk.iEtaReg(),
-               aFitTrk.getCellLocationFit().first - mSettings->houghNbinsPt() / 2,
-               aFitTrk.getCellLocationFit().second - mSettings->houghNbinsPhi() / 2,
-               aFitTrk.consistentHTcell(),
+               0, // aFitTrk.digitaltrack().iDigi_bendchisquaredbin(),
+               aFitTrk.digitaltrack().hitPattern(),
+               0, // aFitTrk.digitaltrack().iDigi_mvaquality(),
+               0, // aFitTrk.digitaltrack().iDigi_mvaqualityExtra1(),
+               0, // aFitTrk.digitaltrack().iDigi_mvaqualityExtra2(),
+               0, // aFitTrk.digitaltrack().iDigi_reserved(),
+               0, // eventID
                true
            );
-
 }
 //-----------------------------------------------------------------------------
 

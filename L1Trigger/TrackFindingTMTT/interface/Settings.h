@@ -661,6 +661,7 @@ private:
   unsigned int         kf_chisquaredBits_;
   double               kf_chisquaredRange_;
   vector<double>       kf_chisquaredBinEdges_;
+
   //
   bool                 other_skipTrackDigi_;
 

@@ -161,6 +161,7 @@ void DigitalTrack::makeDigitalTrack() {
     iDigi_tanLambda_  = 0;
     iDigi_z0_         = 0;
     iDigi_chisquared_ = 0;
+    iDigi_chisquaredBin_ = 0;
 
     iDigi_oneOver2r_bcon_  = 0;
     iDigi_phi0rel_bcon_    = 0;
@@ -192,7 +193,6 @@ void DigitalTrack::makeDigitalTrack() {
     iDigi_tanLambda_  = floor(tanLambda_orig_*tanLambdaMult_);
     iDigi_z0_         = floor(z0_orig_*z0Mult_);
     iDigi_chisquared_ = floor(chisquared_orig_*chisquaredMult_);
-
     // If fitted declared track invalid, it will have set its chi2 to very large number. 
     // So truncate it at maximum allowed by digitisation range.
     if ( ! accepted_ ) iDigi_chisquared_ = pow(2.,chisquaredBits_) - 1;
