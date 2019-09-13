@@ -306,6 +306,14 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   killRecover_            (deadModuleOpts_.getParameter<bool>                 ( "KillRecover"            ) ),
 
   //=== Track digitisation configuration for various track fitters
+  miniHT_oneOver2rBits_   (trackDigi_.getParameter<unsigned int>              ( "MiniHT_oneOver2rBits"   ) ),
+  miniHT_oneOver2rRange_  (trackDigi_.getParameter<double>                    ( "MiniHT_oneOver2rRange"  ) ),
+  miniHT_phi0Bits_        (trackDigi_.getParameter<unsigned int>              ( "MiniHT_phi0Bits"        ) ),
+  miniHT_phi0Range_       (trackDigi_.getParameter<double>                    ( "MiniHT_phi0Range"       ) ),
+  miniHT_z0Bits_          (trackDigi_.getParameter<unsigned int>              ( "MiniHT_z0Bits"          ) ),
+  miniHT_z0Range_         (trackDigi_.getParameter<double>                    ( "MiniHT_z0Range"         ) ),
+  miniHT_tanlambdaBits_   (trackDigi_.getParameter<unsigned int>              ( "MiniHT_tanlambdaBits"   ) ),
+  miniHT_tanlambdaRange_  (trackDigi_.getParameter<double>                    ( "MiniHT_tanlambdaRange"  ) ),
 
   slr_skipTrackDigi_      (trackDigi_.getParameter<bool>                      ( "SLR_skipTrackDigi"      ) ),
   slr_oneOver2rBits_      (trackDigi_.getParameter<unsigned int>              ( "SLR_oneOver2rBits"      ) ),

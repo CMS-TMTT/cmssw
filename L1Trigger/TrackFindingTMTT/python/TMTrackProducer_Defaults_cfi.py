@@ -421,6 +421,16 @@ TMTrackProducer_params = cms.PSet(
   TrackDigi=cms.PSet(
     # For firmware reasons, can't use common digitisation cfg for all fitters.
 
+    #======= MiniHT digi parameters ========
+    MiniHT_oneOver2rBits = cms.uint32(15),
+    MiniHT_oneOver2rRange = cms.double(0.0171),
+    MiniHT_phi0Bits = cms.uint32(18),
+    MiniHT_phi0Range = cms.double(4.104), # phi0 is actually only digitised relative to centre of sector.
+    MiniHT_z0Bits = cms.uint32(10),
+    MiniHT_z0Range  = cms.double(60),
+    MiniHT_tanlambdaBits = cms.uint32(14),
+    MiniHT_tanlambdaRange = cms.double(32),
+    
     #======= SimpleLR digi parameters ========
     SLR_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     SLR_oneOver2rBits = cms.uint32(13),

@@ -338,16 +338,15 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
             // Loop over the tracks
             for ( const TMTT::L1track2D& trk : htRphi.trackCands2D()) {
-
                 int8_t cBin = trk.getCellLocationHT().second - settings_->houghNbinsPhi() / 2;
                 int8_t mBin = trk.getCellLocationHT().first - settings_->houghNbinsPt() / 2;
 
-	        unsigned int iLink = trk.optoLinkID();
-
+    	        unsigned int iLink = trk.optoLinkID();
                 for (const TMTT::Stub* stub : trk.getStubs()) {
 
                     DigiHTMiniStub digiHTMiniStub = digiConverter.makeDigiHTMiniStub(
                                                         *stub,
+                                                        trk,
                                                         // SectorID
 							iPhiSecInNonant,
                                                         iEtaReg,
