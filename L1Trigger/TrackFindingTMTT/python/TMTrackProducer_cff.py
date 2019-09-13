@@ -57,31 +57,31 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 
 #TMTrackProducer.HTArraySpecRphi.MiniHTstage         = cms.bool(False)  
 #TMTrackProducer.HTFillingRphi.MaxStubsInCell        = cms.uint32(16) 
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(18)  # Mini cells in whole HT array.
+#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(16) 
 #TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi       = cms.uint32(32) 
-#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2)   
-#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,9, 1,10, 2,11, 3,12, 4,13, 5,14, 6,15, 7,16, 8,17)
+#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2) 
+#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,8, 1,9, 2,10, 3,11, 4,12, 5,13, 6,14, 7,15)
 
 #--- Reduce Pt threshold to 2 GeV, with coarse HT, and switch off Mini-HT.
 
 #TMTrackProducer.HTArraySpecRphi.MiniHTstage        = cms.bool(False)  
 #TMTrackProducer.HTFillingRphi.MaxStubsInCell       = cms.uint32(16) 
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt       = cms.uint32(27)
+#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt       = cms.uint32(24)
 #TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi      = cms.uint32(32) 
 #TMTrackProducer.GenCuts.GenMinPt                   = cms.double(2.0)
 #TMTrackProducer.HTArraySpecRphi.HoughMinPt         = cms.double(2.0)
-#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1)   
-#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder  = cms.vuint32(0,14, 1,15, 2,16, 3,17, 4,18, 5,19, 6,20, 7,21, 8,22, 9,23, 10,24, 11,25, 12,26, 13)
+#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2)   
+#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder  = cms.vuint32(0,12, 1,13, 2,14, 3,15, 4,16, 5,17, 6,18, 7,19, 8,20, 9,21, 10,22, 11,23)
 
 #--- Reduce Pt threshold to 2 GeV, with coarse HT, followed  by Mini-HT.
 
-#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(54)
+#TMTrackProducer.HTArraySpecRphi.HoughNbinsPt        = cms.uint32(48)
 #TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi       = cms.uint32(64) 
 #TMTrackProducer.GenCuts.GenMinPt                    = cms.double(2.0)
 #TMTrackProducer.HTArraySpecRphi.HoughMinPt          = cms.double(2.0)
 #TMTrackProducer.HTArraySpecRphi.MiniHoughMinPt      = cms.double(3.0) # Mini-HT not used below this Pt, to reduce sensitivity to scattering.
-#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1, 27)   
-#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,28, 2,30, 4,32, 6,34, 8,36, 10,38, 12,40, 14,42, 16,44, 18,46, 20,48, 22,50, 24,52, 26, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53)
+#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2, 24) 
+#TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,24, 2,26, 4,28, 6,30, 8,32, 10,34, 12,36, 14,38, 16,40, 18,42, 20,44, 22,46, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47)
 
 #--- Additional Mini-HT options to improve electron/displaced tracking.
 
@@ -135,9 +135,9 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 
 #--- If globally reducing number of layers cut, best to also use just one HT output opto-link per m-bin.
 # For 3 GeV threshold with no mini-HT.
-#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)   
+#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)   
 # For 2 GeV threshold with mini-HT.
-#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 27)   
+#TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 24)   
 
 #--- Change TP to track matching criteria.
 

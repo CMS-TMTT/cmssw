@@ -58,7 +58,7 @@ enum {BR = 12+1, BZ = 14, BPHI=14, BR1 = BR - 1, BZ1 = BZ + 1, // For stub coord
       NID   = (1 << BID),
       BSEC  = 4,        // Allows up to 2*16 eta sectors, where factor 2 comes from zSign.
       BSEC1 = BSEC + 1, // To allow same number of sectors in raw stub format, where no zSign used.
-      BM    = 6, BC = 6};  // Allow 64*64 HT array. 
+      BM    = 5, BC = 6};  // Allow 64*64 HT array. 
 
 typedef ap_ufixed<BR,BR>    TR;
 typedef ap_fixed<BR1,BR1>   TR1;

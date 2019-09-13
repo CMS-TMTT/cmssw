@@ -61,15 +61,15 @@ static const unsigned int maxStubsPerFitTrack  = 4;
 // Digitisation multipliers (from data format doc).
 // KF uses same multiplier for r as for stubs in DTC, but one extra bit to accomodate larger range,
 // since KF measures r w.r.t. beamline. And it uses r multiplier for z too.
-static const float rMult = pow(2.,KFstubN::BR-1)/103.10944;
-static const float phiMult = pow(2.,KFstubN::BPHI)/0.698131700;
+static const float rMult = pow(2.,KFstubN::BR-1)/91.652837;
+static const float phiMult = pow(2.,KFstubN::BPHI)/0.6981317;
 static const float rphiMult = rMult*phiMult;
 static const float inv2R_Mult = (phiMult/rMult);
 static const float chi2_Mult = 1.;
 
 // Beam spot length & reference radii w.r.t. beamline.
 static const float beamSpotLength= 15.0;
-static const float chosenRofPhi_flt = 61.273;
+static const float chosenRofPhi_flt = 67.262;
 static const KFstubN::TR chosenRofPhi = chosenRofPhi_flt*rMult;
 static const float chosenRofZ_flt = 50.0;
 static const KFstubN::TR chosenRofZ = chosenRofZ_flt*rMult;
@@ -108,9 +108,9 @@ enum {BCH=KFstateN::BH1-phiToCbin_bitShift, BMH=KFstateN::BH0+inv2RToMbin_bitShi
 // Size of HT array
 static const int numPhiBins = 64; 
 #ifdef PT_2GEV
-static const int numPtBins = 54;  
+static const int numPtBins = 48;  
 #else
-static const int numPtBins = 36;  
+static const int numPtBins = 32;  
 #endif
 static const ap_int<BCH> minPhiBin = -numPhiBins/2; // BCH & BMH should be larger than BC & BM to monitor overflow.
 static const ap_int<BCH> maxPhiBin =  numPhiBins/2 - 1;

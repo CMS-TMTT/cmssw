@@ -71,9 +71,9 @@ TMTrackProducer_params = cms.PSet(
      PhiSBits        = cms.uint32(14),   # Bits used to store phiS coord. (13 enough?)
      PhiSRange       = cms.double(0.698131700),  # Range phiS coord. covers in radians.
      RtBits          = cms.uint32(12),   # Bits used to store Rt coord.
-     RtRange        = cms.double(103.10944), # Range Rt coord. covers in units of cm.
+      RtRange        = cms.double(91.653837), # Range Rt coord. covers in units of cm.
      ZBits           = cms.uint32(14),   # Bits used to store z coord.
-     ZRange          = cms.double(824.87554), # Range z coord. covers in units of cm.
+      ZRange          = cms.double(733.2227), # Range z coord. covers in units of cm.
      #
      #--- Parameters available in GP board (excluding any in common with MP specified above).
      #
@@ -97,7 +97,7 @@ TMTrackProducer_params = cms.PSet(
   PhiSectors = cms.PSet(
      NumPhiNonants      = cms.uint32(9),    # Divisions of Tracker at DTC
      NumPhiSectors      = cms.uint32(18),   # Divisions of Tracker at GP.
-     ChosenRofPhi       = cms.double(61.273), # Use phi of track at this radius for assignment of stubs to phi sectors & also for one of the axes of the r-phi HT. If ChosenRofPhi=0, then use track phi0. - Should be an integer multiple of the stub r digitisation granularity.
+     ChosenRofPhi       = cms.double(67.262), # Use phi of track at this radius for assignment of stubs to phi sectors & also for one of the axes of the r-phi HT. If ChosenRofPhi=0, then use track phi0. - Should be an integer multiple of the stub r digitisation granularity.
      #--- You can set one or both the following parameters to True.
      UseStubPhi         = cms.bool(True),  # Require stub phi to be consistent with track of Pt > HTArraySpec.HoughMinPt that crosses HT phi axis?
      UseStubPhiTrk      = cms.bool(True),  # Require stub phi0 (or phi65 etc.) as estimated from stub bend, to lie within HT phi axis, allowing tolerance(s) specified below?
@@ -121,10 +121,10 @@ TMTrackProducer_params = cms.PSet(
 
   HTArraySpecRphi = cms.PSet(
      HoughMinPt      = cms.double(3.0), # Min track Pt that Hough Transform must find. Also used by StubCuts.KillLowPtStubs and by EtaPhiSectors.UseStubPhi.
-     #HoughNbinsPt    = cms.uint32(18),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
+     #HoughNbinsPt    = cms.uint32(16),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
      #HoughNbinsPhi   = cms.uint32(32),  # HT array dimension in track phi0 (or phi65 or any other track phi angle. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
      # If using Mini-HT, increase these to:
-     HoughNbinsPt    = cms.uint32(36),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
+     HoughNbinsPt    = cms.uint32(32),  # HT array dimension in track q/Pt. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
      HoughNbinsPhi   = cms.uint32(64),  # HT array dimension in track phi0 (or phi65 or any other track phi angle. Ignored if HoughNcellsRphi > 0. (If MiniHTstage = True, this refers to mini cells in whole HT array).
      HoughNcellsRphi = cms.int32(-1),   # If > 0, then parameters HoughNbinsPt and HoughNbinsPhi will be calculated from the constraints that their product should equal HoughNcellsRphi and their ratio should make the maximum |gradient|" of stub lines in the HT array equal to 1. If <= 0, then HoughNbinsPt and HoughNbinsPhi will be taken from the values configured above.
      EnableMerge2x2  = cms.bool(False), # Groups of neighbouring 2x2 cells in HT will be treated as if they are a single large cell? N.B. You can only enable this option if your HT array has even numbers of bins in both dimensions. And this cfg param ignored if MiniHTstage = True.  HISTORIC OPTION. SUGGEST NOT USING!
@@ -165,18 +165,18 @@ TMTrackProducer_params = cms.PSet(
      # If BusySectorMbinOrder is not empty, then the m-bins are grouped in the specified order, instead of sequentially.
      # (Histos NumStubsPerLink, NumStubsVsLink & MeanStubsPerLink useful for optimising this option).
      #
-     # Choice for 18x32 coarse HT array with 3 GeV Pt threshold, and no Mini-HT.
-     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2),
-     #BusySectorMbinOrder  = cms.vuint32(0,9, 1,10, 2,11, 3,12, 4,13, 5,14, 6,15, 7,16, 8,17),
-     # Choice for 27x32 coarse HT array with 2 GeV Pt threshold, and no Mini-HT
-     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1),   
-     #BusySectorMbinOrder  = cms.vuint32(0,14, 1,15, 2,16, 3,17, 4,18, 5,19, 6,20, 7,21, 8,22, 9,23, 10,24, 11,25, 12,26, 13),
-     # Choice for 18x32 coarse HT array followed by 2x2 mini-HT array with 3 GeV Pt threshold.
-     BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2,2, 18),   
-     BusySectorMbinOrder   = cms.vuint32(0,18, 2,20, 4,22, 6,24, 8,26, 10,28, 12,30, 14,32, 16,34, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35),
-     # Choice for 18x32 coarse HT array followed by 2x2 mini-HT array with 2 GeV Pt threshold.
-     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1, 27),   
-     #BusySectorMbinOrder  = cms.vuint32(0,28, 2,30, 4,32, 6,34, 8,36, 10,38, 12,40, 14,42, 16,44, 18,46, 20,48, 22,50, 24,52, 26, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53),
+     # Choice for 16x32 coarse HT array with 3 GeV Pt threshold, and no Mini-HT.
+     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2),
+     #BusySectorMbinOrder  = cms.vuint32(0,8, 1,9, 2,10, 3,11, 4,12, 5,13, 6,14, 7,15),
+     # Choice for 24x32 coarse HT array with 2 GeV Pt threshold, and no Mini-HT
+     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2),   
+     #BusySectorMbinOrder  = cms.vuint32(0,12, 1,13, 2,14, 3,15, 4,16, 5,17, 6,18, 7,19, 8,20, 9,21, 10,22, 11,23),
+     # Choice for 16x32 coarse HT array followed by 2x2 mini-HT array with 3 GeV Pt threshold.
+     BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2, 16),   
+     BusySectorMbinOrder   = cms.vuint32(0,16, 2,18, 4,20, 6,22, 8,24, 10,26, 12,28, 14,30, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31),
+     # Choice for 24x32 coarse HT array followed by 2x2 mini-HT array with 2 GeV Pt threshold.
+     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2, 24),   
+     #BusySectorMbinOrder  = cms.vuint32(0,24, 2,26, 4,28, 6,30, 8,32, 10,34, 12,36, 14,38, 16,40, 18,42, 20,44, 22,46, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47),
      #
      # If BusyInputSectorKill = True, and more than BusyInputSectorNumStubs are input to the HT array from the GP, then
      # the excess stubs are killed. This is because HT hardware has finite readin time.
@@ -445,13 +445,13 @@ TMTrackProducer_params = cms.PSet(
     #====== Kalman Filter Digi parameters ========
     KF_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     KF_oneOver2rBits = cms.uint32(18),
-    KF_oneOver2rRange = cms.double(0.013541567),
-    KF_d0Bits = cms.uint32(12), # Made up by Ian as never yet discussed.
-    KF_d0Range  = cms.double(10.),
+    KF_oneOver2rRange = cms.double(0.015234263),
+    KF_d0Bits = cms.uint32(12),
+    KF_d0Range  = cms.double(31.992876),
     KF_phi0Bits = cms.uint32(18),
     KF_phi0Range = cms.double(1.3962634),  # phi0 is actually only digitised relative to centre of sector.
     KF_z0Bits = cms.uint32(18),
-    KF_z0Range  = cms.double(51.554721),
+    KF_z0Range  = cms.double(45.826419),
     KF_tanlambdaBits = cms.uint32(18),
     KF_tanlambdaRange = cms.double(32.),
     KF_chisquaredBits = cms.uint32(17),
