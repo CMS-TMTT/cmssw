@@ -36,7 +36,23 @@ DigitalTrack::DigitalTrack(const Settings* settings) :
 //=== Get digitisation configuration parameters for the specific track fitter being used here.
 
 void DigitalTrack::getDigiCfg(const string& fitterName) {
-  if (fitterName == "SimpleLR") {
+  if (fitterName == "MiniHT") {
+    // SimpleLR track fitter
+    skipTrackDigi_  = false;
+    oneOver2rBits_  = settings_->miniHT_oneOver2rBits();
+    oneOver2rRange_ = settings_->miniHT_oneOver2rRange();
+    d0Bits_         = 0; // dummy
+    d0Range_        = 0; // dummy
+    phi0Bits_       = settings_->miniHT_phi0Bits();
+    phi0Range_      = settings_->miniHT_phi0Range();
+    z0Bits_         = settings_->miniHT_z0Bits();
+    z0Range_        = settings_->miniHT_z0Range();
+    tanLambdaBits_  = settings_->miniHT_tanlambdaBits();
+    tanLambdaRange_ = settings_->miniHT_tanlambdaRange();
+    chisquaredBits_ = 0; // dummy
+    chisquaredRange_= 0; // dummy
+  } 
+  else if (fitterName == "SimpleLR") {
     // SimpleLR track fitter
     skipTrackDigi_  = settings_->slr_skipTrackDigi();
     oneOver2rBits_  = settings_->slr_oneOver2rBits();
@@ -253,9 +269,9 @@ void DigitalTrack::checkInRange() const {
     if (fabs(oneOver2r_orig_) >= 0.5*oneOver2rRange_)   throw cms::Exception("DigitalTrack: Track oneOver2r is out of assumed digitization range.")<<" |oneOver2r| = " <<fabs(oneOver2r_orig_) <<" > "<<0.5*oneOver2rRange_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(phi0rel_orig_) >= 0.5*phi0Range_)   throw cms::Exception("DigitalTrack: Track phi0rel is out of assumed digitization range.")<<" |phi0rel| = " <<fabs(phi0rel_orig_) <<" > "<<0.5*phi0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(z0_orig_) >= 0.5*z0Range_)   throw cms::Exception("DigitalTrack:  Track z0 is out of assumed digitization range.")<<" |z0| = " <<fabs(z0_orig_) <<" > "<<0.5*z0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
-    if (fabs(d0_orig_) >= 0.5*d0Range_)   throw cms::Exception("DigitalTrack:  Track d0 is out of assumed digitization range.")<<" |d0| = " <<fabs(d0_orig_) <<" > "<<0.5*d0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
+    if (fabs(d0_orig_) >= 0.5*d0Range_ && fitterName_ != "MiniHT" )   throw cms::Exception("DigitalTrack:  Track d0 is out of assumed digitization range.")<<" |d0| = " <<fabs(d0_orig_) <<" > "<<0.5*d0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(tanLambda_orig_) >= 0.5*tanLambdaRange_)   throw cms::Exception("DigitalTrack: Track tanLambda is out of assumed digitization range.")<<" |tanLambda| = " <<fabs(tanLambda_orig_) <<" > "<<0.5*tanLambdaRange_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
-    if (accepted_) { // Tracks declared invalid by fitter can have very large original chi2.
+    if (accepted_  && fitterName_ != "MiniHT" ) { // Tracks declared invalid by fitter can have very large original chi2.
       if (chisquared_orig_ >= chisquaredRange_ or chisquared_orig_ < 0.)   throw cms::Exception("DigitalTrack: Track chisquared is out of assumed digitization range.")<<" chisquared = " <<chisquared_orig_ <<" > "<<chisquaredRange_<<" or < 0"<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     }
   }

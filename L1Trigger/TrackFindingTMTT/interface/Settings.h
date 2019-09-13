@@ -348,6 +348,16 @@ public:
 
   //=== Track fit digitisation configuration for various track fitters
 
+  unsigned int        miniHT_oneOver2rBits()        const {return miniHT_oneOver2rBits_;}
+  double              miniHT_oneOver2rRange()       const {return miniHT_oneOver2rRange_;}
+  unsigned int        miniHT_phi0Bits()             const {return miniHT_phi0Bits_;}
+  double              miniHT_phi0Range()            const {return miniHT_phi0Range_;}
+  unsigned int        miniHT_z0Bits()               const {return miniHT_z0Bits_;}
+  double              miniHT_z0Range()              const {return miniHT_z0Range_;}
+  unsigned int        miniHT_tanlambdaBits()        const {return miniHT_tanlambdaBits_;}
+  double              miniHT_tanlambdaRange()       const {return miniHT_tanlambdaRange_;}
+
+
   // These are used only for SimpleLR track fitter.
   bool                slr_skipTrackDigi()        const {return slr_skipTrackDigi_;}
   unsigned int        slr_oneOver2rBits()        const {return slr_oneOver2rBits_;}
@@ -631,6 +641,16 @@ private:
   bool                 killRecover_;
 
   // Track digitisation configuration for various track fitters
+  unsigned int         miniHT_oneOver2rBits_;
+  double               miniHT_oneOver2rRange_;
+  double               miniHT_oneOver2rMult_;
+  unsigned int         miniHT_phi0Bits_;
+  double               miniHT_phi0Range_;
+  unsigned int         miniHT_z0Bits_;
+  double               miniHT_z0Range_;
+  unsigned int         miniHT_tanlambdaBits_;
+  double               miniHT_tanlambdaRange_;
+
   bool                 slr_skipTrackDigi_;
   unsigned int         slr_oneOver2rBits_;
   double               slr_oneOver2rRange_;
