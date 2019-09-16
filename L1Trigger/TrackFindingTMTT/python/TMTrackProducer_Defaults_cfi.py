@@ -71,7 +71,7 @@ TMTrackProducer_params = cms.PSet(
      PhiSBits        = cms.uint32(14),   # Bits used to store phiS coord. (13 enough?)
      PhiSRange       = cms.double(0.698131700),  # Range phiS coord. covers in radians.
      RtBits          = cms.uint32(12),   # Bits used to store Rt coord.
-      RtRange        = cms.double(91.653837), # Range Rt coord. covers in units of cm.
+      RtRange        = cms.double(91.652837), # Range Rt coord. covers in units of cm.
      ZBits           = cms.uint32(14),   # Bits used to store z coord.
       ZRange          = cms.double(733.2227), # Range z coord. covers in units of cm.
      #
@@ -97,7 +97,7 @@ TMTrackProducer_params = cms.PSet(
   PhiSectors = cms.PSet(
      NumPhiNonants      = cms.uint32(9),    # Divisions of Tracker at DTC
      NumPhiSectors      = cms.uint32(18),   # Divisions of Tracker at GP.
-     ChosenRofPhi       = cms.double(67.262), # Use phi of track at this radius for assignment of stubs to phi sectors & also for one of the axes of the r-phi HT. If ChosenRofPhi=0, then use track phi0. - Should be an integer multiple of the stub r digitisation granularity.
+     ChosenRofPhi       = cms.double(67.240), # Use phi of track at this radius for assignment of stubs to phi sectors & also for one of the axes of the r-phi HT. If ChosenRofPhi=0, then use track phi0. - Should be an integer multiple of the stub r digitisation granularity.
      #--- You can set one or both the following parameters to True.
      UseStubPhi         = cms.bool(True),  # Require stub phi to be consistent with track of Pt > HTArraySpec.HoughMinPt that crosses HT phi axis?
      UseStubPhiTrk      = cms.bool(True),  # Require stub phi0 (or phi65 etc.) as estimated from stub bend, to lie within HT phi axis, allowing tolerance(s) specified below?

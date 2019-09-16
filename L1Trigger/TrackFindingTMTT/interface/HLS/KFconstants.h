@@ -69,8 +69,8 @@ static const float chi2_Mult = 1.;
 
 // Beam spot length & reference radii w.r.t. beamline.
 static const float beamSpotLength= 15.0;
-static const float chosenRofPhi_flt = 67.262;
-static const KFstubN::TR chosenRofPhi = chosenRofPhi_flt*rMult;
+static const float chosenRofPhi_flt = 67.240;
+static const KFstubN::TR chosenRofPhi = chosenRofPhi_flt*rMult + 0.5;
 static const float chosenRofZ_flt = 50.0;
 static const KFstubN::TR chosenRofZ = chosenRofZ_flt*rMult;
 

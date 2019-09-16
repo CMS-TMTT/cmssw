@@ -183,9 +183,9 @@ public:
   // (Optionally with beam-spot constraint applied).
   float   phiAtChosenR(bool beamConstraint) const {
     if (beamConstraint) {
-      return reco::deltaPhi(phi0_bcon_ - asin((settings_->invPtToDphi() * settings_->chosenRofPhi()) * qOverPt_bcon_) - d0_bcon_/(settings_->chosenRofPhi()),  0.);
+      return reco::deltaPhi(phi0_bcon_ - ((settings_->invPtToDphi() * settings_->chosenRofPhi()) * qOverPt_bcon_) - d0_bcon_/(settings_->chosenRofPhi()),  0.);
     } else {
-      return reco::deltaPhi(phi0_ - asin((settings_->invPtToDphi() * settings_->chosenRofPhi()) * qOverPt_) - d0_/(settings_->chosenRofPhi()),  0.);
+      return reco::deltaPhi(phi0_ - ((settings_->invPtToDphi() * settings_->chosenRofPhi()) * qOverPt_) - d0_/(settings_->chosenRofPhi()),  0.);
     }
   }
   float   zAtChosenR()   const  {return (z0_ + (settings_->chosenRofZ()) * tanLambda_);} // neglects transverse impact parameter & track curvature.
