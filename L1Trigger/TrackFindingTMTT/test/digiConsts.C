@@ -9,8 +9,11 @@
   double B = 3.8112022876;
   double ptCut = 3.;
   double numPhiSec = 18;
-  double numM = 18;
+  //  double numM = 18;
+  double numM = 16;
   double numC = 32;
+
+  cout<<"(m,c) bins=("<<numM<<","<<numC<<")"<<endl<<endl;
 
   // GP output format
 
