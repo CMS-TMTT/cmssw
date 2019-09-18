@@ -48,6 +48,9 @@ void L1fittedTrack::digitizeTrack(const string& fitterName){
       qOverPt_bcon_   = digitalTrack_.qOverPt_bcon();
       phi0_bcon_      = digitalTrack_.phi0_bcon();
       chi2_bcon_      = digitalTrack_.chisquared_bcon();
+
+      // Recalculate consistency flag using updated helix params.
+      this->setConsistentHTcell();
     }
   }
 }
