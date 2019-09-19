@@ -6,33 +6,50 @@
 namespace TMTT {
 
 MiniHTstage::MiniHTstage( const Settings* settings ) :
-        settings_( settings ),
-        miniHTstage_( settings_->miniHTstage() ),
-        muxOutputsHT_( settings_->muxOutputsHT() ),
-	houghNbinsPt_( settings_->houghNbinsPt() ),
-	houghNbinsPhi_( settings_->houghNbinsPhi() ),
-        miniHoughNbinsPt_( settings_->miniHoughNbinsPt() ),
-        miniHoughNbinsPhi_( settings_->miniHoughNbinsPhi() ),
-        miniHoughMinPt_( settings_->miniHoughMinPt() ),
-        miniHoughDontKill_( settings_->miniHoughDontKill() ),
-        miniHoughDontKillMinPt_( settings_->miniHoughDontKillMinPt() ),
-        numSubSecsEta_( settings_->numSubSecsEta() ),
-        numPhiNonants_( settings_->numPhiNonants() ),
-        numPhiSecPerNon_( settings_->numPhiSectors() / numPhiNonants_ ),
-        numEtaRegions_( settings_->numEtaRegions() ),
-        busySectorKill_( settings_->busySectorKill() ),
-        busySectorNumStubs_( settings_->busySectorNumStubs()),
-        busySectorMbinRanges_( settings_->busySectorMbinRanges() ),
-        chosenRofPhi_( settings_->chosenRofPhi() ),
-	// Get size of 1st stage HT cells.
-        binSizeQoverPtAxis_( miniHoughNbinsPt_ * 2. / (float)settings->houghMinPt() / (float)houghNbinsPt_ ),
-        binSizePhiTrkAxis_( miniHoughNbinsPhi_ * 2. * M_PI / (float)settings->numPhiSectors() / (float)houghNbinsPhi_ ),
-        invPtToDphi_( settings_->invPtToDphi() ) {}
+  settings_( settings ),
+  miniHTstage_( settings_->miniHTstage() ),
+  muxOutputsHT_( settings_->muxOutputsHT() ),
+  houghNbinsPt_( settings_->houghNbinsPt() ),
+  houghNbinsPhi_( settings_->houghNbinsPhi() ),
+  miniHoughLoadBalance_( settings_->miniHoughLoadBalance() ),
+  miniHoughNbinsPt_( settings_->miniHoughNbinsPt() ),
+  miniHoughNbinsPhi_( settings_->miniHoughNbinsPhi() ),
+  miniHoughMinPt_( settings_->miniHoughMinPt() ),
+  miniHoughDontKill_( settings_->miniHoughDontKill() ),
+  miniHoughDontKillMinPt_( settings_->miniHoughDontKillMinPt() ),
+  numSubSecsEta_( settings_->numSubSecsEta() ),
+  numPhiNonants_( settings_->numPhiNonants() ),
+  numPhiSecPerNon_( settings_->numPhiSectors() / numPhiNonants_ ),
+  numEtaRegions_( settings_->numEtaRegions() ),
+  busySectorKill_( settings_->busySectorKill() ),
+  busySectorNumStubs_( settings_->busySectorNumStubs()),
+  busySectorMbinRanges_( settings_->busySectorMbinRanges() ),
+  chosenRofPhi_( settings_->chosenRofPhi() ),
+// Get size of 1st stage HT cells.
+  binSizeQoverPtAxis_( miniHoughNbinsPt_ * 2. / (float)settings->houghMinPt() / (float)houghNbinsPt_ ),
+  binSizePhiTrkAxis_( miniHoughNbinsPhi_ * 2. * M_PI / (float)settings->numPhiSectors() / (float)houghNbinsPhi_ ),
+  invPtToDphi_( settings_->invPtToDphi() ),
+  nHTlinksPerNonant_(0)
+{
+  nMiniHTcells_ = miniHoughNbinsPt_*miniHoughNbinsPhi_;
 
-void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
+  if (miniHoughLoadBalance_ > 0) {
+    if (muxOutputsHT_ == 3) {
+      nHTlinksPerNonant_ = busySectorMbinRanges_.size() - 1;
+    } else if (muxOutputsHT_ == 2) {
+      nHTlinksPerNonant_ = (busySectorMbinRanges_.size() - 1) * numPhiSecPerNon_;
+    } else {
+      throw cms::Exception("MiniHTState: hard-wired MHT load balancing can't be enabled as assumes HT output MUX scheme >= 2");
+    }
+  }
+}
+
+void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) {
 
   for ( unsigned int iPhiNon = 0; iPhiNon < numPhiNonants_; iPhiNon++ ) {
-    map< unsigned int, unsigned int> numStubsPerLink; // Indices are (link ID, #stubs).
+    map< pair<unsigned int, unsigned int>, unsigned int> numStubsPerLinkStage1; // Indices are ([link ID, MHT cell], #stubs).
+    map< pair<unsigned int, unsigned int>, unsigned int> numStubsPerLinkStage2; // Indices are ([link ID, MHT cell], #stubs).
+    map< pair<unsigned int, unsigned int>, unsigned int> numStubsPerLink; // Indices are ([link ID, MHT cell], #stubs).
     for ( unsigned int iSecInNon = 0; iSecInNon < numPhiSecPerNon_; iSecInNon++ ) {
       unsigned int iPhiSec = iPhiNon * numPhiSecPerNon_ + iSecInNon;
       for ( unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++ ) {
@@ -79,41 +96,71 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 		if ( htCell.trackCandFound() ) {
 		  pair< unsigned int, unsigned int > cellLocation( cell.first + mBin, cell.second + cBin );
 		  pair< float, float > helix2D( qOverPtBin, reco::deltaPhi( phiBin + chosenRofPhi_ * invPtToDphi_ * qOverPtBin + phiCentre, 0. ) );
-		  unsigned int newLink = link;
-		  // Static load balancing.
-		  // const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon_;
-		  if (settings_->miniHoughLoadBalance() >= 1) {
-		    //unsigned int iOffset = 2*mBin + cBin; // Send each mini-cell to a different output link. 
-		    //newLink = (newLink + iOffset)%nLinks;
-		    newLink = 2*(unsigned int)(link/2) + mBin;
+
+	          unsigned int mhtCell = miniHoughNbinsPhi_*mBin + cBin; // Send each mini-cell to a different output link 
+
+		  // Number of output links after static load balancing roughly same as number of
+		  // input links with this, with nSep per MHT cell.
+		  unsigned int nSep = std::ceil(float(nHTlinksPerNonant_)/float(nMiniHTcells_));
+
+		  unsigned int newLink, newerLink, newererLink;
+
+		  if (miniHoughLoadBalance_ >= 1) {
+		    // Static load balancing, 4 -> 1, with each MHT cell sent to seperate output link.
+		    newLink = link%nSep;
+		  } else {
+		    newLink = link;
 		  }
-		  // Dynamic load balancing.
-		  if (settings_->miniHoughLoadBalance() >= 2) {
-		    // The mixing for 32 mbins avoids data from different phi sectors being mixed together.
-                    //const unsigned int nMix = 3; // Old value for 36 mbins  
-                    const unsigned int nMix = 4; // New value for 32 mbins  
-                    const unsigned int nSep = 2*nMix;
-                    //unsigned int newerLinkBest = newLink;
-                    //for (unsigned int j = 0; j < nMix; j++) {
-                    //  unsigned int newerLink = (newLink + j * nSep)%nLinks;
-                    //  if (numStubsPerLink[newerLink] < numStubsPerLink[newerLinkBest]) newerLinkBest = newerLink;  
-		    //}
-		    //newLink = newerLinkBest;
-		    unsigned int linkSharedBest = nSep*(unsigned int)(newLink/nSep) + newLink%2; 
-		    for (unsigned int j = 0; j < nMix; j++) {
-		      //In first 6 links, links 0, 2 & 4 are load balanced together, as are links 1, 3 & 5. etc.
-	  	      unsigned int linkShared = nSep*(unsigned int)(newLink/nSep) + newLink%2 + 2*j;
-                      if (numStubsPerLink[linkShared] < numStubsPerLink[linkSharedBest]) linkSharedBest = linkShared;  
-		    }
-  	  	    newLink = linkSharedBest;
+
+		  if (miniHoughLoadBalance_ >= 2) {	  	  
+
+  	   	    // 2-stage dynamic load balancing amongst links corresponding to same MHT cell.
+
+		    // Dynamically mix pairs of neighbouring links.
+		    unsigned int balancedLinkA = 2*(newLink/2);
+		    unsigned int balancedLinkB = balancedLinkA + 1;
+
+		    pair<unsigned int, unsigned int> encodedLinkA(balancedLinkA, mhtCell);
+		    pair<unsigned int, unsigned int> encodedLinkB(balancedLinkB, mhtCell);
+		    if (numStubsPerLinkStage1[encodedLinkA] < numStubsPerLinkStage1[encodedLinkB]) {
+		      newerLink = balancedLinkA;
+		    } else {
+		      newerLink = balancedLinkB;
+		    } 
+		    pair<unsigned int, unsigned int> encodedLinkAB(newerLink, mhtCell);
+  	            numStubsPerLinkStage1[ encodedLinkAB ] += htCell.numStubs();
+
+		    // Dynamically mix pairs of next-to-neighbouring links.
+		    unsigned int balancedLinkY = newerLink;
+		    unsigned int balancedLinkZ = (newerLink%4<=1) ? balancedLinkY + 2 : balancedLinkY - 2;
+
+		    pair<unsigned int, unsigned int> encodedLinkY(balancedLinkY, mhtCell);
+		    pair<unsigned int, unsigned int> encodedLinkZ(balancedLinkZ, mhtCell);
+		    if (numStubsPerLinkStage2[encodedLinkY] < numStubsPerLinkStage2[encodedLinkZ]) {
+		      newererLink = balancedLinkY;
+		    } else {
+		      newererLink = balancedLinkZ;
+		    } 
+		    pair<unsigned int, unsigned int> encodedLinkYZ(newererLink, mhtCell);
+  	            numStubsPerLinkStage2[ encodedLinkYZ ] += htCell.numStubs();
+
+	          } else {
+		    newerLink = newLink;
+		    newererLink = newLink;
 		  }
-		  L1track2D fineTrk( settings_, htCell.stubs(), cellLocation, helix2D, iPhiSec, iEtaReg, newLink, mergedCell );
+
+		  unsigned int trueLinkID = (miniHoughLoadBalance_ > 0) ? nMiniHTcells_ * newererLink + mhtCell : newererLink;
+		  L1track2D fineTrk( settings_, htCell.stubs(), cellLocation, helix2D, iPhiSec, iEtaReg, trueLinkID, mergedCell );
 		  // Truncation due to output opto-link bandwidth.
 		  bool keep( true );
-		  if ( settings_->muxOutputsHT() ) {
-		    numStubsPerLink[ newLink ] += htCell.numStubs();
-		    if ( busySectorKill_ && numStubsPerLink[ newLink ] > busySectorNumStubs_ ) keep = false;
+	          pair<unsigned int, unsigned int> encodedLink;
+		  if (miniHoughLoadBalance_ > 0) {
+		    encodedLink = pair<unsigned int, unsigned int>(newererLink, mhtCell);
+		  } else {
+		    encodedLink = pair<unsigned int, unsigned int>(newererLink, 0);
 		  }
+	          numStubsPerLink[ encodedLink ] += htCell.numStubs();
+	          if ( busySectorKill_ && numStubsPerLink[ encodedLink ] > busySectorNumStubs_ ) keep = false;
 		  if ( keep ) {
 		    fineTracks.push_back( fineTrk );
 		    fineTrksFound = true;
@@ -131,11 +178,15 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) const {
 
           if ( storeCoarseTrack || ( (not fineTrksFound) && miniHoughDontKill_ && fabs(roughTrk.qOverPt()) < 1./miniHoughDontKillMinPt_ ) ) {
             bool keep( true );
-            if ( settings_->muxOutputsHT() ) {
-              numStubsPerLink[ link ] += roughTrk.getNumStubs();
-              if ( busySectorKill_ && numStubsPerLink[ link ] > busySectorNumStubs_ )
-                keep = false;
-            }
+	    // FIX -- currently just output on the original link.
+	    pair<unsigned int, unsigned int> encodedLink;
+	    if (miniHoughLoadBalance_ > 0) {
+	      encodedLink = pair<unsigned int, unsigned int>(link/nMiniHTcells_, link%nMiniHTcells_);
+	    } else {
+	      encodedLink = pair<unsigned int, unsigned int>(link, 0);
+	    }
+            numStubsPerLink[ encodedLink ] += roughTrk.getNumStubs();
+            if ( busySectorKill_ && numStubsPerLink[ encodedLink ] > busySectorNumStubs_ ) keep = false;
             if ( keep ) {
               fineTracks.push_back( roughTrk );
 	    }
