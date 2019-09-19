@@ -155,7 +155,8 @@ public:
   bool                 busyInputSectorKill()     const   {return busyInputSectorKill_;}
   unsigned int         busyInputSectorNumStubs() const   {return busyInputSectorNumStubs_;}
   // Multiplex the outputs from several HTs onto a single pair of output optical links?
-  // Options: 0 = disable Mux; 1 = Dec. 2016 Mux; 2 = Mar 2018 Mux (transverse HT readout by m-bin). 
+  // Options: 0 = disable Mux; 1 = Dec. 2016 Mux; 2 = Mar 2018 Mux (transverse HT readout by m-bin); 
+  // 3 = Sept 2019 Mux (transverse HT readout by m-bin) 
   unsigned int         muxOutputsHT()            const   {return muxOutputsHT_;}
   // Is specified eta sector enabled?
   bool                 isHTRPhiEtaRegWhitelisted(unsigned const iEtaReg) const;

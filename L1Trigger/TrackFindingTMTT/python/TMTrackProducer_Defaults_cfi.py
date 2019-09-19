@@ -165,18 +165,12 @@ TMTrackProducer_params = cms.PSet(
      # If BusySectorMbinOrder is not empty, then the m-bins are grouped in the specified order, instead of sequentially.
      # (Histos NumStubsPerLink, NumStubsVsLink & MeanStubsPerLink useful for optimising this option).
      #
-     # Choice for 16x32 coarse HT array with 3 GeV Pt threshold, and no Mini-HT.
-     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2),
-     #BusySectorMbinOrder  = cms.vuint32(0,8, 1,9, 2,10, 3,11, 4,12, 5,13, 6,14, 7,15),
-     # Choice for 24x32 coarse HT array with 2 GeV Pt threshold, and no Mini-HT
-     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2),   
-     #BusySectorMbinOrder  = cms.vuint32(0,12, 1,13, 2,14, 3,15, 4,16, 5,17, 6,18, 7,19, 8,20, 9,21, 10,22, 11,23),
      # Choice for 16x32 coarse HT array followed by 2x2 mini-HT array with 3 GeV Pt threshold.
-     BusySectorMbinRanges  = cms.vuint32(2,2,2,2,2,2,2,2, 16),   
-     BusySectorMbinOrder   = cms.vuint32(0,16, 2,18, 4,20, 6,22, 8,24, 10,26, 12,28, 14,30, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31),
+     BusySectorMbinRanges  = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 16),   
+     BusySectorMbinOrder   = cms.vuint32(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31),
      # Choice for 24x32 coarse HT array followed by 2x2 mini-HT array with 2 GeV Pt threshold.
-     #BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2, 24),   
-     #BusySectorMbinOrder  = cms.vuint32(0,24, 2,26, 4,28, 6,30, 8,32, 10,34, 12,36, 14,38, 16,40, 18,42, 20,44, 22,46, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47),
+     #BusySectorMbinRanges = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 24),   
+     #BusySectorMbinOrder  = cms.vuint32(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47),
      #
      # If BusyInputSectorKill = True, and more than BusyInputSectorNumStubs are input to the HT array from the GP, then
      # the excess stubs are killed. This is because HT hardware has finite readin time.
@@ -186,8 +180,8 @@ TMTrackProducer_params = cms.PSet(
      #BusyInputSectorNumStubs   = cms.uint32(120), # Alternative proposal from Tom James for ultra compact firmware.
      # Multiplex the outputs from several HTs onto a single pair of output optical links?
      # Options: 0 = disable Mux; 1 = Dec. 2016 Mux; 2 = Mar 2018 Mux (for transverse HT readout by m-bin). 
-     # (The mux algorithm is hard-wired in class MuxHToutputs, and currently only works if option BusySectorMbinRanges is being used).
-     MuxOutputsHT = cms.uint32(2),
+     # (The mux algorithm is hard-wired in class MuxHToutputs, and currently only works if option BusySectorMbinRanges is being used); 3 = Sept 2019 Mux (transerse HT readout by m-bin), with single m bin in entire nonant going to each link.
+     MuxOutputsHT = cms.uint32(3),
      # If this is non-empty, then only the specified eta sectors are enabled, to study them individually.
      EtaRegWhitelist = cms.vuint32()
   ),

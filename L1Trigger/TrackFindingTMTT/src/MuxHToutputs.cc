@@ -90,8 +90,10 @@ void MuxHToutputs::exec(matrix<HTrphi>& mHtRphis) const {
 unsigned int MuxHToutputs::muxFactor() const {
   if (muxOutputsHT_ == 1) {
     return 6;
-  } else {
+  } else if (muxOutputsHT_ == 2) {
     return numEtaRegions_;
+  } else {
+    return numEtaRegions_*numPhiSecPerNon_;
   }
 }
 
@@ -121,7 +123,7 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInNon, unsigned int iEtaReg, 
 
   } else if (muxOutputsHT_ == 2) {
 
-      //--- This is the Mux for the transverse HT readout organised by m-bin. (Each phi sector & m bin range go to a different link).
+      //--- This is the Mar. 2018 Mux for the transverse HT readout organised by m-bin. (Each phi sector & m bin range go to a different link).
 
       link = 0;          
       //link += iSecInNon;     
@@ -135,7 +137,22 @@ unsigned int MuxHToutputs::linkID(unsigned int iSecInNon, unsigned int iEtaReg, 
       link += mBinRange; 
       link += iSecInNon * (busySectorMbinRanges_.size() - 1);
 
-    } else { 
+  } else if (muxOutputsHT_ == 3) {
+
+      //--- This is the Sept. 2019 Mux for the transverse HT readout organised by m-bin. (Each m bin in entire nonant goes to a different link).
+
+      link = 0;          
+      //link += iSecInNon;     
+      //link += numPhiSecPerNon_ * mBinRange; 
+
+      // IRT - match firmware, taking into account that fw uses mBin = -mBin relative to sw.
+      // NOT NEEDED ANYMORE, AS NOW FW USES MBIN SAME SIGN AS Q/PT.
+      // unsigned int iCorr = (settings_->miniHTstage()) ? 1 : 0;
+      // Sign flip for FW using opposite 
+      //link += (busySectorMbinRanges_.size() - iCorr) - mBinRange - 1; 
+      link += mBinRange; 
+
+  } else { 
 
     throw cms::Exception("MuxHToutputs: Unknown MuxOutputsHT configuration option!");
 
