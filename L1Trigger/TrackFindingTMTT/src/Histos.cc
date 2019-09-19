@@ -1110,12 +1110,12 @@ TFileDirectory Histos::bookTrackCands(string tName) {
   hisPSLayersPerTrueTrack_[tName] = inputDir.make<TH1F>(addn("PSLayersPerTrueTrack"),";No. of PS layers with stubs per genuine track;",20,-0.5,19.5);
 
   if (TMTT) {
-    hisNumStubsPerLink_[tName] = inputDir.make<TH1F>(addn("NumStubsPerLink"), "; Mean #stubs per HT output opto-link;", 50,-0.5,199.5);
-    hisNumStubsVsLink_[tName] = inputDir.make<TH2F>(addn("NumStubsVsLink"), "; HT output opto-link; No. stubs/event", 36, -0.5, 35.5, 20,-0.5,199.5);
-    profMeanStubsPerLink_[tName] = inputDir.make<TProfile>(addn("MeanStubsPerLink"), "; Mean #stubs per HT output opto-link;", 36,-0.5,35.5);
-    hisNumTrksPerLink_[tName] = inputDir.make<TH1F>(addn("NumTrksPerLink"), "; Mean #tracks per HT output opto-link;", 50,-0.5,49.5);
-    hisNumTrksVsLink_[tName] = inputDir.make<TH2F>(addn("NumTrksVsLink"), "; HT output opto-link; No. tracks/event", 72, -0.5, 71.5, 20,-0.5,49.5);
-    profMeanTrksPerLink_[tName] = inputDir.make<TProfile>(addn("MeanTrksPerLink"), "; Mean #tracks per HT output opto-link;", 36,-0.5,35.5);
+    hisNumStubsPerLink_[tName] = inputDir.make<TH1F>(addn("NumStubsPerLink"), "; Mean #stubs per MHT output opto-link;", 50,-0.5,199.5);
+    hisNumStubsVsLink_[tName] = inputDir.make<TH2F>(addn("NumStubsVsLink"), "; MHT output opto-link; No. stubs/event", 36, -0.5, 35.5, 20,-0.5,199.5);
+    profMeanStubsPerLink_[tName] = inputDir.make<TProfile>(addn("MeanStubsPerLink"), "; Mean #stubs per MHT output opto-link;", 36,-0.5,35.5);
+    hisNumTrksPerLink_[tName] = inputDir.make<TH1F>(addn("NumTrksPerLink"), "; Mean #tracks per MHT output opto-link;", 50,-0.5,49.5);
+    hisNumTrksVsLink_[tName] = inputDir.make<TH2F>(addn("NumTrksVsLink"), "; MHT output opto-link; No. tracks/event", 72, -0.5, 71.5, 20,-0.5,49.5);
+    profMeanTrksPerLink_[tName] = inputDir.make<TProfile>(addn("MeanTrksPerLink"), "; Mean #tracks per MHT output opto-link;", 36,-0.5,35.5);
   }
 
   if (TMTT) {
@@ -1304,27 +1304,27 @@ void Histos::fillTrackCands(const InputData& inputData, const vector<L1track3D>&
   // Plot number of tracks & number of stubs per output HT opto-link.
 
   if (TMTT && not withRZfilter) {
+    static bool firstMess = true;
     const unsigned int numPhiSecPerNon = numPhiSectors_/numPhiNonants;
     // Hard-wired bodge
-    const unsigned int nLinks = (settings_->busySectorMbinRanges().size() - 1) * numPhiSecPerNon;
+    const unsigned int nLinks = 16; // Hard-wired. Check
 
     for (unsigned int iPhiNon = 0; iPhiNon < numPhiNonants; iPhiNon++) {
       // Each nonant has a separate set of links.
-
-      vector<unsigned int> stubsToLinkCount(nLinks, 0);
+      vector<unsigned int> stubsToLinkCount(nLinks, 0); // Must use vectors to count links with zero entries.
       vector<unsigned int> trksToLinkCount(nLinks, 0);
       for (const L1track3D& trk : tracks) {
-	unsigned int iNonantTrk = floor((trk.iPhiSec())*numPhiNonants/(numPhiSectors_)); // phi nonant number
-	if (iPhiNon == iNonantTrk) {
-	  unsigned int link = trk.optoLinkID();
-	  if (link < nLinks) {
-  	    stubsToLinkCount[link] += trk.getNumStubs();
+        unsigned int iNonantTrk = floor((trk.iPhiSec())*numPhiNonants/(numPhiSectors_)); // phi nonant number
+        if (iPhiNon == iNonantTrk) {
+          unsigned int link = trk.optoLinkID();
+          if (link < nLinks) {
+            stubsToLinkCount[link] += trk.getNumStubs();
             trksToLinkCount[link] += 1;
-          } else {
-            // Bug -- array too small ...
-            //cout<<"MESS UP "<<link<<endl;
+          } else if (firstMess) {
+	    firstMess = false;
+	    cout<<endl<<"===== HISTOS MESS UP: Increase size of nLinks ===== "<<link<<endl<<endl;
           }
-	}
+        }
       }
 
       for (unsigned int link = 0; link < nLinks; link++) {
@@ -1342,6 +1342,7 @@ void Histos::fillTrackCands(const InputData& inputData, const vector<L1track3D>&
       }
     }
   }
+
 
   // Plot q/pt spectrum of track candidates, and number of stubs/tracks
   for (const L1track3D& trk : tracks) {
