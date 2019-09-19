@@ -186,15 +186,15 @@ MatrixC<5>::MatrixC(const MatrixC<5>& C, const MatrixK<5>& K, const MatrixS<5>& 
   double c23new = double(C._23) - (double(K._20) * double(S._03) + double(K._21) * double(S._13));
   double c04new = double(C._04) - (double(K._00) * double(S._04) + double(K._01) * double(S._14));
   double c14new = double(C._14) - (double(K._10) * double(S._04) + double(K._11) * double(S._14));
-  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.02);
-  CHECK_AP::checkCalc("C11_new", _11, c11new, 0.02);
-  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.02);
-  CHECK_AP::checkCalc("C33_new", _33, c33new, 0.02);
-  CHECK_AP::checkCalc("C44_new", _44, c44new, 0.02);
-  CHECK_AP::checkCalc("C01_new", _01, c01new, 0.02);
-  CHECK_AP::checkCalc("C23_new", _23, c23new, 0.02);
-  CHECK_AP::checkCalc("C04_new", _04, c04new, 0.02);
-  CHECK_AP::checkCalc("C14_new", _14, c14new, 0.02);
+  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.03);
+  CHECK_AP::checkCalc("C11_new", _11, c11new, 0.03);
+  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.03);
+  CHECK_AP::checkCalc("C33_new", _33, c33new, 0.03);
+  CHECK_AP::checkCalc("C44_new", _44, c44new, 0.03);
+  CHECK_AP::checkCalc("C01_new", _01, c01new, 0.03);
+  CHECK_AP::checkCalc("C23_new", _23, c23new, 0.03);
+  CHECK_AP::checkCalc("C04_new", _04, c04new, 0.03);
+  CHECK_AP::checkCalc("C14_new", _14, c14new, 0.03);
   CHECK_AP::checkDet("C_new(rphi)",_00,_11,_44, _01, _04, _14);
   CHECK_AP::checkDet("C_new(rz)"  ,_22,_33,_23);
 #endif
