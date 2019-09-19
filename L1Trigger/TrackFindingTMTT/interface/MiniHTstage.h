@@ -18,7 +18,7 @@ public:
 
   ~MiniHTstage(){};
 
-  void exec( matrix< HTrphi >& mHtRphis ) const;
+  void exec( matrix< HTrphi >& mHtRphis );
 
 private:
 
@@ -27,6 +27,7 @@ private:
   unsigned int muxOutputsHT_;
   unsigned int houghNbinsPt_;
   unsigned int houghNbinsPhi_;
+  unsigned int miniHoughLoadBalance_;
   unsigned int miniHoughNbinsPt_;
   unsigned int miniHoughNbinsPhi_;
   float miniHoughMinPt_;
@@ -43,6 +44,8 @@ private:
   float binSizeQoverPtAxis_;
   float binSizePhiTrkAxis_;
   float invPtToDphi_;
+  unsigned int nMiniHTcells_;
+  unsigned int nHTlinksPerNonant_;
 };
 
 }
