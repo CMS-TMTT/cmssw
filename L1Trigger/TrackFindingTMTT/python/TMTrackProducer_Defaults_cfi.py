@@ -160,7 +160,7 @@ TMTrackProducer_params = cms.PSet(
      MaxStubsInCellMiniHough = cms.uint32(16),    # Same type of cut for mini-HT (if in use)
      # If BusySectorKill = True, and more than BusySectorNumStubs stubs are assigned to tracks by an r-phi HT array, then the excess tracks are killed, with lowest Pt ones killed first. This is because HT hardware has finite readout time.
      BusySectorKill       = cms.bool(True),
-     BusySectorNumStubs   = cms.uint32(144),
+     BusySectorNumStubs   = cms.uint32(162), # Or 144 if only 320 MHz FW.
      # If BusySectorMbinRanges is not empty, then the BusySectorNumStubs cut is instead applied to the subset of tracks appearing in the following m bin (q/Pt) ranges of the HT array. The sum of the entries in the vector should equal the number of m bins in the HT. (N.B. If EnableMerge2x2 or MiniHTstage = True, then the m bin ranges here correspond to the bins before merging. Also in these cases, the odd m-bin numbers don't correspond to HT outputs, so should be all grouped together on a single imaginary link).
      # If BusySectorMbinOrder is not empty, then the m-bins are grouped in the specified order, instead of sequentially.
      # (Histos NumStubsPerLink, NumStubsVsLink & MeanStubsPerLink useful for optimising this option).
@@ -176,8 +176,7 @@ TMTrackProducer_params = cms.PSet(
      # the excess stubs are killed. This is because HT hardware has finite readin time.
      # Results unreliable as depend on assumed order of stubs.
      BusyInputSectorKill  = cms.bool(True),
-     BusyInputSectorNumStubs   = cms.uint32(175),  # Naive value is 210.
-     #BusyInputSectorNumStubs   = cms.uint32(120), # Alternative proposal from Tom James for ultra compact firmware.
+     BusyInputSectorNumStubs  = cms.uint32(162),  #  Or 144 if only 320 MHz FW
      # Multiplex the outputs from several HTs onto a single pair of output optical links?
      # Options: 0 = disable Mux; 1 = Dec. 2016 Mux; 2 = Mar 2018 Mux (for transverse HT readout by m-bin). 
      # (The mux algorithm is hard-wired in class MuxHToutputs, and currently only works if option BusySectorMbinRanges is being used); 3 = Sept 2019 Mux (transerse HT readout by m-bin), with single m bin in entire nonant going to each link.
