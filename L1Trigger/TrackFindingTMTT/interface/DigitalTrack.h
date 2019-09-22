@@ -83,7 +83,6 @@ public:
   int          mBinhelix()                const {this->okin(); return mBinhelix_;}
   int          cBinhelix()                const {this->okin(); return cBinhelix_;}
   unsigned int nlayers()                  const {this->okin(); return nlayers_;}
-  bool         consistent()               const {this->okin(); return consistent_;}
   int          mBinHT()                   const {this->okin(); return mBin_;}
   int          cBinHT()                   const {this->okin(); return cBin_;}
   bool         accepted()                 const {this->okin(); return accepted_;}
@@ -115,6 +114,8 @@ public:
   //--- Utility: return phi nonant number corresponding to given phi sector number.
   unsigned int iGetNonant(unsigned int iPhiSec) const {return floor(iPhiSec*numPhiNonants_/numPhiSectors_);}
 
+  bool         available()     const {return ranMake_;}
+
 private:
 
   // Check DigitalTrack correctly initialized;
@@ -140,6 +141,7 @@ private:
   const Settings* settings_;
 
   string          fitterName_; 
+  unsigned int    nHelixParams_;
 
   // Integer data after digitization (which doesn't degrade its resolution, but can recast it in a different form).
   unsigned int        nlayers_;

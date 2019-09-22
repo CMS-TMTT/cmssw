@@ -439,7 +439,7 @@ TMTrackProducer_params = cms.PSet(
     #====== Kalman Filter Digi parameters ========
     KF_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     KF_oneOver2rBits = cms.uint32(18),
-    KF_oneOver2rRange = cms.double(0.015234263),
+    KF_oneOver2rRange = cms.double(0.015234263), # q/Pt > 1/1.3 GeV
     KF_d0Bits = cms.uint32(12),
     KF_d0Range  = cms.double(31.992876),
     KF_phi0Bits = cms.uint32(18),

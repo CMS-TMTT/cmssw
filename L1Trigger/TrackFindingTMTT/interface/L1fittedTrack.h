@@ -57,6 +57,11 @@ public:
     if (! accepted) stubs_.clear();
     nLayers_   = Utility::countLayers(settings, stubs); // Count tracker layers these stubs are in
     matchedTP_ = Utility::matchingTP(settings, stubs, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate info about match.
+    // Set d0 = 0 for 4 param fit, in case fitter didn't do it.
+    if (nHelixParam == 4) {
+      d0_ = 0.;
+      d0_bcon_ = 0.;
+    }
     if (! settings->hybrid()) {
       secTmp_.init(settings, iPhiSec_, iEtaReg_); //Sector class used to check if fitted track trajectory is in expected sector.
       htRphiTmp_.init(settings, iPhiSec_, iEtaReg_, secTmp_.etaMin(), secTmp_.etaMax(), secTmp_.phiCentre()); // HT class used to identify HT cell that corresponds to fitted helix parameters.

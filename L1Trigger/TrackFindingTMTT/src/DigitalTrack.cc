@@ -96,6 +96,7 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
   ranInit_ = true; // Note we ran init().
 
   fitterName_     = fitterName;
+  nHelixParams_   = nHelixParams;
 
   // Get digitisation parameters for this particular track fitter.
   this->getDigiCfg(fitterName);
@@ -211,7 +212,11 @@ void DigitalTrack::makeDigitalTrack() {
 
     oneOver2r_    = (iDigi_oneOver2r_ + 0.5)/oneOver2rMult_;
     qOverPt_      = oneOver2r_/invPtToDPhi_;
-    d0_           = (iDigi_d0_ + 0.5)/d0Mult_;
+    if (nHelixParams_ == 5) {
+      d0_         = (iDigi_d0_ + 0.5)/d0Mult_;
+    } else {
+      d0_         = 0.;
+    }
     phi0rel_      = (iDigi_phi0rel_ + 0.5)/phi0Mult_;
     phi0_         = reco::deltaPhi(phi0rel_, -phiSectorCentre_);
     tanLambda_    = (iDigi_tanLambda_ + 0.5)/tanLambdaMult_;
@@ -219,11 +224,19 @@ void DigitalTrack::makeDigitalTrack() {
     chisquared_   = (iDigi_chisquared_ + 0.5)/chisquaredMult_;
 
     // Same again with beam-spot constraint.
-    oneOver2r_bcon_    = (iDigi_oneOver2r_bcon_ + 0.5)/oneOver2rMult_;
-    qOverPt_bcon_      = oneOver2r_bcon_/invPtToDPhi_;
-    phi0rel_bcon_      = (iDigi_phi0rel_bcon_ + 0.5)/phi0Mult_;
-    phi0_bcon_         = reco::deltaPhi(phi0rel_bcon_, -phiSectorCentre_);
-    chisquared_bcon_   = (iDigi_chisquared_bcon_ + 0.5)/chisquaredMult_;
+    if (nHelixParams_ == 5) {
+      oneOver2r_bcon_    = (iDigi_oneOver2r_bcon_ + 0.5)/oneOver2rMult_;
+      qOverPt_bcon_      = oneOver2r_bcon_/invPtToDPhi_;
+      phi0rel_bcon_      = (iDigi_phi0rel_bcon_ + 0.5)/phi0Mult_;
+      phi0_bcon_         = reco::deltaPhi(phi0rel_bcon_, -phiSectorCentre_);
+      chisquared_bcon_   = (iDigi_chisquared_bcon_ + 0.5)/chisquaredMult_;
+    } else {
+      oneOver2r_bcon_    = oneOver2r_;
+      qOverPt_bcon_      = qOverPt_;
+      phi0rel_bcon_      = phi0rel_;
+      phi0_bcon_         = phi0_;
+      chisquared_bcon_   = chisquared_;
+    }
 
     // Check that track coords. are within assumed digitization range.
     this->checkInRange();
