@@ -29,8 +29,10 @@
   const unsigned int nSec = 9;
   const float chosenR   = 50;
   const unsigned int nSecEdges = nSec + 1;
-  // Standard eta sectors
-  const float eta[nSecEdges] = {0,0.31,0.61,0.89,1.16,1.43,1.7,1.95,2.16,2.4};
+  // 18 eta sectors
+  //const float eta[nSecEdges] = {0,0.31,0.61,0.89,1.16,1.43,1.7,1.95,2.16,2.4};
+  // 16 eta sectors
+  const float eta[nSecEdges] = {0,0.20,0.41,0.62,0.90,1.26,1.68,2.08,2.4};
   // Sectors optimised by Ben Gayther to balance GP output data rate (at expense of increased HT tracks).
   //const float eta[nSecEdges] = {0.0, 0.19, 0.38, 0.57, 0.77, 1.01, 1.31, 1.66, 2.03, 2.40};
   const unsigned int nSubSec = 2;
@@ -45,8 +47,9 @@
 
   // Open picture of CMS tracker
   // http://ghugo.web.cern.ch/ghugo/layouts/cabling/OT614_200_IT404_layer2_10G/layout.html
+  // T14 geom from http://cms-tklayout.web.cern.ch/cms-tklayout/layouts/cmssw-models/index.html
   // Adjust the range of trackerBorder below to correspond to the coordinate range shown in this picture.
-  TImage *img = TImage::Open("TrackerLayout.png");
+  TImage *img = TImage::Open("TrackerLayoutT14.png");
   img->Draw("x");
   d1.Update();
 
@@ -62,9 +65,10 @@
 
   trackerBorder.SetNextPoint(0.,0.);  
   trackerBorder.SetNextPoint(295.,0.);  
-  trackerBorder.SetNextPoint(295.,123.);  
-  trackerBorder.SetNextPoint(0.,123.);  
+  trackerBorder.SetNextPoint(295.,122.);  
+  trackerBorder.SetNextPoint(0.,122.);  
   trackerBorder.SetNextPoint(0.,0.);  
+  // Enable this to check ROOT axes align with those of TrackerLayout*.png.
   //trackerBorder.Draw();
 
   /*
