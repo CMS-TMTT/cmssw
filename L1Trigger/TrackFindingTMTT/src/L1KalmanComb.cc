@@ -148,6 +148,69 @@ void L1KalmanComb::printStubs( std::ostream &os, std::vector<const Stub *> &stub
 }
 
 
+//=== Get Kalman layer mapping (i.e. layer order in which stubs should be processed) 
+
+unsigned int L1KalmanComb::getKalmanLayer(unsigned int iEtaReg, unsigned int layerIDreduced, bool barrel) const {
+
+  // index across is ian encoded layer id (where barrel layers=1,2,7,5,4,3 & endcap wheels=3,4,5,6,7 & 0 never occurs)
+  // index down is eta reg
+  // element is kalman layer where 7 is invalid
+  // assumes we are in barrel, endcap adjustments later
+
+  static const unsigned layerMap[18][8] = 
+    { 
+      { 7,  0,  7,  1,  2,  3,  4,  5 },
+      { 7,  0,  7,  1,  2,  3,  4,  5 },
+      { 7,  0,  1,  2,  3,  4,  5,  5 },
+      { 7,  0,  1,  2,  3,  4,  5,  2 },
+      { 7,  0,  1,  3,  4,  3,  6,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  5,  4,  3,  7,  2 },
+      { 7,  0,  1,  3,  4,  3,  6,  2 },
+      { 7,  0,  1,  2,  3,  4,  5,  2 },
+      { 7,  0,  1,  2,  3,  4,  5,  5 },
+      { 7,  0,  7,  1,  2,  3,  4,  5 },
+      { 7,  0,  7,  1,  2,  3,  4,  5 },
+    };
+
+
+  unsigned int kalmanLayer = layerMap[iEtaReg][layerIDreduced];
+
+  // If stub with given Ian encoded layer ID can have different KF layer ID depending on whether it
+  // is barrel or endcap, then in above layer-map, the the barrel case is assumed.
+  // The endcap case is fixed by hand below.
+
+  if ( not barrel ) {
+			
+    switch ( iEtaReg ) {
+    case 3:
+    case 14:
+      if (layerIDreduced==7) kalmanLayer = 6;
+      break;
+    case 4:
+    case 13:
+      if (layerIDreduced==5) kalmanLayer = 5;
+      break;
+    case 5:
+    case 12:
+      if (layerIDreduced==4) kalmanLayer = 5;
+      break;
+    default:
+      break;
+    }
+			
+  }
+
+  return kalmanLayer;
+
+}
+
 
 
 L1KalmanComb::L1KalmanComb(const Settings* settings, const uint nPar, const string &fitterName, const uint nMeas ) : TrackFitGeneric(settings, fitterName ){
@@ -537,38 +600,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   std::vector<const KalmanState *> new_states;
   std::vector<const KalmanState *> prev_states;
   prev_states.push_back( state0 );
-	
-
-  // === Layer Mapping (i.e. layer order in which stubs should be processed) ===
-
-  // index across is ian encoded layer id (where barrel layers=1,2,7,5,4,3 & endcap wheels=3,4,5,6,7 & 0 never occurs)
-  // index down is eta reg
-  // element is kalman layer where 7 is invalid
-  // assumes we are in barrel, endcap adjustments later
-  // should really be defined once in constructor 
-  
-  unsigned layerMap[18][8] = 
-    { 
-      { 7,  0,  7,  1,  2,  3,  4,  5 },
-      { 7,  0,  7,  1,  2,  3,  4,  5 },
-      { 7,  0,  1,  2,  3,  4,  5,  5 },
-      { 7,  0,  1,  2,  3,  4,  5,  2 },
-      { 7,  0,  1,  3,  4,  3,  6,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  3,  4,  3,  6,  2 },
-      { 7,  0,  1,  2,  3,  4,  5,  2 },
-      { 7,  0,  1,  2,  3,  4,  5,  5 },
-      { 7,  0,  7,  1,  2,  3,  4,  5 },
-      { 7,  0,  7,  1,  2,  3,  4,  5 },
-    };
-  
+	  
   // arrange stubs into Kalman layers according to eta region
   int etaReg = l1track3D.iEtaReg();
   std::map<int, std::vector<const StubCluster *> > layerStubs;
@@ -576,32 +608,12 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   // Get dead layers, if any.
   // They are assumed to be idetnical to those defined in StubKiller.cc
   bool remove2PSCut = getSettings()->kalmanRemove2PScut();
-  set<unsigned> kalmanDeadLayers = getKalmanDeadLayers( layerMap, remove2PSCut );
+  set<unsigned> kalmanDeadLayers = getKalmanDeadLayers( remove2PSCut );
 
   for( auto stubCluster : stubClusters ){
-		
-    int kalmanLayer = layerMap[etaReg][stubCluster->layerIdReduced()];
-
-    if ( !stubCluster->barrel() ) {
-			
-      switch ( etaReg ) {
-      case 3:
-      case 14:
-	if (stubCluster->layerIdReduced()==7) kalmanLayer = 6;
-	break;
-      case 4:
-      case 13:
-	if (stubCluster->layerIdReduced()==5) kalmanLayer = 5;
-	break;
-      case 5:
-      case 12:
-	if (stubCluster->layerIdReduced()==4) kalmanLayer = 5;
-	break;
-      default:
-	break;
-      }
-			
-    }
+	
+    // Get Kalman encoded layer ID for this stub.
+    int kalmanLayer = this->getKalmanLayer(etaReg, stubCluster->layerIdReduced(), stubCluster->barrel());
 		
     if (layerStubs[kalmanLayer].size() < getSettings()->kalmanMaxStubsPerLayer()) {
       if (kalmanLayer != 7) {
@@ -1586,55 +1598,62 @@ bool L1KalmanComb::isOverlap( const Stub* a, const Stub*b, OVERLAP_TYPE type ){
   }
 }
 
-set<unsigned> L1KalmanComb::getKalmanDeadLayers( unsigned layerMap[18][8], bool& remove2PSCut ) const {
+set<unsigned> L1KalmanComb::getKalmanDeadLayers( bool& remove2PSCut ) const {
+
+  // Kill scenarios described in https://github.com/EmyrClement/StubKiller/blob/master/README.md
 
   // By which Stress Test scenario (if any) are dead modules being emulated?
   const unsigned int killScenario = getSettings()->killScenario(); 
   // Should TMTT tracking be modified to reduce efficiency loss due to dead modules?
   const bool killRecover = getSettings()->killRecover();
 
-  set<unsigned> deadLayers;
+  set<pair<unsigned,bool>> deadLayers; // GP layer ID & boolean indicating if in barrel.
 
   if (killRecover) {
-    if ( killScenario == 1 ) {
-      deadLayers = {4};
+    if ( killScenario == 1 ) { // barrel layer 5
+      deadLayers.insert(pair<unsigned,bool>(4,true));
       if ( iCurrentEtaReg_ < 5 || iCurrentEtaReg_ > 8 || iCurrentPhiSec_ < 8 || iCurrentPhiSec_ > 11 ) {
 	deadLayers.clear();
       }
 
     }
-    else if ( killScenario == 2 ) {
-      deadLayers = {1};
+    else if ( killScenario == 2 ) { // barrel layer 1
+      deadLayers.insert(pair<unsigned,bool>(1,true));
       if ( iCurrentEtaReg_ > 8 || iCurrentPhiSec_ < 8 || iCurrentPhiSec_ > 11 ) {
 	deadLayers.clear();
       }
       remove2PSCut = true;
     }
-    else if ( killScenario == 3 ) {
-      deadLayers = {1,2};
+    else if ( killScenario == 3 ) { // barrel layers 1 & 2
+      deadLayers.insert(pair<unsigned,bool>(1,true));
+      deadLayers.insert(pair<unsigned,bool>(2,true));
       if ( iCurrentEtaReg_ > 8 || iCurrentPhiSec_ < 8 || iCurrentPhiSec_ > 11 ) {
 	deadLayers.clear();
       }
       else if ( iCurrentEtaReg_ < 1 ) {
-	deadLayers = {0};
+        deadLayers.insert(pair<unsigned,bool>(0,true));  // What is this doing?
       }
       remove2PSCut = true;
     }
-    else if ( killScenario == 4 ) {
-      deadLayers = {1,2};
+    else if ( killScenario == 4 ) { // barrel layer 1 & disk 1
+      deadLayers.insert(pair<unsigned,bool>(1,true));
+      deadLayers.insert(pair<unsigned,bool>(3,false));
       if ( iCurrentEtaReg_ > 8 || iCurrentPhiSec_ < 8 || iCurrentPhiSec_ > 11 ) {
 	deadLayers.clear();
       }
       else if ( iCurrentEtaReg_ > 3 ) {
-	deadLayers = {0};
+        deadLayers.insert(pair<unsigned,bool>(0,true));
       }
       remove2PSCut = true;
     }
   }
 
   set<unsigned> kalmanDeadLayers;
-  for ( auto layer : deadLayers ) {
-    kalmanDeadLayers.insert( layerMap[iCurrentEtaReg_][layer] );
+  for ( const auto& p : deadLayers ) {
+    unsigned int layer = p.first;
+    bool barrel = p.second;
+    unsigned int kalmanLayer = this->getKalmanLayer(iCurrentEtaReg_, layer, barrel);
+    kalmanDeadLayers.insert( kalmanLayer );
   }
 
   return kalmanDeadLayers;
