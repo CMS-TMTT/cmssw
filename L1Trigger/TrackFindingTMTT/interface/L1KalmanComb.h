@@ -86,6 +86,8 @@ class L1KalmanComb : public TrackFitGeneric{
 	double calcChi2( const KalmanState &state )const;
 
 	virtual double getRofState( unsigned layerId, const vector<double> &xa )const{ return 0;}
+        virtual unsigned int getKalmanLayer(unsigned int iEtaReg, unsigned int layerIDreduced, bool barrel)const;
+
 	std::vector<const KalmanState *> doKF( const L1track3D &l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa );
 
         void printTPSummary( std::ostream &os, const TP *tp, bool addReturn=true ) const;
@@ -104,7 +106,7 @@ class L1KalmanComb : public TrackFitGeneric{
 	double DeltaRForClustering( unsigned endcapRing );
 	bool isOverlap( const Stub* a, const Stub*b, OVERLAP_TYPE type );
 
-	set<unsigned> getKalmanDeadLayers( unsigned layerMap[18][8], bool& remove2PSCut ) const;
+	set<unsigned> getKalmanDeadLayers( bool& remove2PSCut ) const;
 
         // Function to calculate approximation for tilted barrel modules (aka B) copied from Stub class.
         float getApproxB(float z, float r) const;
