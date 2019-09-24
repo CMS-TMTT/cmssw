@@ -158,7 +158,7 @@ public:
   KFstate<4>() : inv2R(0), phi0(0), tanL(0), z0(0),
     cov_00(0), cov_11(0), cov_22(0), cov_33(0), cov_01(0), cov_23(0),
     chiSquared(0), cBin_ht(0), mBin_ht(0), layerID(0), nSkippedLayers(0), hitPattern(0),
-    trackID(0), eventID(0), etaSectID(0), etaSectZsign(0),
+    trackID(0), eventID(0), phiSectID(0), etaSectID(0), etaSectZsign(0),
     valid(0) {}
 
 public:
@@ -191,6 +191,7 @@ public:
   KFstateN::TNLAY hitPattern;
   KFstateN::TTRK  trackID;    // Not used by KF updator. Just helps VHDL keep track of which state this is. 
   KFstateN::TEV   eventID;        // Not used by KF updator. Just helps VHDL keep track of which event this is.
+  ap_uint<1>      phiSectID;
   KFstateN::TSEC  etaSectID; // Eta sector ID, but counting away from 0 near theta=PI/2 & increasing to 8 near endcap. (Named SectorID in Maxeller).
   ap_uint<1>      etaSectZsign;  // True if eta sector is in +ve z side of tracker; False otherwise. (Named zSign in Maxeller).
   ap_uint<1>      valid; // Used by external code when calculation finished on valid input state & stub.
@@ -205,7 +206,7 @@ public:
     if (valid) {
       std::cout<<text<<std::dec
            <<" trackID="<<trackID
-	   <<" etaSectID="<<etaSectID<<" etaSectZsign="<<etaSectZsign
+	   <<" phiSectID="<<phiSectID<<" etaSectID="<<etaSectID<<" etaSectZsign="<<etaSectZsign
 	   <<" HT (m,c)=("<<mBin_ht<<","<<cBin_ht<<")"
            <<" layers (ID, skip)=("<<layerID<<","<<nSkippedLayers<<")"
 	   <<std::hex<<" hitPattern="<<hitPattern<<std::dec

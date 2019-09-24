@@ -56,7 +56,7 @@ enum {BR = 12+1, BZ = 14, BPHI=14, BR1 = BR - 1, BZ1 = BZ + 1, // For stub coord
       NLAY  = (1 << BLAY),
       BID   = 3,        // Stub ID in layer. [pow(2,BID) - 1]  must be >= MaxStubsPerLayPerTrack, 
       NID   = (1 << BID),
-      BSEC  = 4,        // Allows up to 2*16 eta sectors, where factor 2 comes from zSign.
+      BSEC  = 3,        // Allows up to 2*8 eta sectors, where factor 2 comes from zSign.
       BSEC1 = BSEC + 1, // To allow same number of sectors in raw stub format, where no zSign used.
       BM    = 5, BC = 6};  // Allow 64*64 HT array. 
 
@@ -128,10 +128,11 @@ public:
   KFstub(const KFstubN::TR& r_, const KFstubN::TZ& z_, const KFstubN::TPHI& phi_, 
 	 const KFstubN::TEV& event_, const KFstubN::TTRK& trk_, const KFstubN::TLAY& lay_, 
 	 const KFstubN::TID& id_, 
-	 const KFstubN::TSEC& sec_, const ap_uint<1>& zs_, const KFstubN::TM& mb_, const KFstubN::TC& cb_,
+	 const ap_uint<1>& phiSec_, const KFstubN::TSEC& etaSec_, const ap_uint<1>& zs_, 
+	 const KFstubN::TM& mb_, const KFstubN::TC& cb_,
 	 const ap_uint<1>& final_, const ap_uint<1>& valid_) :
          coord(r_, z_, phi_, valid_), addr(event_, trk_, lay_, id_),
-	 etaSectID(sec_), etaSectZsign(zs_), mBin_ht(mb_), cBin_ht(cb_), finalStubInTrk(final_) {}
+	 phiSectID(phiSec_), etaSectID(etaSec_), etaSectZsign(zs_), mBin_ht(mb_), cBin_ht(cb_), finalStubInTrk(final_) {}
 
   KFstub() : KFstub(0,0,0,0,0,0,0,0,0,0,0,0,false) {}
 
@@ -141,6 +142,7 @@ public:
   KFstubC coord;
   KFstubA addr;
 
+  ap_uint<1>     phiSectID;
   KFstubN::TSEC  etaSectID;       // ID increases the further sector is from theta = 90 degrees.
   ap_uint<1>     etaSectZsign;    // True if eta sector in -ve z half of Tracker.
   KFstubN::TM    mBin_ht;     // HT cell location
@@ -150,7 +152,7 @@ public:
 #ifndef __SYNTHESIS__
 public:
   void print(const char* text) const {
-  if (coord.valid) std::cout<<text<<std::dec<<" r="<<coord.r<<" phiS="<<coord.phiS<<" z="<<float(coord.z)<<" evt="<<addr.eventID<<" trk="<<addr.trackID<<" lay="<<addr.layerID<<" stub="<<addr.stubID<<"  sec="<<etaSectID<<" sign="<<etaSectZsign<<" m="<<mBin_ht<<" c="<<cBin_ht<<" final="<<finalStubInTrk<<std::endl;
+    if (coord.valid) std::cout<<text<<std::dec<<" r="<<coord.r<<" phiS="<<coord.phiS<<" z="<<float(coord.z)<<" evt="<<addr.eventID<<" trk="<<addr.trackID<<" lay="<<addr.layerID<<" stub="<<addr.stubID<<" phiSec="<<phiSectID<<" etaSec="<<etaSectID<<" sign="<<etaSectZsign<<" m="<<mBin_ht<<" c="<<cBin_ht<<" final="<<finalStubInTrk<<std::endl;
   }
 #endif
 };
@@ -161,10 +163,12 @@ class KFstubR {
 public:
 
   KFstubR(const KFstubN::TR& r_, const KFstubN::TZ& z_, const KFstubN::TPHI& phi_, 
-	  const KFstubN::TSEC& sec_, const ap_uint<1>& zs_, const KFstubN::TM& mb_, const KFstubN::TC& cb_,
+	  const ap_uint<1>& phiSec_, const KFstubN::TSEC& etaSec_, 
+	  const ap_uint<1>& zs_, const KFstubN::TM& mb_, const KFstubN::TC& cb_,
 	  const ap_uint<1>& final_, const ap_uint<1>& valid_) :
          coord(r_, z_, phi_, valid_), 
-	 etaSectID(sec_), etaSectZsign(zs_), mBin_ht(mb_), cBin_ht(cb_), finalStubInTrk(final_) {}
+	 phiSectID(phiSec_), etaSectID(etaSec_), etaSectZsign(zs_), 
+	 mBin_ht(mb_), cBin_ht(cb_), finalStubInTrk(final_) {}
 
   KFstubR() : KFstubR(0,0,0,0,0,0,0,0,false) {}
 
@@ -174,6 +178,7 @@ public:
 
   KFstubC coord;
 
+  ap_uint<1>     phiSectID;
   KFstubN::TSEC  etaSectID;       // ID increases the further sector is from theta = 90 degrees.
   ap_uint<1>     etaSectZsign;    // True if eta sector in -ve z half of Tracker.
   KFstubN::TM    mBin_ht;     // HT cell location
@@ -183,7 +188,7 @@ public:
 #ifndef __SYNTHESIS__
 public:
   void print(const char* text) const {
-  if (coord.valid) std::cout<<text<<std::dec<<" r="<<coord.r<<" phiS="<<coord.phiS<<" z="<<float(coord.z)<<"  sec="<<etaSectID<<" sign="<<etaSectZsign<<" m="<<mBin_ht<<" c="<<cBin_ht<<" final="<<finalStubInTrk<<std::endl;
+    if (coord.valid) std::cout<<text<<std::dec<<" r="<<coord.r<<" phiS="<<coord.phiS<<" z="<<float(coord.z)<<" phiSec="<<phiSectID<<"  etaSec="<<etaSectID<<" sign="<<etaSectZsign<<" m="<<mBin_ht<<" c="<<cBin_ht<<" final="<<finalStubInTrk<<std::endl;
   }
 #endif
 };

@@ -53,6 +53,7 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
   stateOut.hitPattern = stateIn.hitPattern;
   stateOut.trackID = stateIn.trackID;
   stateOut.eventID = stateIn.eventID;
+  stateOut.phiSectID = stateIn.phiSectID;
   stateOut.etaSectID = stateIn.etaSectID;
   stateOut.etaSectZsign = stateIn.etaSectZsign;
   stateOut.valid = (stub.valid && stateIn.valid);
