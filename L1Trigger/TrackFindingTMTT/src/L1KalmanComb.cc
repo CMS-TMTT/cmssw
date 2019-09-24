@@ -617,10 +617,13 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     // Get Kalman encoded layer ID for this stub.
     int kalmanLayer = this->getKalmanLayer(etaReg, stubCluster->layerIdReduced(), stubCluster->barrel());
 		
-    if (layerStubs[kalmanLayer].size() < getSettings()->kalmanMaxStubsPerLayer()) {
-      if (kalmanLayer != 7) {
+    if (kalmanLayer != 7) {
+      if (layerStubs[kalmanLayer].size() < getSettings()->kalmanMaxStubsPerLayer()) {
 	const_cast<StubCluster*>(stubCluster)->setLayerKF(kalmanLayer); // Ugly trick to store KF layer inside stub cluster.
 	layerStubs[kalmanLayer].push_back( stubCluster );
+      } else {
+	// If too many stubs, FW keeps the last stub.
+	layerStubs[kalmanLayer].back() = stubCluster;
       }
     }
   }
