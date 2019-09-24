@@ -30,7 +30,7 @@ DigiConverter::makeDigiDTCStub(const TMTT::Stub& aDTCStub, uint32_t aDigiPhiSec)
 
 //-----------------------------------------------------------------------------
 DigiHTStub
-DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t, aPhiSectorIdInNon, uint32_t aEtaSectorId, int cBin, int aChiZ, int aChiPhi, bool mSel ) const {
+DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t aPhiSectorIdInNon, uint32_t aEtaSectorId, int cBin, int aChiZ, int aChiPhi, bool mSel ) const {
     return DigiHTStub(
                aHTStub.layerIdReduced(),
 	       aPhiSectorIdInNon,
