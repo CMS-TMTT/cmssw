@@ -152,54 +152,54 @@ void L1KalmanComb::printStubs( std::ostream &os, std::vector<const Stub *> &stub
 
 unsigned int L1KalmanComb::getKalmanLayer(unsigned int iEtaReg, unsigned int layerIDreduced, bool barrel) const {
 
-  // index across is ian encoded layer id (where barrel layers=1,2,7,5,4,3 & endcap wheels=3,4,5,6,7 & 0 never occurs)
+  // index across is GP encoded layer ID (where barrel layers=1,2,7,5,4,3 & endcap wheels=3,4,5,6,7 & 0 never occurs)
   // index down is eta reg
-  // element is kalman layer where 7 is invalid
-  // assumes we are in barrel, endcap adjustments later
+  // element is kalman layer, where 7 is invalid
 
-  static const unsigned layerMap[18][8] = 
+  // If stub with given GP encoded layer ID can have different KF layer ID depending on whether it
+  // is barrel or endcap, then in layerMap, the the barrel case is assumed.
+  // The endcap case is fixed by hand later in this function.
+
+
+  const unsigned int nEta = 16;
+  const unsigned int nGPlayID = 7;
+
+  if (nEta != numEtaRegions_) throw cms::Exception("ERROR L1KalmanComb::getKalmanLayer hardwired value of nEta differs from NumEtaRegions cfg param");
+
+  static const unsigned layerMap[nEta/2][nGPlayID+1] = 
     { 
-      { 7,  0,  7,  1,  2,  3,  4,  5 },
-      { 7,  0,  7,  1,  2,  3,  4,  5 },
-      { 7,  0,  1,  2,  3,  4,  5,  5 },
-      { 7,  0,  1,  2,  3,  4,  5,  2 },
-      { 7,  0,  1,  3,  4,  3,  6,  2 },
       { 7,  0,  1,  5,  4,  3,  7,  2 },
       { 7,  0,  1,  5,  4,  3,  7,  2 },
       { 7,  0,  1,  5,  4,  3,  7,  2 },
       { 7,  0,  1,  5,  4,  3,  7,  2 },
       { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  5,  4,  3,  7,  2 },
-      { 7,  0,  1,  3,  4,  3,  6,  2 },
-      { 7,  0,  1,  2,  3,  4,  5,  2 },
-      { 7,  0,  1,  2,  3,  4,  5,  5 },
-      { 7,  0,  7,  1,  2,  3,  4,  5 },
+      { 7,  0,  1,  3,  4,  2,  6,  2 },
+      { 7,  0,  1,  1,  2,  3,  4,  5 },
       { 7,  0,  7,  1,  2,  3,  4,  5 },
     };
 
+  unsigned int kfEtaReg;  // KF VHDL eta sector def: small in barrel & large in endcap.
+  if (iEtaReg < numEtaRegions_/2) {
+    kfEtaReg = numEtaRegions_/2 - 1 - iEtaReg;
+  } else {
+    kfEtaReg = iEtaReg - numEtaRegions_/2;
+  }
 
-  unsigned int kalmanLayer = layerMap[iEtaReg][layerIDreduced];
+  unsigned int kalmanLayer = layerMap[kfEtaReg][layerIDreduced];
 
-  // If stub with given Ian encoded layer ID can have different KF layer ID depending on whether it
-  // is barrel or endcap, then in above layer-map, the the barrel case is assumed.
-  // The endcap case is fixed by hand below.
+  // Fixes to endcap stubs.
 
   if ( not barrel ) {
 			
-    switch ( iEtaReg ) {
-    case 3:
-    case 14:
-      if (layerIDreduced==7) kalmanLayer = 6;
-      break;
+    switch ( kfEtaReg ) {
     case 4:
-    case 13:
-      if (layerIDreduced==5) kalmanLayer = 5;
+      if (layerIDreduced==3) kalmanLayer = 4;
+      if (layerIDreduced==4) kalmanLayer = 5;
+      if (layerIDreduced==5) kalmanLayer = 6;
       break;
     case 5:
-    case 12:
-      if (layerIDreduced==4) kalmanLayer = 5;
+      if (layerIDreduced==5) kalmanLayer = 5;
+      if (layerIDreduced==7) kalmanLayer = 6;
       break;
     default:
       break;
@@ -216,6 +216,8 @@ unsigned int L1KalmanComb::getKalmanLayer(unsigned int iEtaReg, unsigned int lay
 L1KalmanComb::L1KalmanComb(const Settings* settings, const uint nPar, const string &fitterName, const uint nMeas ) : TrackFitGeneric(settings, fitterName ){
   nPar_ = nPar;
   nMeas_ = nMeas;
+  numEtaRegions_ = settings->numEtaRegions();
+
   hymin = vector<double>( nPar_, -1 );
   hymax = vector<double>( nPar_,  1 );
   hymin[0] = -0.05;

@@ -55,13 +55,13 @@ template<>
 class BODGE<4> {
 public:
   //  enum BIT_ADJUST {V=BODGE_V, S=2, R=5-S, IR=10+R+S, DET=13-2*R-2*S, K=23-IR+R, RES=2, CHI2=BODGE_CHI2};
-  enum BIT_ADJUST {V=BODGE_V, S=2, R=5-S, IR=10+R+S, DET=12-2*R-2*S, K=23-IR+R, RES=2, CHI2=BODGE_CHI2};
+  enum BIT_ADJUST {V=BODGE_V, S=2, R=5-S, IR=10+R+S, DET=12-2*R-2*S, K=23-IR+R, RES=1, CHI2=BODGE_CHI2};
 };
 
 template<>
 class BODGE<5> {
 public:
-  enum BIT_ADJUST {V=BODGE_V, S=2, R=4-S, IR=7+R+S, DET=13-2*R-2*S, K=21-IR+R, RES=2, CHI2=BODGE_CHI2};
+  enum BIT_ADJUST {V=BODGE_V, S=2, R=4-S, IR=7+R+S, DET=13-2*R-2*S, K=21-IR+R, RES=1, CHI2=BODGE_CHI2};
 };
 
 // Allow some bits for correlation in helix params between r-phi and r-z planes.

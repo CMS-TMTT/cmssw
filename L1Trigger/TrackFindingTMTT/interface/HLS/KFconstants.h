@@ -129,10 +129,10 @@ static const float dmBin_digi = dmBin/inv2R_Mult; // = pow(2,4)
 
 class EtaBoundaries {
 public:
-  enum {nSec=9};
+  enum {nSec=8};
 
   EtaBoundaries() {
-    static const float eta[nSec+1] = {0.0, 0.31, 0.61, 0.89, 1.16, 1.43, 1.7, 1.95, 2.16, 2.4};
+    static const float eta[nSec+1] = {0.0, 0.20, 0.41, 0.62, 0.90, 1.26, 1.68, 2.08, 2.4};
     for (unsigned int i = 0; i <= nSec; i++) {
       float zAtRefR = chosenRofZ_flt/tan(2 * atan(exp(-eta[i])));
       z_[i] = rMult*zAtRefR;

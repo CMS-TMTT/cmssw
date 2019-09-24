@@ -109,8 +109,10 @@ TMTrackProducer_params = cms.PSet(
   #=== Division of Tracker into eta sectors
 
   EtaSectors = cms.PSet(
-     EtaRegions = cms.vdouble(-2.4,-2.16,-1.95,-1.7,-1.43,-1.16,-0.89,-0.61,-0.31,0.0,0.31,0.61,0.89,1.16,1.43,1.7,1.95,2.16,2.4), # Eta boundaries.
-     #EtaRegions = cms.vdouble(-2.40, -2.03, -1.66, -1.31, -1.01, -0.77, -0.57, -0.38, -0.19, 0.0, 0.19, 0.38, 0.57, 0.77, 1.01, 1.31, 1.66, 2.03, 2.40), # Alternative, that reduces GP output truncation, at cost of 10% increase in HT output tracks.
+# Eta boundaries for 18 eta regions
+#     EtaRegions = cms.vdouble(-2.4,-2.16,-1.95,-1.7,-1.43,-1.16,-0.89,-0.61,-0.31,0.0,0.31,0.61,0.89,1.16,1.43,1.7,1.95,2.16,2.4), 
+# Eta boundaries for 16 eta regions
+     EtaRegions = cms.vdouble(-2.4,-2.08,-1.68,-1.26,-0.90,-0.62,-0.41,-0.20,0.0,0.20,0.41,0.62,0.90,1.26,1.68,2.08,2.4), 
      ChosenRofZ  = cms.double(50.),        # Use z of track at this radius for assignment of tracks to eta sectors & also for one of the axes of the r-z HT. Do not set to zero!
      BeamWindowZ = cms.double(15),         # Half-width of window assumed to contain beam-spot in z.
      HandleStripsEtaSec = cms.bool(False), # If True, adjust algorithm to allow for uncertainty in stub (r,z) coordinate caused by length of 2S module strips when assigning stubs to eta sectors.

@@ -117,6 +117,8 @@ class L1KalmanComb : public TrackFitGeneric{
     protected:
 	unsigned nPar_;
 	unsigned nMeas_;
+        unsigned numEtaRegions_;
+
 	std::vector<KalmanState *> state_list_;
 	std::vector<StubCluster *> stbcl_list_;
 

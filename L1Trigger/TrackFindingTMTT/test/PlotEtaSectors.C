@@ -33,8 +33,6 @@
   //const float eta[nSecEdges] = {0,0.31,0.61,0.89,1.16,1.43,1.7,1.95,2.16,2.4};
   // 16 eta sectors
   const float eta[nSecEdges] = {0,0.20,0.41,0.62,0.90,1.26,1.68,2.08,2.4};
-  // Sectors optimised by Ben Gayther to balance GP output data rate (at expense of increased HT tracks).
-  //const float eta[nSecEdges] = {0.0, 0.19, 0.38, 0.57, 0.77, 1.01, 1.31, 1.66, 2.03, 2.40};
   const unsigned int nSubSec = 2;
   const unsigned int nSubSecEdges = nSubSec + 1;
 

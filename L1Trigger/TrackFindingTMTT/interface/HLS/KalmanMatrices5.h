@@ -275,7 +275,7 @@ public:
   // BODGE<5>::RES should be slightly larger than BODGE_V as hits can be several sigma wrong.
   // Add one extra fractional bit relative to stub, to avoid additional precision loss.
   typedef ap_fixed<B18-BODGE<5>::RES+1,KFstubN::BPHI -BODGE<5>::RES> TRP;
-  typedef ap_fixed<B18-BODGE<5>::RES+1,KFstubN::BZ1-BODGE<5>::RES> TRZ;
+  typedef ap_fixed<B18-BODGE<5>::RES+1,KFstubN::BZ1  -BODGE<5>::RES> TRZ;
 
 public:
   VectorRes(const VectorM& m, const MatrixH<5>& H, const VectorX<5>& x);
