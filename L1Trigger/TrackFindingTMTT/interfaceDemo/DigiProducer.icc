@@ -167,6 +167,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     map<unsigned int, set<const TMTT::Stub*> > stubsInNonant;
     uint numPhiSecPerNon = settings_->numPhiSectors() / settings_->numPhiNonants();
+
     // Fill Hough-Transform arrays with stubs.
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
         for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
@@ -259,6 +260,9 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     //
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
+
+        unsigned int iPhiSecInNonant = iPhiSec%numPhiSecPerNon;
+
         for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
 
             const TMTT::Sector& sector = mSectors(iPhiSec, iEtaReg);
@@ -292,6 +296,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
                     DigiHTStub digiHTStub = digiConverter.makeDigiHTStub(
                                                 *lStubs[i],
+						iPhiSecInNonant,
                                                 iEtaReg,
                                                 cBin,
                                                 lChiZ[i],
@@ -314,6 +319,8 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     //=== Make 3D tracks, optionally running r-z track filters (such as Seed Filter) & duplicate track removal.
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
+        unsigned int iPhiSecInNonant = iPhiSec%numPhiSecPerNon;
+
         for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
 
             // Get tracks found by r-phi HT.
@@ -342,6 +349,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                     DigiHTMiniStub digiHTMiniStub = digiConverter.makeDigiHTMiniStub(
                                                         *stub,
                                                         // SectorID
+							iPhiSecInNonant,
                                                         iEtaReg,
                                                         cBin,
                                                         mBin

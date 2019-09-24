@@ -30,10 +30,11 @@ DigiConverter::makeDigiDTCStub(const TMTT::Stub& aDTCStub, uint32_t aDigiPhiSec)
 
 //-----------------------------------------------------------------------------
 DigiHTStub
-DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t aSectorId, int cBin, int aChiZ, int aChiPhi, bool mSel ) const {
+DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t, aPhiSectorIdInNon, uint32_t aEtaSectorId, int cBin, int aChiZ, int aChiPhi, bool mSel ) const {
     return DigiHTStub(
                aHTStub.layerIdReduced(),
-               aSectorId,
+	       aPhiSectorIdInNon,
+               aEtaSectorId,
                cBin,
                aChiZ,
                aChiPhi,
@@ -47,10 +48,11 @@ DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t aSectorId, in
 
 //-----------------------------------------------------------------------------
 DigiHTMiniStub
-DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, uint32_t aSectorId, int8_t cBin, int8_t mBin) const {
+DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, uint32_t aPhiSectorIdInNon, uint32_t aEtaSectorId, int8_t cBin, int8_t mBin) const {
     return DigiHTMiniStub(
                aHTMiniStub.layerIdReduced(),
-               aSectorId,
+	       aPhiSectorIdInNon,
+               aEtaSectorId,
                cBin,
                mBin,
                aHTMiniStub.digitalStub().iDigi_PhiS(),
@@ -66,6 +68,8 @@ DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, uint32_t aSect
 DigiKF4Track
 DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
 
+    const uint numPhiSecPerNon = mSettings->numPhiSectors() / mSettings->numPhiNonants();
+
     return DigiKF4Track(
                aFitTrk.digitaltrack().iDigi_oneOver2r(),
                aFitTrk.digitaltrack().iDigi_phi0rel(),
@@ -76,6 +80,7 @@ DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
                0,
                aFitTrk.getCellLocationHT().first - mSettings->houghNbinsPt() / 2,
                aFitTrk.getCellLocationHT().second - mSettings->houghNbinsPhi() / 2,
+               aFitTrk.iPhiSec()%numPhiSecPerNon,
                aFitTrk.iEtaReg(),
                aFitTrk.getCellLocationFit().first - mSettings->houghNbinsPt() / 2,
                aFitTrk.getCellLocationFit().second - mSettings->houghNbinsPhi() / 2,
