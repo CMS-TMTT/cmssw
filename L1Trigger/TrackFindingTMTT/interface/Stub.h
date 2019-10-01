@@ -340,7 +340,7 @@ private:
   bool                         digitizeWarningsOn_;  // Enable warnings about accessing non-digitized quantities.
 
   // Which tracker geometry is this?
-  static string             trackerGeometryVersion_;
+  static thread_local string trackerGeometryVersion_;
 
   // Used to provide TMTT recommendations for stub window sizes that CMS should use.
   StubWindowSuggest              stubWindowSuggest_;

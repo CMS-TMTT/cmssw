@@ -20,7 +20,7 @@ namespace TMTT {
 
 // Static variables
 
-string Stub::trackerGeometryVersion_ = "UNKNOWN";
+thread_local string Stub::trackerGeometryVersion_ = "UNKNOWN";
 
 bool       Stub::stubKillerInit_ = false;
 StubKiller Stub::stubKiller_;
