@@ -342,11 +342,13 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                 int8_t mBin = trk.getCellLocationHT().first - settings_->houghNbinsPt() / 2;
 
     	        unsigned int iLink = trk.optoLinkID();
+                bool isFirstStubOnTrackCandidate = true;
                 for (const TMTT::Stub* stub : trk.getStubs()) {
 
                     DigiHTMiniStub digiHTMiniStub = digiConverter.makeDigiHTMiniStub(
                                                         *stub,
                                                         trk,
+                                                        isFirstStubOnTrackCandidate,
                                                         // SectorID
 							iPhiSecInNonant,
                                                         iEtaReg,
@@ -355,6 +357,8 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                                                     );
                     digiHTMiniStub.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), (uint16_t)iLink, DigiRouteId::kNullTimeIndex});
                     allDigiHTMiniStubs->push_back(digiHTMiniStub);
+
+                    isFirstStubOnTrackCandidate = false;
                 }
             }
 
