@@ -48,7 +48,7 @@ DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t aPhiSectorIdI
 
 //-----------------------------------------------------------------------------
 DigiHTMiniStub
-DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, const TMTT::L1track2D& a2DTrk, uint32_t aSectorId, int8_t cBin, int8_t mBin) const {
+DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, const TMTT::L1track2D& a2DTrk, bool isFirstStubOnTrackCandidate, uint32_t aSectorId, int8_t cBin, int8_t mBin) const {
     return DigiHTMiniStub(
                aHTMiniStub.layerIdReduced(),
 	       aPhiSectorIdInNon,
@@ -59,6 +59,7 @@ DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, const TMTT::L1
                aHTMiniStub.digitalStub().iDigi_Z(),
                aHTMiniStub.digitalStub().iDigi_Rt(),
                true, // valid
+               isFirstStubOnTrackCandidate,
                a2DTrk.getNumStubs(),
                a2DTrk.digitaltrack().iDigi_oneOver2r(),
                a2DTrk.digitaltrack().iDigi_phi0rel(),
