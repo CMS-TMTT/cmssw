@@ -424,7 +424,7 @@ TMTrackProducer_params = cms.PSet(
     # For firmware reasons, can't use common digitisation cfg for all fitters.
 
     #======= MiniHT digi parameters ========
-    MiniHT_oneOver2rBits = cms.uint32(15),
+    MiniHT_oneOver2rBits = cms.uint32(14),
     MiniHT_oneOver2rRange = cms.double(0.0171),
     MiniHT_phi0Bits = cms.uint32(18),
     MiniHT_phi0Range = cms.double(4.104), # phi0 is actually only digitised relative to centre of sector.
