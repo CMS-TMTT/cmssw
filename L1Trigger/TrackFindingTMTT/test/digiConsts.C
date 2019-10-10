@@ -7,9 +7,9 @@
 
   double c = 2.99792458e10;
   double B = 3.8112022876;
+  double invPtToInvR = B*c/1.0e13;
   double ptCut = 3.;
   double numPhiSec = 18;
-  //  double numM = 18;
   double numM = 16;
   double numC = 32;
 
@@ -57,4 +57,7 @@
   double rangeZ0    = delZ0*pow(2,nB);
   double rangeD0    = delD0*pow(2,nB);
   cout<<"ranges: 1/2R="<<rangeInv2R<<"  phi0="<<rangePhi0<<"  tanL="<<rangeTanL<<"  z0="<<rangeZ0<<"  d0="<<rangeD0<<endl<<endl;
+  double rangeAbsInvR = rangeInv2R;
+  double rangeAbsPt = 1./(rangeAbsInvR/invPtToInvR);
+  cout<<"so can cover abs(pt) > "<< rangeAbsPt <<endl;
 }

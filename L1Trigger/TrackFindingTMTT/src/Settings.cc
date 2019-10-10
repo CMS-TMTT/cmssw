@@ -25,7 +25,7 @@ Settings::Settings() {
   kalmanMaxNumStubs_=6;
   numPhiNonants_=9;
   numPhiSectors_=9;
-  etaRegions_ = {-2.4,-2.16,-1.95,-1.7,-1.43,-1.16,-0.89,-0.61,-0.31,0.0,0.31,0.61,0.89,1.16,1.43,1.7,1.95,2.16,2.4}; // Used by KF
+  etaRegions_ = {-2.4,-2.08,-1.68,-1.26,-0.90,-0.62,-0.41,-0.20,0.0,0.20,0.41,0.62,0.90,1.26,1.68,2.08,2.4}; // Used by KF
   kalmanRemove2PScut_=true;
   killScenario_=0;
   kalmanMaxSkipLayersHard_=1; // On "hard" input tracks
@@ -36,9 +36,9 @@ Settings::Settings() {
   //  kalmanDebugLevel_=2; // Good for debugging
   enableDigitize_=false;
   houghMinPt_=2.0;
-  chosenRofPhi_=55.0;
+  chosenRofPhi_=67.240;
   chosenRofZ_=50.0;
-  houghNbinsPt_=18;
+  houghNbinsPt_=16;
   handleStripsPhiSec_=1;
   useApproxB_=true;
   kalmanHOtilted_=true; 
