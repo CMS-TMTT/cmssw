@@ -45,8 +45,9 @@ public:
 
   //=== Cuts applied to stubs before arriving in L1 track finding board.
 
-  // Reduce number of bits used by front-end chips to store stub bend info.
-  bool                 bendResReduced()          const   {return bendResReduced_;}
+  // Reduce number of bits used by front-end chips to store stub bend info?
+  // = 0 (no); = 1 (yes using official recipe); = 2 (yes using TMTT method)
+  unsigned int         degradeBendRes()          const   {return degradeBendRes_;}
   // Don't use stubs with eta beyond this cut, since the tracker geometry makes it impossible to reconstruct tracks with them.
   double               maxStubEta()              const   {return maxStubEta_;}
   // Don't use stubs whose measured Pt from bend info is significantly below HTArraySpec.HoughMinPt, where "significantly" means allowing for resolution in q/Pt derived from stub bend resolution HTFilling.BendResolution
@@ -57,7 +58,7 @@ public:
   double               bendResolution()          const   {return bendResolution_;}        
   // Additional contribution to bend resolution from its encoding into a reduced number of bits.
   // This number is the assumed resolution relative to the naive guess of its value.
-  // It is ignored in BendResReduced = False.
+  // It is ignored in DegradeBendRes = 0.
   double               bendResolutionExtra()     const   {return bendResolutionExtra_;}        
   // Order stubs by bend in DTC, such that highest Pt stubs are transmitted first.
   bool                 orderStubsByBend()        const   {return orderStubsByBend_;}
@@ -460,7 +461,7 @@ private:
   unsigned int         genMinStubLayers_;
 
   // Cuts applied to stubs before arriving in L1 track finding board.
-  bool                 bendResReduced_;
+  unsigned int         degradeBendRes_;
   double               maxStubEta_;
   bool                 killLowPtStubs_;
   bool                 printStubWindows_;

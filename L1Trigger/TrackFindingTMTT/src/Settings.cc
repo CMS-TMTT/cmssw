@@ -116,7 +116,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
 
   //=== Cuts applied to stubs before arriving in L1 track finding board.
 
-  bendResReduced_         ( stubCuts_.getParameter<bool>                      ( "BendResReduced"         ) ),
+  degradeBendRes_         ( stubCuts_.getParameter<unsigned int>              ( "DegradeBendRes"         ) ),
   maxStubEta_             ( stubCuts_.getParameter<double>                    ( "MaxStubEta"             ) ),
   killLowPtStubs_         ( stubCuts_.getParameter<bool>                      ( "KillLowPtStubs"         ) ),
   printStubWindows_       ( stubCuts_.getParameter<bool>                      ( "PrintStubWindows"       ) ),
