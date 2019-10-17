@@ -1425,35 +1425,42 @@ void Histos::fillTrackCands(const InputData& inputData, const vector<L1track3D>&
 
   for (const TP& tp: vTPs) {
 
-    bool tpRecoed = false;
-    for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-      bool tpRecoedInEtaSec = false;
-      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-
-	vector<const L1track3D*> matchedTrks;
-        for (const L1track3D& trk : tracks) {  
-	  if (trk.iPhiSec() == iPhiSec && trk.iEtaReg() == iEtaReg) {
-	    const TP* tpAssoc = trk.getMatchedTP();
-	    if (tpAssoc != nullptr) {
-	      if (tpAssoc->index() == tp.index()) matchedTrks.push_back(&trk);
-	    }
-	  }
-	}
-
-	// Count them
-	unsigned int nTrk = matchedTrks.size(); 
-        if (nTrk > 0) {
-	  tpRecoed = true;            // This TP was reconstructed at least once in tracker.
-	  tpRecoedInEtaSec = true;    // This TP was reconstructed at least once in this eta sector.
-          nSecsMatchingTPs += 1;      // Increment sum by no. of sectors this TP was reconstructed in
-  	  nTrksMatchingTPs += nTrk;   // Increment sum by no. of tracks this TP was reconstructed as
-	  if (TMTT) {
-            profDupTracksVsEta_[tName]->Fill(fabs(tp.eta()), nTrk - 1); // Study duplication of tracks within an individual HT array.
-            profDupTracksVsInvPt_[tName]->Fill(fabs(tp.qOverPt()), nTrk - 1); // Study duplication of tracks within an individual HT array.
-	  }
-        }
+    vector<const L1track3D*> matchedTrks;
+    for (const L1track3D& trk : tracks) {
+      const TP* tpAssoc = trk.getMatchedTP();
+      if (tpAssoc != nullptr) {
+        if (tpAssoc->index() == tp.index()) matchedTrks.push_back(&trk);
       }
-      if (tpRecoedInEtaSec) nEtaSecsMatchingTPs++; // Increment each time TP found in an eta sector.
+    }
+    unsigned int nTrk = matchedTrks.size();
+
+    bool tpRecoed = false;
+
+    if (nTrk > 0) {
+      tpRecoed = true;            // This TP was reconstructed at least once in tracker.
+      nTrksMatchingTPs += nTrk;   // Increment sum by no. of tracks this TP was reconstructed as
+
+      set<unsigned int> iEtaRegRecoed;
+      for (const L1track3D* trk : matchedTrks) iEtaRegRecoed.insert(trk->iEtaReg());
+      nEtaSecsMatchingTPs = iEtaRegRecoed.size();
+
+      set< pair<unsigned int, unsigned int> > iSecRecoed;
+      for (const L1track3D* trk : matchedTrks) iSecRecoed.insert({trk->iPhiSec(), trk->iEtaReg()});
+      nSecsMatchingTPs = iSecRecoed.size();
+
+
+      if (TMTT) {
+	for (const auto& p : iSecRecoed) {
+	  unsigned int nTrkInSec = 0;
+	  for (const L1track3D* trk : matchedTrks) {
+	    if (trk->iPhiSec() == p.first && trk->iEtaReg() == p.second) nTrkInSec++; 
+	  }
+	  if (nTrkInSec > 0) {
+  	    profDupTracksVsEta_[tName]->Fill(fabs(tp.eta()), nTrkInSec - 1); // Study duplication of tracks within an individual HT array.
+	    profDupTracksVsInvPt_[tName]->Fill(fabs(tp.qOverPt()), nTrkInSec - 1); // Study duplication of tracks within an individual HT array.
+	  }
+	} 
+      }
     }
 
     if (tpRecoed) {
