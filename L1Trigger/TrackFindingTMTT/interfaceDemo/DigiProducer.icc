@@ -197,6 +197,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
                         // Digitize stub if as would be at input to HT, which slightly degrades its coord. & bend resolution, affecting the HT performance.
                         const_cast<TMTT::Stub*>(stub)->digitizeForHTinput(iPhiSec);
+                        const_cast<TMTT::Stub*>(stub)->digitizeForHybrid(iPhiSec, settings_);
 
                         // Store stub in Hough transform array for this sector, indicating its compatibility with eta subsectors with sector.
                         htRphi.store( stub, inEtaSubSecs );

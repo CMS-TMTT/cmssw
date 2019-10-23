@@ -73,6 +73,7 @@ DigitalStub::DigitalStub(const Settings* settings) :
   ranMakeGPinput_(false),
   ranMakeHTinput_(false),
   ranMakeSForTFinput_(""),
+  ranMakeHybridInput_(false),
 
   // Digitization configuration parameters
   phiSectorBits_ (settings->phiSectorBits()), // No. of bits to store phi sector number
@@ -119,6 +120,7 @@ DigitalStub::DigitalStub(const Settings* settings) :
 //=== and half-length of strip or pixel in r and in z, and if it's in barrel, tilted barrel and/or PS module.
 
 void DigitalStub::init(float phi_orig, float r_orig, float z_orig,
+           unsigned int iPhi,
            unsigned int min_qOverPt_bin_orig, unsigned int max_qOverPt_bin_orig, 
            unsigned int layerID, unsigned int layerIDreduced, float bend_orig,
 	   float pitch, float sep, float rErr, float zErr, bool barrel, bool tiltedBarrel, bool psModule) {
@@ -136,6 +138,10 @@ void DigitalStub::init(float phi_orig, float r_orig, float z_orig,
   bend_orig_            = bend_orig;
   rErr_orig_            = rErr;
   zErr_orig_            = zErr;
+
+  iPhi_ = iPhi;
+
+  isPSModule_ = psModule;
 
   // Calculate unique module type ID, allowing pitch/sep of module to be determined.
   // (N.B. Module types 0 & 1 have identical pitch & sep, but one is tilted & one is flat barrel module).
@@ -345,6 +351,130 @@ void DigitalStub::makeDRinput(unsigned int stubId){
 
   ranMakeDRinput_ = true; // Note we ran makeDRinput().
   stubId_ = stubId;  
+}
+
+void DigitalStub::makeHybridInput(unsigned int iPhiSec, const Settings* settings) {
+
+  this->makeHTinput( iPhiSec );
+
+  unsigned int iPhiNon = floor(iPhiSec*numPhiNonants_/numPhiSectors_); // Find nonant corresponding to this sector.
+
+  ranMakeHybridInput_ = true; // Note we ran makeHybridInput().
+
+  iDigi_Hybrid_Layer_ = layerID_ - 1;
+
+  // Hybrid endcap layer ids are lower for +ve z, larger for -ve z
+  if ( iDigi_Hybrid_Layer_ >= 20 ) iDigi_Hybrid_Layer_ -= 14;
+  else if ( iDigi_Hybrid_Layer_ >= 10 ) iDigi_Hybrid_Layer_ += 1;
+
+  //--- Shift axes of coords. if required.
+
+  // Get reference value of z/r to use
+  unsigned int layerIndex = iDigi_Hybrid_Layer_;
+  if ( layerIndex > 10 ) layerIndex -= 5;
+  double r_ref = settings->getLayerRReference()[layerIndex];
+  double z_ref = settings->getLayerZReference()[layerIndex];
+
+  float rMultiplier = 0;
+  float zMultiplier = 0;
+  float phiMultiplier = 0;
+  double zRange = 0;
+  if ( iDigi_Hybrid_Layer_ <= 5 ) {
+    if ( isPSModule() ) {
+      rMultiplier = pow(2, settings->hybrid_rBits_BarrelPS()  ) / settings->hybrid_rRange_BarrelPS();
+      zMultiplier = pow(2, settings->hybrid_zBits_BarrelPS()  ) / settings->hybrid_zRange_BarrelPS();
+      phiMultiplier = pow(2, settings->hybrid_phiBits_BarrelPS()  ) / settings->hybrid_phiRange_BarrelPS();
+    }
+    else {
+      rMultiplier = pow(2, settings->hybrid_rBits_Barrel2S()  ) / settings->hybrid_rRange_Barrel2S();
+      zMultiplier = pow(2, settings->hybrid_zBits_Barrel2S()  ) / settings->hybrid_zRange_Barrel2S();
+      phiMultiplier = pow(2, settings->hybrid_phiBits_Barrel2S()  ) / settings->hybrid_phiRange_Barrel2S();
+    }
+  }
+  else {
+    if ( isPSModule() ) {
+      rMultiplier = pow(2, settings->hybrid_rBits_EndcapPS()  ) / settings->hybrid_rRange_EndcapPS();
+      zMultiplier = pow(2, settings->hybrid_zBits_EndcapPS()  ) / settings->hybrid_zRange_EndcapPS();
+      phiMultiplier = pow(2, settings->hybrid_phiBits_EndcapPS()  ) / settings->hybrid_phiRange_EndcapPS();
+    }
+    else {
+      zMultiplier = pow(2, settings->hybrid_zBits_Endcap2S()  ) / settings->hybrid_zRange_Endcap2S();
+      phiMultiplier = pow(2, settings->hybrid_phiBits_Endcap2S()  ) / settings->hybrid_phiRange_Endcap2S();
+    }
+  }
+
+  int sign = (z_orig_ >= 0) ? 1 : -1;
+  iDigi_Hybrid_Z_ = floor( ( z_orig_ - sign*z_ref ) * zMultiplier );
+  iDigi_Hybrid_Phi_ = floor( phiO_orig_ * phiMultiplier );
+
+  if ( iDigi_Hybrid_Layer_ <= 5 || this->isPSModule() ) {
+    // Barrel and PS endcap modules
+    iDigi_Hybrid_R_ = floor( ( r_orig_ - r_ref ) * rMultiplier );
+    iDigi_Hybrid_Alpha_ = 0;
+  }
+  else {
+    // 2S endcap modules
+    vector<double> moduleR_2S = settings->getDisk1To2_2S_R();
+
+    if ( ( iDigi_Hybrid_Layer_ >= 8 && iDigi_Hybrid_Layer_ <= 10 ) || iDigi_Hybrid_Layer_ >= 13 ) {
+      moduleR_2S = settings->getDisk3To5_2S_R();
+    }
+
+    int r_index = -1;
+    for ( unsigned int i = 0; i < moduleR_2S.size(); ++i ) {
+      if ( fabs( r_orig_ - moduleR_2S[i] ) < 0.2 ) {
+        r_index = i;
+        break;
+      }
+    }
+
+    if ( r_index < 0 ) {
+       throw cms::Exception("Couldn't find radius of 2S endcap module corresponding to this stub")<<" Stub r = " <<r_orig_<<endl;  
+    }
+    iDigi_Hybrid_R_ = r_index;
+
+
+    // alpha
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/HybridDataFormat
+    // "alpha is simply defined as the strip number in the module (with coarse granularity)."
+    float alphaMultiplier = pow(2, settings->hybrid_alphaBits_Endcap2S()  ) / settings->hybrid_alphaRange_Endcap2S();
+
+    iDigi_Hybrid_Alpha_ = floor( iPhi_ * alphaMultiplier );
+  }
+
+
+  // Bend
+  // Copied from hybrid code to make sure same is used
+  int hybridBend=2.0*bend_orig_;
+  if ( this->isPSModule() ) {
+      if (hybridBend==0||hybridBend==1) iDigi_Hybrid_Bend_ = 0;
+      else if (hybridBend==2||hybridBend==3) iDigi_Hybrid_Bend_ = 1;
+      else if (hybridBend==4||hybridBend==5) iDigi_Hybrid_Bend_ = 2;
+      else if (hybridBend>=6) hybridBend = 3;
+      else if (hybridBend==-1||hybridBend==-2) iDigi_Hybrid_Bend_ = 4;
+      else if (hybridBend==-3||hybridBend==-4) iDigi_Hybrid_Bend_ = 5;
+      else if (hybridBend==-5||hybridBend==-6) iDigi_Hybrid_Bend_ = 6;
+      else if (hybridBend<=-7) iDigi_Hybrid_Bend_ = 7;
+  }
+  else {
+    if (hybridBend==0||hybridBend==1) iDigi_Hybrid_Bend_ = 0;
+    else if (hybridBend==2||hybridBend==3) iDigi_Hybrid_Bend_ = 1;
+    else if (hybridBend==4||hybridBend==5) iDigi_Hybrid_Bend_ = 2;
+    else if (hybridBend==6||hybridBend==7) iDigi_Hybrid_Bend_ = 3;
+    else if (hybridBend==8||hybridBend==9) iDigi_Hybrid_Bend_ = 4;
+    else if (hybridBend==10||hybridBend==11) iDigi_Hybrid_Bend_ = 5;
+    else if (hybridBend==12||hybridBend==13) iDigi_Hybrid_Bend_ = 6;
+    else if (hybridBend>=14) hybridBend = 7;
+    else if (hybridBend==-1||hybridBend==-2) iDigi_Hybrid_Bend_ = 8;
+    else if (hybridBend==-3||hybridBend==-4) iDigi_Hybrid_Bend_ = 9;
+    else if (hybridBend==-5||hybridBend==-6) iDigi_Hybrid_Bend_ = 10;
+    else if (hybridBend==-7||hybridBend==-8) iDigi_Hybrid_Bend_ = 11;
+    else if (hybridBend==-9||hybridBend==-9) iDigi_Hybrid_Bend_ = 12;
+    else if (hybridBend==-11||hybridBend==-10) iDigi_Hybrid_Bend_ = 13;
+    else if (hybridBend==-13||hybridBend==-12) iDigi_Hybrid_Bend_ = 14;
+    else if (hybridBend<=-14) iDigi_Hybrid_Bend_ = 15;
+
+  }
 }
 
 

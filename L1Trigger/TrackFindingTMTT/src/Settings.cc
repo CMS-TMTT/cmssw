@@ -154,6 +154,37 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   phiORange_              ( stubDigitize_.getParameter<double>                ( "PhiORange"              ) ),
   bendBits_               ( stubDigitize_.getParameter<unsigned int>          ( "BendBits"               ) ),
 
+  hybrid_rBits_BarrelPS_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_rBits_BarrelPS"      ) ),
+  hybrid_rRange_BarrelPS_     ( stubDigitize_.getParameter<double>      ("hybrid_rRange_BarrelPS"     ) ),
+  hybrid_zBits_BarrelPS_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_zBits_BarrelPS"      ) ),
+  hybrid_zRange_BarrelPS_     ( stubDigitize_.getParameter<double>      ("hybrid_zRange_BarrelPS"     ) ),
+  hybrid_phiBits_BarrelPS_    ( stubDigitize_.getParameter<unsigned int>      ("hybrid_phiBits_BarrelPS"    ) ),
+  hybrid_phiRange_BarrelPS_   ( stubDigitize_.getParameter<double>      ("hybrid_phiRange_BarrelPS"   ) ),
+  hybrid_bendBits_BarrelPS_   ( stubDigitize_.getParameter<unsigned int>      ("hybrid_bendBits_BarrelPS"   ) ),
+  hybrid_rBits_Barrel2S_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_rBits_Barrel2S"      ) ),
+  hybrid_rRange_Barrel2S_     ( stubDigitize_.getParameter<double>      ("hybrid_rRange_Barrel2S"     ) ),
+  hybrid_zBits_Barrel2S_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_zBits_Barrel2S"      ) ),
+  hybrid_zRange_Barrel2S_     ( stubDigitize_.getParameter<double>      ("hybrid_zRange_Barrel2S"     ) ),
+  hybrid_phiBits_Barrel2S_    ( stubDigitize_.getParameter<unsigned int>      ("hybrid_phiBits_Barrel2S"    ) ),
+  hybrid_phiRange_Barrel2S_   ( stubDigitize_.getParameter<double>      ("hybrid_phiRange_Barrel2S"   ) ),
+  hybrid_bendBits_Barrel2S_   ( stubDigitize_.getParameter<unsigned int>      ("hybrid_bendBits_Barrel2S"   ) ),
+  hybrid_rBits_EndcapPS_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_rBits_EndcapPS"      ) ),
+  hybrid_rRange_EndcapPS_     ( stubDigitize_.getParameter<double>      ("hybrid_rRange_EndcapPS"     ) ),
+  hybrid_zBits_EndcapPS_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_zBits_EndcapPS"      ) ),
+  hybrid_zRange_EndcapPS_     ( stubDigitize_.getParameter<double>      ("hybrid_zRange_EndcapPS"     ) ),
+  hybrid_phiBits_EndcapPS_    ( stubDigitize_.getParameter<unsigned int>      ("hybrid_phiBits_EndcapPS"    ) ),
+  hybrid_phiRange_EndcapPS_   ( stubDigitize_.getParameter<double>      ("hybrid_phiRange_EndcapPS"   ) ),
+  hybrid_bendBits_EndcapPS_   ( stubDigitize_.getParameter<unsigned int>      ("hybrid_bendBits_EndcapPS"   ) ),
+  hybrid_rBits_Endcap2S_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_rBits_Endcap2S"      ) ),
+  hybrid_rRange_Endcap2S_     ( stubDigitize_.getParameter<double>      ("hybrid_rRange_Endcap2S"     ) ),
+  hybrid_zBits_Endcap2S_      ( stubDigitize_.getParameter<unsigned int>      ("hybrid_zBits_Endcap2S"      ) ),
+  hybrid_zRange_Endcap2S_     ( stubDigitize_.getParameter<double>      ("hybrid_zRange_Endcap2S"     ) ),
+  hybrid_phiBits_Endcap2S_    ( stubDigitize_.getParameter<unsigned int>      ("hybrid_phiBits_Endcap2S"    ) ),
+  hybrid_phiRange_Endcap2S_   ( stubDigitize_.getParameter<double>      ("hybrid_phiRange_Endcap2S"   ) ),
+  hybrid_alphaBits_Endcap2S_  ( stubDigitize_.getParameter<unsigned int>      ("hybrid_alphaBits_Endcap2S"  ) ),
+  hybrid_alphaRange_Endcap2S_ ( stubDigitize_.getParameter<double>      ("hybrid_alphaRange_Endcap2S" ) ),
+  hybrid_bendBits_Endcap2S_   ( stubDigitize_.getParameter<unsigned int>      ("hybrid_bendBits_Endcap2S"   ) ),
+
   //=== Configuration of Geometric Processor.
   useApproxB_             ( geometricProc_.getParameter<bool>                 ( "UseApproxB"             ) ),
   bApprox_gradient_       ( geometricProc_.getParameter<double>               ( "BApprox_gradient"       ) ),
@@ -367,7 +398,13 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   psPixelLength_          (0.),
   ssStripPitch_           (0.),
   ssNStrips_              (0.),
-  ssStripLength_          (0.)
+  ssStripLength_          (0.),
+
+  layerR_reference_                (trackDigi_.getParameter<vector<double> >       ( "layerR_reference"     ) ),
+  layerZ_reference_                (trackDigi_.getParameter<vector<double> >       ( "layerZ_reference"     ) ),
+  layerR_2S_disk1to2_              (trackDigi_.getParameter<vector<double> >       ( "layerR_2S_disk1to2"     ) ),
+  layerR_2S_disk3to5_              (trackDigi_.getParameter<vector<double> >       ( "layerR_2S_disk3to5"     ) )
+
 {
   // If user didn't specify any PDG codes, use e,mu,pi,K,p, to avoid picking up unstable particles like Xi-.
   vector<unsigned int> genPdgIdsUnsigned( genCuts_.getParameter<vector<unsigned int> >   ( "GenPdgIds" ) ); 
