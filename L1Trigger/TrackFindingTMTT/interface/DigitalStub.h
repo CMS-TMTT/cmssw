@@ -30,7 +30,8 @@ public:
   // range of m bin (= q/Pt bin) values allowed by bend filter, 
   // normal & "reduced" tracker layer of stub, stub bend, and pitch & seperation of module,
   // and half-length of strip or pixel in r and in z, and if it's in barrel, tilted barrel and/or PS modules.
-  void init(float phi_orig, float r_orig, float z_orig, 
+  void init(float phi_orig, float r_orig, float z_orig,
+      unsigned int iPhi,
       unsigned int min_qOverPt_bin_orig, unsigned int max_qOverPt_bin_orig, 
       unsigned int layerID, unsigned int layerIDreduced, float bend_orig,
       float pitch, float sep, float rErr, float zErr, bool barrel, bool tiltedBarrel, bool psModule);
@@ -47,6 +48,8 @@ public:
   void makeSForTFinput(string SForTF);
 
   void makeDRinput(unsigned int stubId);
+
+  void makeHybridInput(unsigned int iPhiSec, const Settings* settings);
 
   // N.B. The m_min and m_max variables should logically be calculated by DigitalStub::makeHTinput(),  
   // but are actually calculated by Stub::digitizeForHTinput() because too lazy to move code.
@@ -71,6 +74,15 @@ public:
   // %%% Those exclusively input to seed filter.
   unsigned int iDigi_rErr()    const {this->okSForTF(); return iDigi_rErr_;}   // Stub uncertainty in r, assumed equal to half strip length.
   unsigned int iDigi_zErr()    const {this->okSForTF(); return iDigi_zErr_;}   // Stub uncertainty in z, assumed equal to half strip length.
+
+  // Digits corresponding to stub coords. in hybrid format
+  unsigned int iDigi_Hybrid_Layer()   const {this->okHybrid(); return iDigi_Hybrid_Layer_;}  // layer 
+  unsigned int iDigi_Hybrid_R()       const {this->okHybrid(); return iDigi_Hybrid_R_;}      // r coord. 
+  int          iDigi_Hybrid_Z()       const {this->okHybrid(); return iDigi_Hybrid_Z_;}      // z coord.
+  unsigned int iDigi_Hybrid_Phi()     const {this->okHybrid(); return iDigi_Hybrid_Phi_;}    // phi coord. 
+  unsigned int iDigi_Hybrid_Alpha()   const {this->okHybrid(); return iDigi_Hybrid_Alpha_;}    // phi coord. 
+  unsigned int iDigi_Hybrid_Bend()    const {this->okHybrid(); return iDigi_Hybrid_Bend_;}    // phi coord. 
+
 
   // Floating point stub coords derived from digitized info (so with degraded resolution).
   // %%% Those common to GP & HT input.
@@ -131,11 +143,12 @@ private:
   void         okHT()  const {if (! ranMakeHTinput_) throw cms::Exception("DigitalStub: You forgot to call makeGPinput() or makeHTinput()!");}
   void         okSForTF()  const {if (ranMakeSForTFinput_ == "") throw cms::Exception("DigitalStub: You forgot to call makeSForTFinput()!");}
   void         okDR()  const {if (! ranMakeDRinput_) throw cms::Exception("DigitalStub: You forgot to call makeDRinput()!");}
-
+  void         okHybrid()  const {if (! ranMakeHybridInput_) throw cms::Exception("DigitalStub: You forgot to call makeHybridInput()!");}
 
   // Check that init() is called before accessing original pre-digitization variables.
   void         okin()  const {if (! ranInit_) throw cms::Exception("DigitalStub: You forgot to call init()!");}
 
+  bool         isPSModule() const { return isPSModule_; }
 private:
 
   //--- To check DigitialStub correctly initialized.
@@ -144,6 +157,8 @@ private:
   bool                 ranMakeHTinput_;
   string               ranMakeSForTFinput_;
   bool                 ranMakeDRinput_;
+  bool                 ranMakeHybridInput_;
+
   //--- configuration
 
   // Digitization configuration
@@ -214,6 +229,14 @@ private:
   unsigned int iDigi_rErr_;
   unsigned int iDigi_zErr_;
   unsigned int stubId_;
+
+  unsigned int iDigi_Hybrid_Layer_;
+  int          iDigi_Hybrid_R_;
+  int          iDigi_Hybrid_Z_;
+  int          iDigi_Hybrid_Phi_;
+  unsigned int iDigi_Hybrid_Alpha_;
+  unsigned int iDigi_Hybrid_Bend_;
+
   //--- Floating point stub coords derived from digitized info (so with degraded resolution).
   float phi_;
   float r_;
@@ -224,6 +247,9 @@ private:
   float bend_;
   float rErr_;
   float zErr_;
+
+  bool isPSModule_;
+  unsigned int iPhi_; // Strip number, needed for hybrid format
 };
 
 }

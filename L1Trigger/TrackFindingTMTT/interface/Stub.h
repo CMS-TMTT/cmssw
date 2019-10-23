@@ -75,6 +75,8 @@ public:
   // Digitize stub for input to Hough transform, with digitized phi coord. measured relative to specified phi sector.
   void digitizeForHTinput(unsigned int iPhiSec);
 
+  void digitizeForHybrid(unsigned int iPhiSec, const Settings* settings);
+
   // Digitize stub for input to r-z Seed Filter.
   // (Kept for backwards compatibility.)
   void digitizeForSFinput() {this->digitizeForSForTFinput("SeedFilter");}

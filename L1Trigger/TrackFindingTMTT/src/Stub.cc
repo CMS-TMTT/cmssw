@@ -204,7 +204,7 @@ Stub::Stub(const TTStubRef& ttStubRef, unsigned int index_in_vStubs, const Setti
   this->calcQoverPtrange();
 
   // Initialize class used to produce digital version of stub, with original stub parameters pre-digitization.
-  digitalStub_.init(phi_, r_, z_, min_qOverPt_bin_, max_qOverPt_bin_, layerId_, this->layerIdReduced(), bend_, stripPitch_, sensorSpacing, rErr_, zErr_, barrel_, tiltedBarrel_, psModule_);
+  digitalStub_.init(phi_, r_, z_, iphi_, min_qOverPt_bin_, max_qOverPt_bin_, layerId_, this->layerIdReduced(), bend_, stripPitch_, sensorSpacing, rErr_, zErr_, barrel_, tiltedBarrel_, psModule_);
 
   // Update recommended stub window sizes that TMTT recommends that CMS should use in FE electronics.
   if (settings_->printStubWindows()) stubWindowSuggest_.process(this);
@@ -300,6 +300,7 @@ void Stub::digitizeForHTinput(unsigned int iPhiSec) {
 
       // Digitize
       digitalStub_.makeHTinput(iPhiSec);
+      digitalStub_.makeHybridInput(iPhiSec, settings_);
 
       // Since GP and HT use same digitisation in r and z, don't bother updating their values.
       // (Actually, the phi digitisation boundaries also match, except for systolic array, so could skip updating phi too).
@@ -319,6 +320,15 @@ void Stub::digitizeForHTinput(unsigned int iPhiSec) {
       // Note that stub has been digitized.
       digitizedForHTinput_ = true;
     }
+  }
+}
+
+//=== Digitize stub for input to KF assuming hybrid data format
+
+void Stub::digitizeForHybrid(unsigned int iPhiSec, const Settings* settings) {
+
+  if (settings_->enableDigitize()) {
+    digitalStub_.makeHybridInput( iPhiSec, settings );
   }
 }
 

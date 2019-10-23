@@ -80,7 +80,42 @@ TMTrackProducer_params = cms.PSet(
      #
      PhiOBits        = cms.uint32(15),      # Bits used to store PhiO parameter.
      PhiORange      = cms.double(1.3962634), # Range PhiO parameter covers.
-     BendBits        = cms.uint32(6)        # Bits used to store stub bend.
+     BendBits        = cms.uint32(6),        # Bits used to store stub bend.
+
+     # Parameters for hybrid data format
+     hybrid_rBits_BarrelPS      = cms.uint32(7),
+     hybrid_rRange_BarrelPS     = cms.double(7.5),
+     hybrid_zBits_BarrelPS      = cms.uint32(12),
+     hybrid_zRange_BarrelPS     = cms.double(240),
+     hybrid_phiBits_BarrelPS    = cms.uint32(14),
+     hybrid_phiRange_BarrelPS   = cms.double(1.02607),
+     hybrid_bendBits_BarrelPS   = cms.uint32(3),
+
+     hybrid_rBits_Barrel2S      = cms.uint32(7),
+     hybrid_rRange_Barrel2S     = cms.double(7.5),
+     hybrid_zBits_Barrel2S      = cms.uint32(8),
+     hybrid_zRange_Barrel2S     = cms.double(240),
+     hybrid_phiBits_Barrel2S    = cms.uint32(17),
+     hybrid_phiRange_Barrel2S   = cms.double(1.02607),
+     hybrid_bendBits_Barrel2S   = cms.uint32(4),
+
+     hybrid_rBits_EndcapPS      = cms.uint32(12),
+     hybrid_rRange_EndcapPS     = cms.double(120),
+     hybrid_zBits_EndcapPS      = cms.uint32(7),
+     hybrid_zRange_EndcapPS     = cms.double(7.5),
+     hybrid_phiBits_EndcapPS    = cms.uint32(14),
+     hybrid_phiRange_EndcapPS   = cms.double(1.02607),
+     hybrid_bendBits_EndcapPS   = cms.uint32(3),
+
+     hybrid_rBits_Endcap2S      = cms.uint32(7),
+     hybrid_rRange_Endcap2S     = cms.double(0), # Encoded, set range to zero
+     hybrid_zBits_Endcap2S      = cms.uint32(7),
+     hybrid_zRange_Endcap2S     = cms.double(7.5),
+     hybrid_phiBits_Endcap2S    = cms.uint32(14),
+     hybrid_phiRange_Endcap2S   = cms.double(1.02607),
+     hybrid_alphaBits_Endcap2S  = cms.uint32(4),
+     hybrid_alphaRange_Endcap2S = cms.double(1024),
+     hybrid_bendBits_Endcap2S   = cms.uint32(4),
   ),
 
   #=== Configuration of Geometric Processor.
@@ -473,7 +508,16 @@ TMTrackProducer_params = cms.PSet(
 
     #====== Other track fitter Digi params.
     # Currently equal to those for KF, although you can skip track digitisation for them with following.
-    Other_skipTrackDigi = cms.bool( True ) 
+    Other_skipTrackDigi = cms.bool( True ),
+
+    # Taken from http://cms-tklayout.web.cern.ch/cms-tklayout/layouts/recent-layouts/OT614_200_IT404/layout.html
+    # For D21 geometry (T6 tracker)
+    layerR_reference = cms.vdouble( 24.8656, 37.1678, 52.2700, 68.7000, 86.0000, 110.8000, 0, 0, 0, 0, 0  ),
+    layerZ_reference = cms.vdouble( 0, 0, 0, 0, 0, 0, 131.1800, 155.0000, 185.3400, 221.6190, 265.0000 ),
+
+    layerR_2S_disk1to2 = cms.vdouble( 66.7345, 71.7345, 77.5056, 82.5056, 84.8444, 89.8444, 95.7515, 100.7515, 102.475, 107.475 ),
+    layerR_2S_disk3to5 = cms.vdouble( 65.1317, 70.1317, 75.63, 80.63, 83.9293, 88.9293, 94.6316, 99.6316, 102.475, 107.475 ),
+
   ),
 
   #===== Use HYBRID TRACKING (Tracklet pattern reco + TMTT KF -- requires tracklet C++ too) =====
