@@ -50,6 +50,7 @@ public:
 
   // Digits corresponding to track params.
   int          iDigi_oneOver2r()          const {this->ok(); return iDigi_oneOver2r_;} // half inverse curvature of track.
+  int          iDigi_oneOverR()           const {this->ok(); return iDigi_oneOverR_;} // half inverse curvature of track.
   int          iDigi_d0()                 const {this->ok(); return iDigi_d0_;} 
   int          iDigi_phi0rel()            const {this->ok(); return iDigi_phi0rel_;} // measured relative to centre of sector
   int          iDigi_z0()                 const {this->ok(); return iDigi_z0_;}
@@ -96,6 +97,7 @@ public:
   //%%% Those common to GP & HT input.
   float        orig_qOverPt()             const {this->okin(); return qOverPt_orig_;} 
   float        orig_oneOver2r()           const {this->okin(); return oneOver2r_orig_;} // half inverse curvature of track.
+  float        orig_oneOverR()            const {this->okin(); return oneOverR_orig_;} // inverse curvature of track.
   float        orig_d0()                  const {this->okin(); return d0_orig_;}
   float        orig_phi0()                const {this->okin(); return phi0_orig_;}
   float        orig_phi0rel()             const {this->okin(); return phi0rel_orig_;} // measured relative to centre of sector
@@ -209,6 +211,7 @@ private:
 
   float                qOverPt_orig_;
   float                oneOver2r_orig_;
+  float                oneOverR_orig_;
   float                d0_orig_;
   float                phi0_orig_;
   float                phi0rel_orig_;
@@ -226,6 +229,7 @@ private:
   //--- Digits corresponding to track params.
 
   int                  iDigi_oneOver2r_;
+  int                  iDigi_oneOverR_;
   int                  iDigi_d0_;
   int                  iDigi_phi0rel_;
   int                  iDigi_z0_;
