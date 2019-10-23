@@ -86,21 +86,18 @@ public:
   double                hybrid_zRange_BarrelPS()      const   {return hybrid_zRange_BarrelPS_;}
   unsigned int          hybrid_phiBits_BarrelPS()     const   {return hybrid_phiBits_BarrelPS_;}
   double                hybrid_phiRange_BarrelPS()    const   {return hybrid_phiRange_BarrelPS_;}
-  unsigned int          hybrid_bendBits_BarrelPS()    const   {return hybrid_bendBits_BarrelPS_;}
   unsigned int          hybrid_rBits_Barrel2S()       const   {return hybrid_rBits_Barrel2S_;}
   double                hybrid_rRange_Barrel2S()      const   {return hybrid_rRange_Barrel2S_;}
   unsigned int          hybrid_zBits_Barrel2S()       const   {return hybrid_zBits_Barrel2S_;}
   double                hybrid_zRange_Barrel2S()      const   {return hybrid_zRange_Barrel2S_;}
   unsigned int          hybrid_phiBits_Barrel2S()     const   {return hybrid_phiBits_Barrel2S_;}
   double                hybrid_phiRange_Barrel2S()    const   {return hybrid_phiRange_Barrel2S_;}
-  unsigned int          hybrid_bendBits_Barrel2S()    const   {return hybrid_bendBits_Barrel2S_;}
   unsigned int          hybrid_rBits_EndcapPS()       const   {return hybrid_rBits_EndcapPS_;}
   double                hybrid_rRange_EndcapPS()      const   {return hybrid_rRange_EndcapPS_;}
   unsigned int          hybrid_zBits_EndcapPS()       const   {return hybrid_zBits_EndcapPS_;}
   double                hybrid_zRange_EndcapPS()      const   {return hybrid_zRange_EndcapPS_;}
   unsigned int          hybrid_phiBits_EndcapPS()     const   {return hybrid_phiBits_EndcapPS_;}
   double                hybrid_phiRange_EndcapPS()    const   {return hybrid_phiRange_EndcapPS_;}
-  unsigned int          hybrid_bendBits_EndcapPS()    const   {return hybrid_bendBits_EndcapPS_;}
   unsigned int          hybrid_rBits_Endcap2S()       const   {return hybrid_rBits_Endcap2S_;}
   double                hybrid_rRange_Endcap2S()      const   {return hybrid_rRange_Endcap2S_;}
   unsigned int          hybrid_zBits_Endcap2S()       const   {return hybrid_zBits_Endcap2S_;}
@@ -109,7 +106,6 @@ public:
   double                hybrid_phiRange_Endcap2S()    const   {return hybrid_phiRange_Endcap2S_;}
   unsigned int          hybrid_alphaBits_Endcap2S()   const   {return hybrid_alphaBits_Endcap2S_;}
   double                hybrid_alphaRange_Endcap2S()  const   {return hybrid_alphaRange_Endcap2S_;}
-  unsigned int          hybrid_bendBits_Endcap2S()    const   {return hybrid_bendBits_Endcap2S_;}
 
   //=== Configuration of Geometric Processor.
   // Use an FPGA-friendly approximation to determine track angle dphi from bend in GP?
@@ -536,21 +532,18 @@ private:
   double        hybrid_zRange_BarrelPS_;
   unsigned int  hybrid_phiBits_BarrelPS_;
   double        hybrid_phiRange_BarrelPS_;
-  unsigned int  hybrid_bendBits_BarrelPS_;
   unsigned int  hybrid_rBits_Barrel2S_;
   double        hybrid_rRange_Barrel2S_;
   unsigned int  hybrid_zBits_Barrel2S_;
   double        hybrid_zRange_Barrel2S_;
   unsigned int  hybrid_phiBits_Barrel2S_;
   double        hybrid_phiRange_Barrel2S_;
-  unsigned int  hybrid_bendBits_Barrel2S_;
   unsigned int  hybrid_rBits_EndcapPS_;
   double        hybrid_rRange_EndcapPS_;
   unsigned int  hybrid_zBits_EndcapPS_;
   double        hybrid_zRange_EndcapPS_;
   unsigned int  hybrid_phiBits_EndcapPS_;
   double        hybrid_phiRange_EndcapPS_;
-  unsigned int  hybrid_bendBits_EndcapPS_;
   unsigned int  hybrid_rBits_Endcap2S_;
   double        hybrid_rRange_Endcap2S_;
   unsigned int  hybrid_zBits_Endcap2S_;
@@ -559,7 +552,6 @@ private:
   double        hybrid_phiRange_Endcap2S_;
   unsigned int  hybrid_alphaBits_Endcap2S_;
   double        hybrid_alphaRange_Endcap2S_;
-  unsigned int  hybrid_bendBits_Endcap2S_;
 
   // Configuration of Geometric Processor.
   bool                 useApproxB_;

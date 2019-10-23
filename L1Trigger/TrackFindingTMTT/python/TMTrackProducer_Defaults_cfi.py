@@ -89,7 +89,6 @@ TMTrackProducer_params = cms.PSet(
      hybrid_zRange_BarrelPS     = cms.double(240),
      hybrid_phiBits_BarrelPS    = cms.uint32(14),
      hybrid_phiRange_BarrelPS   = cms.double(1.02607),
-     hybrid_bendBits_BarrelPS   = cms.uint32(3),
 
      hybrid_rBits_Barrel2S      = cms.uint32(7),
      hybrid_rRange_Barrel2S     = cms.double(7.5),
@@ -97,7 +96,6 @@ TMTrackProducer_params = cms.PSet(
      hybrid_zRange_Barrel2S     = cms.double(240),
      hybrid_phiBits_Barrel2S    = cms.uint32(17),
      hybrid_phiRange_Barrel2S   = cms.double(1.02607),
-     hybrid_bendBits_Barrel2S   = cms.uint32(4),
 
      hybrid_rBits_EndcapPS      = cms.uint32(12),
      hybrid_rRange_EndcapPS     = cms.double(120),
@@ -105,7 +103,6 @@ TMTrackProducer_params = cms.PSet(
      hybrid_zRange_EndcapPS     = cms.double(7.5),
      hybrid_phiBits_EndcapPS    = cms.uint32(14),
      hybrid_phiRange_EndcapPS   = cms.double(1.02607),
-     hybrid_bendBits_EndcapPS   = cms.uint32(3),
 
      hybrid_rBits_Endcap2S      = cms.uint32(7),
      hybrid_rRange_Endcap2S     = cms.double(0), # Encoded, set range to zero
@@ -115,7 +112,6 @@ TMTrackProducer_params = cms.PSet(
      hybrid_phiRange_Endcap2S   = cms.double(1.02607),
      hybrid_alphaBits_Endcap2S  = cms.uint32(4),
      hybrid_alphaRange_Endcap2S = cms.double(1024),
-     hybrid_bendBits_Endcap2S   = cms.uint32(4),
   ),
 
   #=== Configuration of Geometric Processor.
