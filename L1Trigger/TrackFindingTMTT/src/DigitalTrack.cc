@@ -122,6 +122,7 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
 
   qOverPt_orig_   = qOverPt_orig;
   oneOver2r_orig_ = qOverPt_orig*invPtToDPhi_;
+  oneOverR_orig_ = oneOver2r_orig_ * 2;
   d0_orig_        = d0_orig;
   phi0_orig_      = phi0_orig;
   phi0rel_orig_   = reco::deltaPhi(phi0_orig_, phiSectorCentre_);
@@ -172,6 +173,7 @@ void DigitalTrack::makeDigitalTrack() {
     // Optionally skip track digitisaton if done internally inside track fitting code, so
     // retain original helix params.
     iDigi_oneOver2r_  = 0;
+    iDigi_oneOverR_  = 0;
     iDigi_d0_         = 0;
     iDigi_phi0rel_    = 0;
     iDigi_tanLambda_  = 0;
@@ -204,6 +206,7 @@ void DigitalTrack::makeDigitalTrack() {
     //--- Digitize variables
 
     iDigi_oneOver2r_  = floor(oneOver2r_orig_*oneOver2rMult_);
+    iDigi_oneOverR_   = floor(oneOverR_orig_*oneOver2rMult_); // Use same multiplier as for 1/2R
     iDigi_d0_         = floor(d0_orig_*d0Mult_);
     iDigi_phi0rel_    = floor(phi0rel_orig_*phi0Mult_);
     iDigi_tanLambda_  = floor(tanLambda_orig_*tanLambdaMult_);
@@ -267,6 +270,7 @@ void DigitalTrack::makeDigitalTrack() {
 void DigitalTrack::checkInRange() const {
   if (accepted_) { // Don't bother apply to tracks rejected by the fitter.
     if (fabs(oneOver2r_orig_) >= 0.5*oneOver2rRange_)   throw cms::Exception("DigitalTrack: Track oneOver2r is out of assumed digitization range.")<<" |oneOver2r| = " <<fabs(oneOver2r_orig_) <<" > "<<0.5*oneOver2rRange_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
+    if (fabs(oneOverR_orig_) >= 0.5*oneOver2rRange_)   throw cms::Exception("DigitalTrack: Track oneOverR is out of assumed digitization range.")<<" |oneOverR| = " <<fabs(oneOverR_orig_) <<" > "<<0.5*oneOver2rRange_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(phi0rel_orig_) >= 0.5*phi0Range_)   throw cms::Exception("DigitalTrack: Track phi0rel is out of assumed digitization range.")<<" |phi0rel| = " <<fabs(phi0rel_orig_) <<" > "<<0.5*phi0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(z0_orig_) >= 0.5*z0Range_)   throw cms::Exception("DigitalTrack:  Track z0 is out of assumed digitization range.")<<" |z0| = " <<fabs(z0_orig_) <<" > "<<0.5*z0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(d0_orig_) >= 0.5*d0Range_ && fitterName_ != "MiniHT" )   throw cms::Exception("DigitalTrack:  Track d0 is out of assumed digitization range.")<<" |d0| = " <<fabs(d0_orig_) <<" > "<<0.5*d0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
