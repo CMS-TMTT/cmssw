@@ -444,19 +444,37 @@ void DigitalStub::makeHybridInput(unsigned int iPhiSec, const Settings* settings
 
 
   // Bend
-  // Copied from hybrid code to make sure same is used
   int hybridBend=2.0*bend_orig_;
+  unsigned int tempHybridBend = 0;
   if ( this->isPSModule() ) {
-      if (hybridBend==0||hybridBend==1) iDigi_Hybrid_Bend_ = 0;
-      else if (hybridBend==2||hybridBend==3) iDigi_Hybrid_Bend_ = 1;
-      else if (hybridBend==4||hybridBend==5) iDigi_Hybrid_Bend_ = 2;
-      else if (hybridBend>=6) hybridBend = 3;
-      else if (hybridBend==-1||hybridBend==-2) iDigi_Hybrid_Bend_ = 4;
-      else if (hybridBend==-3||hybridBend==-4) iDigi_Hybrid_Bend_ = 5;
-      else if (hybridBend==-5||hybridBend==-6) iDigi_Hybrid_Bend_ = 6;
-      else if (hybridBend<=-7) iDigi_Hybrid_Bend_ = 7;
+    if ( hybridBend >= 0 ) {
+        iDigi_Hybrid_Bend_ = std::min( floor( hybridBend / 2 ), 3. );
+    }
+    else {
+        iDigi_Hybrid_Bend_ = std::min( fabs( floor( ( hybridBend - 1 ) / 2 ) ) + 3, 7. );
+    }
+    // Above is more compact
+    // Below is implementation from hybrid code
+    // if (hybridBend==0||hybridBend==1) iDigi_Hybrid_Bend_ = 0;
+    // else if (hybridBend==2||hybridBend==3) iDigi_Hybrid_Bend_ = 1;
+    // else if (hybridBend==4||hybridBend==5) iDigi_Hybrid_Bend_ = 2;
+    // else if (hybridBend>=6) iDigi_Hybrid_Bend_ = 3;
+    // else if (hybridBend==-1||hybridBend==-2) iDigi_Hybrid_Bend_ = 4;
+    // else if (hybridBend==-3||hybridBend==-4) iDigi_Hybrid_Bend_ = 5;
+    // else if (hybridBend==-5||hybridBend==-6) iDigi_Hybrid_Bend_ = 6;
+    // else if (hybridBend<=-7) iDigi_Hybrid_Bend_ = 7;
   }
   else {
+
+    // if ( hybridBend >= 0 ) {
+    //     tempHybridBend = std::min( floor( hybridBend / 2 ), 7. );
+    // }
+    // else {
+    //     tempHybridBend = std::min( fabs( floor( ( hybridBend - 1 ) / 2 ) ) + 7, 15. );
+    // }
+    // Above is more compact
+    // Below is implementation from hybrid code
+    // Using less compact version, whilst checking if there is a bug in the code below
     if (hybridBend==0||hybridBend==1) iDigi_Hybrid_Bend_ = 0;
     else if (hybridBend==2||hybridBend==3) iDigi_Hybrid_Bend_ = 1;
     else if (hybridBend==4||hybridBend==5) iDigi_Hybrid_Bend_ = 2;
@@ -469,11 +487,15 @@ void DigitalStub::makeHybridInput(unsigned int iPhiSec, const Settings* settings
     else if (hybridBend==-3||hybridBend==-4) iDigi_Hybrid_Bend_ = 9;
     else if (hybridBend==-5||hybridBend==-6) iDigi_Hybrid_Bend_ = 10;
     else if (hybridBend==-7||hybridBend==-8) iDigi_Hybrid_Bend_ = 11;
+    // THIS LOOKS BUGGY
     else if (hybridBend==-9||hybridBend==-9) iDigi_Hybrid_Bend_ = 12;
     else if (hybridBend==-11||hybridBend==-10) iDigi_Hybrid_Bend_ = 13;
     else if (hybridBend==-13||hybridBend==-12) iDigi_Hybrid_Bend_ = 14;
-    else if (hybridBend<=-14) iDigi_Hybrid_Bend_ = 15;
+    else if (hybridBend<=-14) hybridBend = 15;
 
+    // if ( iDigi_Hybrid_Bend_ != tempHybridBend ) {
+    //   std::cout << "Error : " << bend_orig_ << " " << hybridBend << " " << floor( hybridBend / 2 ) << " " << iDigi_Hybrid_Bend_ << " " << tempHybridBend << std::endl;
+    // }
   }
 }
 
