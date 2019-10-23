@@ -460,7 +460,7 @@ TMTrackProducer_params = cms.PSet(
     MiniHT_z0Bits = cms.uint32(10),
     MiniHT_z0Range  = cms.double(60),
     MiniHT_tanlambdaBits = cms.uint32(14),
-    MiniHT_tanlambdaRange = cms.double(32),
+    MiniHT_tanlambdaRange = cms.double(16),
     
     #======= SimpleLR digi parameters ========
     SLR_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
