@@ -48,9 +48,10 @@ void Get3Dtracks::makeUnfilteredTrks(const vector<L1track2D>& vecTracksRphi) {
       // Centre of HT bin lies on boundary of two fitted track digi bins, so nudge slightly +ve (like FW)
       // to remove ambiguity.
       const float small = 0.1;
+      const unsigned int nHelixBits = 18; // Bits used internally in KF HLS to represent helix params.
       qOverPt += (2./settings_->invPtToInvR()) *
-                 small*settings_->kf_oneOver2rRange()/pow(2.,settings_->kf_oneOver2rBits());
-      phi0    += small*settings_->kf_phi0Range()     /pow(2.,settings_->kf_phi0Bits());
+                 small*settings_->kf_oneOver2rRange()/pow(2., nHelixBits);
+      phi0    += small*settings_->kf_phi0Range()     /pow(2., nHelixBits);
     }    
     pair<float, float> helixRphi(qOverPt, phi0);
 

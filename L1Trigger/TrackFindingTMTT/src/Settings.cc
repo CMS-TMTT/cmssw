@@ -321,6 +321,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   kf_tanlambdaRange_      (trackDigi_.getParameter<double>                    ( "KF_tanlambdaRange"      ) ),
   kf_chisquaredBits_      (trackDigi_.getParameter<unsigned int>              ( "KF_chisquaredBits"      ) ),
   kf_chisquaredRange_     (trackDigi_.getParameter<double>                    ( "KF_chisquaredRange"     ) ),
+  kf_chisquaredBinEdges_  (trackDigi_.getParameter<vector<double> >           ( "KF_chisquaredBinEdges"  ) ),
   //
   other_skipTrackDigi_    (trackDigi_.getParameter<bool>                      ( "Other_skipTrackDigi"    ) ),
 

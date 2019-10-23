@@ -376,6 +376,7 @@ public:
   double              kf_tanlambdaRange()        const {return kf_tanlambdaRange_;}
   unsigned int        kf_chisquaredBits()        const {return kf_chisquaredBits_;}
   double              kf_chisquaredRange()       const {return kf_chisquaredRange_;}
+  vector<double>      kf_chisquaredBinEdges()    const {return kf_chisquaredBinEdges_;}
   // Skip track digitisation when fitted is not SimpleLR or KF?
   bool                other_skipTrackDigi()      const {return other_skipTrackDigi_;}
 
@@ -659,6 +660,7 @@ private:
   double               kf_tanlambdaRange_;
   unsigned int         kf_chisquaredBits_;
   double               kf_chisquaredRange_;
+  vector<double>       kf_chisquaredBinEdges_;
   //
   bool                 other_skipTrackDigi_;
 
