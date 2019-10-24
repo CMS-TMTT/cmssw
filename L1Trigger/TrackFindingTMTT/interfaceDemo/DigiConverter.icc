@@ -27,13 +27,12 @@ DigiConverter::makeDigiDTCStub(const TMTT::Stub& aDTCStub, uint32_t aDigiPhiSec)
 }
 //-----------------------------------------------------------------------------
 
-
 //-----------------------------------------------------------------------------
 DigiHTStub
 DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t aPhiSectorIdInNon, uint32_t aEtaSectorId, int cBin, int aChiZ, int aChiPhi, bool mSel ) const {
     return DigiHTStub(
                aHTStub.layerIdReduced(),
-	       aPhiSectorIdInNon,
+               aPhiSectorIdInNon,
                aEtaSectorId,
                cBin,
                aChiZ,
@@ -44,7 +43,6 @@ DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t aPhiSectorIdI
            );
 }
 //-----------------------------------------------------------------------------
-
 
 //-----------------------------------------------------------------------------
 DigiHTMiniStub
@@ -83,7 +81,7 @@ DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
     if (aFitTrk.getHitPattern() > 127) cout<<"HIT "<<aFitTrk.getHitPattern()<<endl;
 
     return DigiKF4Track(
-               aFitTrk.digitaltrack().iDigi_oneOver2r(),
+               aFitTrk.digitaltrack().iDigi_oneOverR(),
                aFitTrk.digitaltrack().iDigi_phi0rel(),
                aFitTrk.digitaltrack().iDigi_tanLambda(),
                aFitTrk.digitaltrack().iDigi_z0(),

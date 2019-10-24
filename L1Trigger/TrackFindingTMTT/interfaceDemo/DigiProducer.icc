@@ -352,7 +352,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                                                         isFirstStubOnTrackCandidate,
                                                         // SectorID
 							iPhiSecInNonant,
-                                                        iEtaReg,
+                                                        //iEtaReg,
                                                         cBin,
                                                         mBin
                                                     );
