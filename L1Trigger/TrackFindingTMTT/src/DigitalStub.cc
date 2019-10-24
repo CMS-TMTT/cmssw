@@ -120,7 +120,7 @@ DigitalStub::DigitalStub(const Settings* settings) :
 //=== and half-length of strip or pixel in r and in z, and if it's in barrel, tilted barrel and/or PS module.
 
 void DigitalStub::init(float phi_orig, float r_orig, float z_orig,
-           unsigned int iPhi,
+           float alpha,
            unsigned int min_qOverPt_bin_orig, unsigned int max_qOverPt_bin_orig, 
            unsigned int layerID, unsigned int layerIDreduced, float bend_orig,
 	   float pitch, float sep, float rErr, float zErr, bool barrel, bool tiltedBarrel, bool psModule) {
@@ -138,8 +138,7 @@ void DigitalStub::init(float phi_orig, float r_orig, float z_orig,
   bend_orig_            = bend_orig;
   rErr_orig_            = rErr;
   zErr_orig_            = zErr;
-
-  iPhi_ = iPhi;
+  alpha_ = alpha;
 
   isPSModule_ = psModule;
 
@@ -438,8 +437,11 @@ void DigitalStub::makeHybridInput(unsigned int iPhiSec, const Settings* settings
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/HybridDataFormat
     // "alpha is simply defined as the strip number in the module (with coarse granularity)."
     float alphaMultiplier = pow(2, settings->hybrid_alphaBits_Endcap2S()  ) / settings->hybrid_alphaRange_Endcap2S();
+    // iDigi_Hybrid_Alpha_ = floor( iPhi_ * alphaMultiplier );
+    // But it's actually scaled between -1 and 1 : https://gitlab.cern.ch/cms-tracker-phase2-backend-development/BE_software/L1Tracking/blob/master/TrackFindingTracklet/interface/L1TStub.h#L223-232
+    // and then digitised.
+    iDigi_Hybrid_Alpha_ = floor( alpha_ * alphaMultiplier );
 
-    iDigi_Hybrid_Alpha_ = floor( iPhi_ * alphaMultiplier );
   }
 
 

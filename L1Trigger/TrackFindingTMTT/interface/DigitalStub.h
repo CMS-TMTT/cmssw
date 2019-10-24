@@ -35,7 +35,7 @@ public:
   // normal & "reduced" tracker layer of stub, stub bend, and pitch & seperation of module,
   // and half-length of strip or pixel in r and in z, and if it's in barrel, tilted barrel and/or PS modules.
   void init(float phi_orig, float r_orig, float z_orig,
-      unsigned int iPhi,
+      float alpha,
       unsigned int min_qOverPt_bin_orig, unsigned int max_qOverPt_bin_orig, 
       unsigned int layerID, unsigned int layerIDreduced, float bend_orig,
       float pitch, float sep, float rErr, float zErr, bool barrel, bool tiltedBarrel, bool psModule);
@@ -253,7 +253,7 @@ private:
   float zErr_;
 
   bool isPSModule_;
-  unsigned int iPhi_; // Strip number, needed for hybrid format
+  float alpha_; // Strip number, scaled between -1 and +1, needed for hybrid format
 };
 
 }
