@@ -153,6 +153,20 @@ Stub::Stub(const TTStubRef& ttStubRef, unsigned int index_in_vStubs, const Setti
     alpha_ = -phiRelToModule /r_ ;
   }
 
+  alphaHybrid_=0;
+  // Copied from https://gitlab.cern.ch/cms-tracker-phase2-backend-development/BE_software/L1Tracking/blob/master/TrackFindingTracklet/interface/L1TStub.h#L223-232
+  // with some modification to work in TMTT code
+  //Scaled to go between -1 and +1
+  if ((not barrel_) && (not psModule_)) {
+    int flip = ( outerModuleAtSmallerR_ ) ? 1 : -1;
+    if (z_>0.0) {
+      alphaHybrid_ = ((int)iphi_-509.5)*flip/510.0;
+    } else {
+      alphaHybrid_ = -((int)iphi_-509.5)*flip/510.0;
+    }
+  }
+
+
   // Calculate constants used to interpret bend information.
 
   // float sensorSpacing = barrel_ ? (moduleMaxR_ - moduleMinR_) : (moduleMaxZ_ - moduleMinZ_);
@@ -204,7 +218,7 @@ Stub::Stub(const TTStubRef& ttStubRef, unsigned int index_in_vStubs, const Setti
   this->calcQoverPtrange();
 
   // Initialize class used to produce digital version of stub, with original stub parameters pre-digitization.
-  digitalStub_.init(phi_, r_, z_, iphi_, min_qOverPt_bin_, max_qOverPt_bin_, layerId_, this->layerIdReduced(), bend_, stripPitch_, sensorSpacing, rErr_, zErr_, barrel_, tiltedBarrel_, psModule_);
+  digitalStub_.init(phi_, r_, z_, alphaHybrid_, min_qOverPt_bin_, max_qOverPt_bin_, layerId_, this->layerIdReduced(), bend_, stripPitch_, sensorSpacing, rErr_, zErr_, barrel_, tiltedBarrel_, psModule_);
 
   // Update recommended stub window sizes that TMTT recommends that CMS should use in FE electronics.
   if (settings_->printStubWindows()) stubWindowSuggest_.process(this);

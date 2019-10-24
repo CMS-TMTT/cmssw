@@ -111,7 +111,7 @@ TMTrackProducer_params = cms.PSet(
      hybrid_phiBits_Endcap2S    = cms.uint32(14),
      hybrid_phiRange_Endcap2S   = cms.double(1.02607),
      hybrid_alphaBits_Endcap2S  = cms.uint32(4),
-     hybrid_alphaRange_Endcap2S = cms.double(1024),
+     hybrid_alphaRange_Endcap2S = cms.double(2),
   ),
 
   #=== Configuration of Geometric Processor.

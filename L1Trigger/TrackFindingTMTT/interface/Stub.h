@@ -192,6 +192,8 @@ public:
   // (If true hit at larger r than stub r by deltaR, then stub phi needs correcting by +alpha*deltaR).
   // *** TO DO *** : Digitize this.
   float                                alpha() const { return           alpha_; }
+  // alpha, using definition in hybrid code
+  float                                alphaHybrid() const { return           alphaHybrid_; }
   // Module type: PS or 2S?
   bool                              psModule() const { return        psModule_; }
   // Tracker layer ID number (1-6 = barrel layer; 11-15 = endcap A disk; 21-25 = endcap B disk)
@@ -307,6 +309,7 @@ private:
   float                               pitchOverSep_;
   unsigned int                                iphi_;
   float                                      alpha_;
+  float                                      alphaHybrid_;
   bool                                    psModule_;
   unsigned int                             layerId_;
   unsigned int                          endcapRing_;
