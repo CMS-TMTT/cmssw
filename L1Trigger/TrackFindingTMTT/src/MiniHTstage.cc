@@ -151,7 +151,6 @@ void MiniHTstage::exec( matrix< HTrphi >& mHtRphis ) {
 
 		  unsigned int trueLinkID = (miniHoughLoadBalance_ > 0) ? nMiniHTcells_ * newererLink + mhtCell : newererLink;
 		  L1track2D fineTrk( settings_, htCell.stubs(), cellLocation, helix2D, iPhiSec, iEtaReg, trueLinkID, mergedCell );
-
 		  // Truncation due to output opto-link bandwidth.
 		  bool keep( true );
 	          pair<unsigned int, unsigned int> encodedLink;
