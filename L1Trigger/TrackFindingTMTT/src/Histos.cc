@@ -122,6 +122,8 @@ TFileDirectory Histos::bookInputData() {
   // N.B. Histograms of the kinematics and production vertex of tracking particles
   // are booked in bookTrackCands(), since they are used to study the tracking efficiency.
 
+  hisNumEvents_ = inputDir.make<TH1F>("NumEvents",";; No. of events",1,-0.5,0.5);
+
   // Count stubs & tracking particles.
 
   profNumStubs_        = inputDir.make<TProfile>("NumStubs","; Category; No. stubs in tracker",4,0.5,4.5);
@@ -261,6 +263,8 @@ TFileDirectory Histos::bookInputData() {
 void Histos::fillInputData(const InputData& inputData) {
   const vector<const Stub*>& vStubs = inputData.getStubs();
   const vector<TP>&          vTPs   = inputData.getTPs();
+
+  hisNumEvents_->Fill(0.);
 
   // Count stubs.
   unsigned int nStubsGenuine = 0;

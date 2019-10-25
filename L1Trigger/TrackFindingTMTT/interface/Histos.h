@@ -133,6 +133,7 @@ protected:
   edm::Service<TFileService> fs_;
 
   // Histograms of input data.
+  TH1F*     hisNumEvents_;
   TProfile* profNumStubs_;
   TH1F* hisStubsVsEta_;
   TH1F* hisStubsVsR_;
