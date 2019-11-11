@@ -454,13 +454,13 @@ TMTrackProducer_params = cms.PSet(
 
     #======= MiniHT digi parameters ========
     MiniHT_oneOver2rBits = cms.uint32(14),
-    MiniHT_oneOver2rRange = cms.double(0.0171),
+    MiniHT_oneOver2rRange = cms.double(0.0171011898),
     MiniHT_phi0Bits = cms.uint32(18),
-    MiniHT_phi0Range = cms.double(2.052), # phi0 is actually only digitised relative to centre of sector.
+    MiniHT_phi0Range = cms.double(2.0521428), # phi0 digitised relative to centre of sector.
     MiniHT_z0Bits = cms.uint32(10),
-    MiniHT_z0Range  = cms.double(60),
+    MiniHT_z0Range  = cms.double(60.0000000),
     MiniHT_tanlambdaBits = cms.uint32(14),
-    MiniHT_tanlambdaRange = cms.double(16),
+    MiniHT_tanlambdaRange = cms.double(16.00000),
     
     #======= SimpleLR digi parameters ========
     SLR_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
@@ -480,16 +480,24 @@ TMTrackProducer_params = cms.PSet(
     #====== Kalman Filter digi parameters ========
     KF_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     KF_oneOver2rBits = cms.uint32(15),
-    KF_oneOver2rRange = cms.double(0.0171),
+      KF_oneOver2rRange = cms.double(0.0171011898),
     KF_d0Bits = cms.uint32(13), # Made up by Ian as never yet discussed.
-    KF_d0Range  = cms.double(32.),
+      KF_d0Range  = cms.double(30.782095),
     KF_phi0Bits = cms.uint32(12),
+<<<<<<< HEAD
     KF_phi0Range = cms.double(2.052),  # phi0 is actually only digitised relative to centre of sector.
+=======
+      KF_phi0Range = cms.double(2.0521428),  # phi0 digitised relative to centre of sector.
+>>>>>>> Used exact track digi params and halved phi0 range
     KF_z0Bits = cms.uint32(12),
-    KF_z0Range  = cms.double(60),
+      KF_z0Range  = cms.double(60.000000),
     KF_tanlambdaBits = cms.uint32(16),
+<<<<<<< HEAD
     KF_tanlambdaRange = cms.double(16.),
     KF_chisquaredBits = cms.uint32(15), # N.B. 17 bits are used internally inside KF.
+=======
+      KF_tanlambdaRange = cms.double(16.00000),
+>>>>>>> Used exact track digi params and halved phi0 range
     # KF_chisquaredBits = cms.uint32(4), // Number of bits when we move to binned chi2
     KF_chisquaredRange = cms.double(1024.),
     KF_chisquaredBinEdges = cms.vdouble(0, 0.5, 1, 2, 3, 5, 7, 10, 20, 40, 100, 200, 500, 1000, 3000 ), # Additional bin for >3000
