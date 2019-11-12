@@ -112,6 +112,14 @@ TMTrackProducer_params = cms.PSet(
      hybrid_phiRange_Endcap2S   = cms.double(1.02607),
      hybrid_alphaBits_Endcap2S  = cms.uint32(4),
      hybrid_alphaRange_Endcap2S = cms.double(2),
+
+     # Taken from http://cms-tklayout.web.cern.ch/cms-tklayout/layouts/recent-layouts/OT614_200_IT404/layout.html
+     # For D21 geometry (T6 tracker)
+     layerR_reference = cms.vdouble( 24.8656, 37.1678, 52.2700, 68.7000, 86.0000, 110.8000, 0, 0, 0, 0, 0  ),
+     layerZ_reference = cms.vdouble( 0, 0, 0, 0, 0, 0, 131.1800, 155.0000, 185.3400, 221.6190, 265.0000 ),
+
+     layerR_2S_disk1to2 = cms.vdouble( 66.7345, 71.7345, 77.5056, 82.5056, 84.8444, 89.8444, 95.7515, 100.7515, 102.475, 107.475 ),
+     layerR_2S_disk3to5 = cms.vdouble( 65.1317, 70.1317, 75.63, 80.63, 83.9293, 88.9293, 94.6316, 99.6316, 102.475, 107.475 )
   ),
 
   #=== Configuration of Geometric Processor.
@@ -456,13 +464,13 @@ TMTrackProducer_params = cms.PSet(
 
     #======= MiniHT digi parameters ========
     MiniHT_oneOver2rBits = cms.uint32(14),
-      MiniHT_oneOver2rRange = cms.double(0.0171011898),
+    MiniHT_oneOver2rRange = cms.double(0.0171011898 / 2.), # N.B. 1/2R, not 1/R
     MiniHT_phi0Bits = cms.uint32(18),
-      MiniHT_phi0Range = cms.double(2.0521428), # phi0 digitised relative to centre of sector.
+    MiniHT_phi0Range = cms.double(2.0521428), # phi0 digitised relative to centre of sector.
     MiniHT_z0Bits = cms.uint32(10),
-      MiniHT_z0Range  = cms.double(60.0000000),
+    MiniHT_z0Range  = cms.double(60.0000000),
     MiniHT_tanlambdaBits = cms.uint32(14),
-      MiniHT_tanlambdaRange = cms.double(16.00000),
+    MiniHT_tanlambdaRange = cms.double(16.00000),
     
     #======= SimpleLR digi parameters ========
     SLR_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
@@ -482,7 +490,7 @@ TMTrackProducer_params = cms.PSet(
     #====== Kalman Filter digi parameters ========
     KF_skipTrackDigi = cms.bool( False ), # Optionally skip track digitisation if done internally inside fitting code.
     KF_oneOver2rBits = cms.uint32(15),
-    KF_oneOver2rRange = cms.double(0.0171011898),
+    KF_oneOver2rRange = cms.double(0.0171011898 / 2), # N.B. 1/2R, not 1/R
     KF_d0Bits = cms.uint32(13), # Made up by Ian as never yet discussed.
     KF_d0Range  = cms.double(30.782095),
     KF_phi0Bits = cms.uint32(12),
@@ -504,16 +512,7 @@ TMTrackProducer_params = cms.PSet(
 
     #====== Other track fitter Digi params.
     # Currently equal to those for KF, although you can skip track digitisation for them with following.
-    Other_skipTrackDigi = cms.bool( True ),
-
-    # Taken from http://cms-tklayout.web.cern.ch/cms-tklayout/layouts/recent-layouts/OT614_200_IT404/layout.html
-    # For D21 geometry (T6 tracker)
-    layerR_reference = cms.vdouble( 24.8656, 37.1678, 52.2700, 68.7000, 86.0000, 110.8000, 0, 0, 0, 0, 0  ),
-    layerZ_reference = cms.vdouble( 0, 0, 0, 0, 0, 0, 131.1800, 155.0000, 185.3400, 221.6190, 265.0000 ),
-
-    layerR_2S_disk1to2 = cms.vdouble( 66.7345, 71.7345, 77.5056, 82.5056, 84.8444, 89.8444, 95.7515, 100.7515, 102.475, 107.475 ),
-    layerR_2S_disk3to5 = cms.vdouble( 65.1317, 70.1317, 75.63, 80.63, 83.9293, 88.9293, 94.6316, 99.6316, 102.475, 107.475 ),
-
+    Other_skipTrackDigi = cms.bool( True )
   ),
 
   #===== Use HYBRID TRACKING (Tracklet pattern reco + TMTT KF -- requires tracklet C++ too) =====
