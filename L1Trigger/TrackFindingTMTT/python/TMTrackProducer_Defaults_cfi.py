@@ -66,7 +66,7 @@ TMTrackProducer_params = cms.PSet(
   StubDigitize = cms.PSet(
      EnableDigitize  = cms.bool(True),  # Digitize stub coords? If not, use floating point coords.
      #
-     #--- Parameters available in MP board.
+     #--- Parameters available in MP board. (And in case of Hybrid used internally in KF)
      #
      PhiSectorBits   = cms.uint32(6),    # Bits used to store phi sector number -- NOT USED
      PhiSBits        = cms.uint32(14),   # Bits used to store phiS coord. (13 enough?)
