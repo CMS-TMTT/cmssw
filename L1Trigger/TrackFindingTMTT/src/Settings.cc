@@ -168,6 +168,11 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   hybrid_alphaBits_Endcap2S_  ( stubDigitize_.getParameter<unsigned int>      ("hybrid_alphaBits_Endcap2S"  ) ),
   hybrid_alphaRange_Endcap2S_ ( stubDigitize_.getParameter<double>      ("hybrid_alphaRange_Endcap2S" ) ),
 
+  layerR_reference_                (stubDigitize_.getParameter<vector<double> >       ( "layerR_reference"     ) ),
+  layerZ_reference_                (stubDigitize_.getParameter<vector<double> >       ( "layerZ_reference"     ) ),
+  layerR_2S_disk1to2_              (stubDigitize_.getParameter<vector<double> >       ( "layerR_2S_disk1to2"     ) ),
+  layerR_2S_disk3to5_              (stubDigitize_.getParameter<vector<double> >       ( "layerR_2S_disk3to5"     ) ),
+
   //=== Configuration of Geometric Processor.
   useApproxB_             ( geometricProc_.getParameter<bool>                 ( "UseApproxB"             ) ),
   bApprox_gradient_       ( geometricProc_.getParameter<double>               ( "BApprox_gradient"       ) ),
@@ -381,12 +386,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   psPixelLength_          (0.),
   ssStripPitch_           (0.),
   ssNStrips_              (0.),
-  ssStripLength_          (0.),
-
-  layerR_reference_                (trackDigi_.getParameter<vector<double> >       ( "layerR_reference"     ) ),
-  layerZ_reference_                (trackDigi_.getParameter<vector<double> >       ( "layerZ_reference"     ) ),
-  layerR_2S_disk1to2_              (trackDigi_.getParameter<vector<double> >       ( "layerR_2S_disk1to2"     ) ),
-  layerR_2S_disk3to5_              (trackDigi_.getParameter<vector<double> >       ( "layerR_2S_disk3to5"     ) )
+  ssStripLength_          (0.)
 
 {
   // If user didn't specify any PDG codes, use e,mu,pi,K,p, to avoid picking up unstable particles like Xi-.
