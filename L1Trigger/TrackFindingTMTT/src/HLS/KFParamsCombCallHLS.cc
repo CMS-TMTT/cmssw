@@ -192,7 +192,6 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
   // decimal point in the digitized numbers (profitting from Maxeller/HLS ability to handle floats).
 
   stateDigi.inv2R = inv2R*inv2R_Mult_; // See inv2RToHWU() in Maxeller code in above web link.
-  std::cout<<"DEBUG PHI0 "<<phi0<<std::endl;
   stateDigi.phi0  = phi0*phiMult_;
 
   #ifdef IRT_DEBUG
