@@ -61,8 +61,17 @@ static const unsigned int maxStubsPerFitTrack  = 4;
 // Digitisation multipliers (from data format doc).
 // KF uses same multiplier for r as for stubs in DTC, but one extra bit to accomodate larger range,
 // since KF measures r w.r.t. beamline. And it uses r multiplier for z too.
+
+#ifdef HYBRID_FORMAT
+// Taken from smallest stub granularity in DTC in any region of tracker.
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/HybridDataFormat
+static const float rMult = 1. / 0.02929688;
+static const float phiMult = 1. / (7.828293e-6 * 8); // Degrade tracklet granularity by factor 8 to save bits.
+#else
 static const float rMult = pow(2.,KFstubN::BR-1)/91.652837;
 static const float phiMult = pow(2.,KFstubN::BPHI)/0.6981317;
+#endif
+
 static const float rphiMult = rMult*phiMult;
 static const float inv2R_Mult = (phiMult/rMult);
 static const float chi2_Mult = 1.;
