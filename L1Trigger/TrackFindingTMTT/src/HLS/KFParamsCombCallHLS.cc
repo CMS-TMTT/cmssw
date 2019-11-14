@@ -9,6 +9,7 @@
  */
 
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/KFParamsCombCallHLS.h"
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/KFconstants.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/KalmanUpdate.h"
 
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
@@ -35,6 +36,33 @@ template const KalmanState* KFParamsCombCallHLS::getStateOut<5>(const KalmanStat
 
 //--- Normal code below ...
 
+KFParamsCombCallHLS::KFParamsCombCallHLS(const Settings* settings, const uint nPar, const string &fitterName ) : KFParamsComb(settings, nPar, fitterName) {
+
+  // Get digitisation multipliers.
+  rMult_   = pow(2, getSettings()->rtBits() )   / (getSettings()->rtRange());
+  zMult_   = pow(2, getSettings()->zBits() )    / (getSettings()->zRange()); 
+  phiMult_ = pow(2, getSettings()->phiSBits() ) / (getSettings()->phiSRange()); 
+  const double small = 1.e-6;
+  if (fabs(rMult_ - KalmanHLS::rMult) / rMult_ > small || fabs(zMult_ - KalmanHLS::rMult / 2) / zMult_ > small || fabs(phiMult_ - KalmanHLS::phiMult) / phiMult_ > small) {
+	throw cms::Exception("ERROR: KFParamsCombCallHLS inconsistent digi multipliers.")<<" r="<<rMult_<<" "<<KalmanHLS::rMult<<"  z="<<zMult_<<" "<<(KalmanHLS::rMult / 2)<<" phi="<<phiMult_<<" "<<KalmanHLS::phiMult<<std::endl; 
+  }
+  // Multiplier of (phiMult/rMult) for helix param "inv2R" simplifies the KF maths, as explained in
+  // https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/demonstrator/specifications/demonstrator2_formats_working_doc.docx 
+  inv2R_Mult_ = (phiMult_/rMult_);
+  d0_Mult_ = (phiMult_*rMult_);
+
+  // Reference radius in r-phi plane.
+  chosenRofPhi_ = getSettings()->chosenRofPhi();
+  // Number of eta sectors.
+  numEtaRegions_ = getSettings()->numEtaRegions();
+
+#ifdef PT_2GEV
+  if (settings->houghMinPt() > 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit KFpragmaOpts.h to undefine PT_2GEV");
+#else
+  if (settings->houghMinPt() < 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit KFpragmaOpts.h to define PT_2GEV");
+#endif
+}
+
 //=== Update KF helix params with this stub.
 //=== (Override KF state updator in L1KalmanComb with version suitable for HLS).
 
@@ -44,19 +72,6 @@ const KalmanState* KFParamsCombCallHLS::kalmanUpdate( unsigned skipped, unsigned
   cout.unsetf(ios::floatfield); // Get useful debug printout ...
   cout.precision(8);
   
-  // Get digitisation multipliers.
-  rMult_   = pow(2, getSettings()->rtBits() )   / (getSettings()->rtRange());
-  zMult_   = pow(2, getSettings()->zBits() )    / (getSettings()->zRange()); 
-  phiMult_ = pow(2, getSettings()->phiSBits() ) / (getSettings()->phiSRange()); 
-  // Multiplier of (phiMult/rMult) for helix param "inv2R" simplifies the KF maths, as explained in 
-  //https://svnweb.cern.ch/cern/wsvn/UK-TrackTrig/demonstrator/specifications/demonstrator2_formats_working_doc.docx ,
-  inv2R_Mult_ = (phiMult_/rMult_);
-  d0_Mult_ = (phiMult_*rMult_);
-
-  // Reference radius in r-phi plane.
-  chosenRofPhi_ = getSettings()->chosenRofPhi();
-  // Number of eta sectors.
-  numEtaRegions_ = getSettings()->numEtaRegions();
   // Get digitised stub info
   KalmanHLS::KFstubC stubDigi = this->getDigiStub(stubCluster, &stateIn);
 
@@ -177,6 +192,7 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
   // decimal point in the digitized numbers (profitting from Maxeller/HLS ability to handle floats).
 
   stateDigi.inv2R = inv2R*inv2R_Mult_; // See inv2RToHWU() in Maxeller code in above web link.
+  std::cout<<"DEBUG PHI0 "<<phi0<<std::endl;
   stateDigi.phi0  = phi0*phiMult_;
 
   #ifdef IRT_DEBUG
