@@ -220,7 +220,7 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
   stateDigi.cov_11 = cov_phi0_phi0 * phiMult_ * phiMult_;
   stateDigi.cov_22 = cov_tanL_tanL;
   stateDigi.cov_33 = cov_z0_z0 * rMult_ * rMult_;
-  stateDigi.cov_01 = cov_inv2R_phi0 * rMult_ * phiMult_;
+  stateDigi.cov_01 = cov_inv2R_phi0 * inv2R_Mult_ * phiMult_;
   stateDigi.cov_23 = cov_tanL_z0 * rMult_;
 
   // Check digitisation range of covariance matrix is sufficient.
@@ -228,7 +228,7 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
   KalmanHLS::CHECK_AP::checkCalc("C11_old", stateDigi.cov_11, cov_phi0_phi0   * phiMult_    * phiMult_);
   KalmanHLS::CHECK_AP::checkCalc("C22_old", stateDigi.cov_22, cov_tanL_tanL);
   KalmanHLS::CHECK_AP::checkCalc("C33_old", stateDigi.cov_33, cov_z0_z0       * rMult_      * rMult_);
-  KalmanHLS::CHECK_AP::checkCalc("C01_old", stateDigi.cov_01, cov_inv2R_phi0  * rMult_      * phiMult_);
+  KalmanHLS::CHECK_AP::checkCalc("C01_old", stateDigi.cov_01, cov_inv2R_phi0  * inv2R_Mult_ * phiMult_);
   KalmanHLS::CHECK_AP::checkCalc("C23_old", stateDigi.cov_23, cov_tanL_z0     * rMult_);
 
   this->getDigiStateInUtil(helixParams, cov, stateDigi);
@@ -308,7 +308,7 @@ const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, 
   pxx[1][1] = (double(stateOutDigi.cov_11) + 0.5 / pow(2, stateOutDigi.cov_11.width - stateOutDigi.cov_11.iwidth)) / (phiMult_ * phiMult_);
   pxx[2][2] = (double(stateOutDigi.cov_22) + 0.5 / pow(2, stateOutDigi.cov_22.width - stateOutDigi.cov_22.iwidth));
   pxx[3][3] = (double(stateOutDigi.cov_33) + 0.5 / pow(2, stateOutDigi.cov_33.width - stateOutDigi.cov_33.iwidth)) / (rMult_ * rMult_);
-  pxx[0][1] = (double(stateOutDigi.cov_01) + 0.5 / pow(2, stateOutDigi.cov_01.width - stateOutDigi.cov_01.iwidth)) / (rMult_ * phiMult_);
+  pxx[0][1] = (double(stateOutDigi.cov_01) + 0.5 / pow(2, stateOutDigi.cov_01.width - stateOutDigi.cov_01.iwidth)) / (inv2R_Mult_ * phiMult_);
   pxx[1][0] = pxx[0][1];
   pxx[2][3] = (double(stateOutDigi.cov_23) + 0.5 / pow(2, stateOutDigi.cov_23.width - stateOutDigi.cov_23.iwidth)) / (rMult_);
   pxx[3][2] = pxx[2][3];
