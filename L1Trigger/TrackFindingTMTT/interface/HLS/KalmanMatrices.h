@@ -166,20 +166,24 @@ public:
 class OneOverInt {
 public:
   enum {BDET=9}; // Number of significant bits used to calculate 1/determinant. Keep small to save resources.
-  enum {MINN = (1 << (BDET - 1)), MAXN = (1 << BDET)}; // pow(2,BSR) // Min & max. value of r
+  enum {MINN = (1 << (BDET - 2)), MAXN = (1 << BDET)}; // pow(2,BSR) // Min & max. value of r
   enum {BOI=2-BDET}; // Large enough to contain reciprocal.
   typedef ap_ufixed<BDET,BOI>   TOI;
 public:
   OneOverInt() {
-    for (unsigned int n = MINN; n < MAXN; n++) { // Don't bother initializing first two, as would overflow bit range.
-      get[n - MINN] = 1./float(n); // Round to nearest half integer
+    for (unsigned int n = 0; n < MAXN; n++) { // Don't bother initializing first two, as would overflow bit range.
+      if (n > MINN) {
+        get[n] = 1./float(n); // Round to nearest half integer
+      } else {
+	get[n] = 1./float(MINN+1); // Truncated to save bits, but better than nothing.
+      }
     }
   }
 
-  const TOI& getIt(const ap_uint<BDET>& i) const {return get[i - MINN];}
+  const TOI& getIt(const ap_uint<BDET>& i) const {return get[i];}
 
 private:
-  TOI get[MAXN - MINN + 1];
+  TOI get[MAXN];
 };
 
 
