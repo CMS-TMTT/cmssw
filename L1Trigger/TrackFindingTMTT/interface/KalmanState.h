@@ -47,8 +47,8 @@ class KalmanState{
 	const  StubCluster* stubCluster() const { return     stubCluster_; }
 	double                    chi2() const { return chi2rphi_ + chi2rz_; }
         double              chi2scaled() const { return chi2rphi_/kalmanChi2RphiScale_ + chi2rz_; } // Improves electron performance.
-	double                  chi2rz() const { return           chi2rphi_; }
-	double                chi2rphi() const { return             chi2rz_; }
+	double                chi2rphi() const { return        chi2rphi_; }
+	double                  chi2rz() const { return          chi2rz_; }
 	unsigned           nStubLayers() const { return         n_stubs_; }
         L1track3D            candidate() const { return       l1track3D_; }
         unsigned int        hitPattern() const { return      hitPattern_; } // Bit-encoded KF layers the fitted track has stubs in.
