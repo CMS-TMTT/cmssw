@@ -382,8 +382,8 @@ TMTrackProducer_params = cms.PSet(
      # Multiple scattering term - inflate hit phi errors by this divided by Pt
      # (0.00075 gives best helix resolution & 0.00450 gives best chi2 distribution).
      KalmanMultiScattTerm    = cms.double(0.00075), 
-     # Multiple scattering factor -- buggy so don't use!
-     KalmanMultiScattFactor  = cms.double(0.0),
+     # Scale down chi2 in r-phi plane by this factor to improve electron performance (should be power of 2)
+     KalmanChi2RphiScale     = cms.uint32(8),
      # N.B. KF track fit chi2 cut is not cfg param, but instead is hard-wired in KF4ParamsComb::isGoodState(...).
      #--- Enable Higher order corrections
      # Treat z uncertainty in tilted barrel modules correctly.

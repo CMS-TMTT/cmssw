@@ -395,7 +395,7 @@ L1fittedTrack SimpleLR::fit( const L1track3D& l1track3D) {
     ResZ /= RZSigma;
 
     chi2_phi += fabs(ResPhi*ResPhi);
-    chi2_z += fabs(ResZ*ResZ);
+    chi2_z   += fabs(ResZ*ResZ);
     if(settings_->debug()==6 ){ 
       cout << "Stub ResPhi "<< ResPhi*RPhiSigma << " ResSigma " << RPhiSigma << " Res "<< ResPhi << " chi2 "<< chi2_phi << endl;
       cout << "Stub ResZ "<< ResZ*RZSigma << " ResSigma " << RZSigma << " Res "<< ResZ << " chi2 "<< chi2_z << endl;
@@ -408,7 +408,7 @@ L1fittedTrack SimpleLR::fit( const L1track3D& l1track3D) {
   // double chi2 = (chi2_phi + chi2_z)/2.;
   // double chi2 = sqrt(chi2_phi*chi2_phi + chi2_z*chi2_z)/2;
 
-  double chi2 = chi2_phi;
+  double chi2 = chi2_phi; // Ignore r-z residuals due to poor 2S resolution?
   if(digitize_) chi2 = floor(chi2*chi2Mult_)/chi2Mult_;
 
 
@@ -433,7 +433,7 @@ L1fittedTrack SimpleLR::fit( const L1track3D& l1track3D) {
   const unsigned int hitPattern = 0; // FIX: Needs setting
   L1fittedTrack fitTrk(settings_, l1track3D, fitStubs, hitPattern,
                 qOverPt, 0., phi0, z0, tanLambda,
-                chi2, 4, accepted);
+		chi2_phi, chi2_z, 4, accepted);
 
   if(settings_->enableDigitize()) fitTrk.digitizeTrack("SimpleLR");
 

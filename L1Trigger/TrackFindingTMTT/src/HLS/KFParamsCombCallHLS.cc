@@ -233,7 +233,8 @@ KalmanHLS::KFstate<NPAR> KFParamsCombCallHLS::getDigiStateIn(unsigned int skippe
 
   this->getDigiStateInUtil(helixParams, cov, stateDigi);
 
-  stateDigi.chiSquared = state->chi2();
+  stateDigi.chiSquaredRphi = state->chi2rphi();
+  stateDigi.chiSquaredRz   = state->chi2rz();
 
   // This is the KF layer that we are currently looking for stubs in, incremented by L1KalmanComb::doKF(), which in any eta region increases from 0-7 as a particle goes through each layer in turn.
   stateDigi.layerID        = layer;
@@ -318,10 +319,11 @@ const KalmanState* KFParamsCombCallHLS::getStateOut(const KalmanState* stateIn, 
   TMatrixD K(nPar_,2); // KF gain matrix - don't provide, as can't be used?
   TMatrixD dcov(2,2);  // Stub (phi,z) position covariance matrix - don't provide as can't be used?
   const StubCluster* stubcl = stubCluster;
-  double chi2 = (double(stateOutDigi.chiSquared) + 0.5 / pow(2, stateOutDigi.chiSquared.width - stateOutDigi.chiSquared.iwidth));
+  double chi2rphi = (double(stateOutDigi.chiSquaredRphi) + 0.5 / pow(2, stateOutDigi.chiSquaredRphi.width - stateOutDigi.chiSquaredRphi.iwidth));
+  double chi2rz   = (double(stateOutDigi.chiSquaredRz)   + 0.5 / pow(2, stateOutDigi.chiSquaredRz.width - stateOutDigi.chiSquaredRz.iwidth));
 
   const KalmanState* ks = this->mkState(candidate, n_skipped, kLayer_next, layerId, last_state,
-				        x, pxx, K, dcov, stubcl, chi2);
+				        x, pxx, K, dcov, stubcl, chi2rphi, chi2rz);
 
 #ifdef PRINT_HLSARGS
   std::cout<<std::hex<<"OUTPUT hitPattern="<<ks->hitPattern()<<std::dec<<std::endl;

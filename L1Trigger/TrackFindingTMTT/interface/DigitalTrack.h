@@ -36,8 +36,8 @@ public:
   void init(const string& fitterName, unsigned int nHelixParams,
 	    unsigned int iPhiSec, unsigned int iEtaReg, int mbin, int cbin, int mBinhelix, int cBinhelix, 
 	    unsigned int hitPattern,
-	    float qOverPt_orig, float d0_orig, float phi0_orig, float tanLambda_orig, float z0_orig, float chisquared_orig, 
-	    float qOverPt_bcon_orig, float phi0_bcon_orig, float chisquared_bcon_orig, // beam-spot constrained values. 
+	    float qOverPt_orig, float d0_orig, float phi0_orig, float tanLambda_orig, float z0_orig, float chisquaredRphi_orig, float chisquaredRz_orig, 
+	    float qOverPt_bcon_orig, float phi0_bcon_orig, float chisquaredRphi_bcon_orig, // beam-spot constrained values. 
 	    unsigned int nLayers, bool consistent, bool accepted, 
 	    float tp_qOverPt, float tp_d0, float tp_phi0, float tp_tanLambda, float tp_z0, float tp_eta, 
 	    int tp_index, bool tp_useForAlgEff, bool tp_useForEff, int tp_pdgId);
@@ -54,12 +54,13 @@ public:
   int          iDigi_phi0rel()            const {this->ok(); return iDigi_phi0rel_;} // measured relative to centre of sector
   int          iDigi_z0()                 const {this->ok(); return iDigi_z0_;}
   int          iDigi_tanLambda()          const {this->ok(); return iDigi_tanLambda_;}
-  unsigned int iDigi_chisquared()         const {this->ok(); return iDigi_chisquared_;}
+  unsigned int iDigi_chisquaredRphi()     const {this->ok(); return iDigi_chisquaredRphi_;}
+  unsigned int iDigi_chisquaredRz()       const {this->ok(); return iDigi_chisquaredRz_;}
 
   // Digits corresponding to track params with post-fit beam-spot constraint.
   int          iDigi_oneOver2r_bcon()     const {this->ok(); return iDigi_oneOver2r_bcon_;} // half inverse curvature of track.
   int          iDigi_phi0rel_bcon()       const {this->ok(); return iDigi_phi0rel_bcon_;} // measured relative to centre of sector
-  unsigned int iDigi_chisquared_bcon()    const {this->ok(); return iDigi_chisquared_bcon_;}
+  unsigned int iDigi_chisquaredRphi_bcon() const {this->ok(); return iDigi_chisquaredRphi_bcon_;}
 
   // Floating point track params derived from digitized info (so with degraded resolution).
   float        qOverPt()                  const {this->ok(); return qOverPt_;} 
@@ -69,14 +70,15 @@ public:
   float        phi0rel()                  const {this->ok(); return phi0rel_;} // measured relative to centre of sector
   float        z0()                       const {this->ok(); return z0_;}
   float        tanLambda()                const {this->ok(); return tanLambda_;}
-  float        chisquared()               const {this->ok(); return chisquared_;}
+  float        chisquaredRphi()           const {this->ok(); return chisquaredRphi_;}
+  float        chisquaredRz()             const {this->ok(); return chisquaredRz_;}
 
   // Floating point track params derived from digitized track params with post-fit beam-spot constraint.
   float        qOverPt_bcon()             const {this->ok(); return qOverPt_bcon_;} 
   float        oneOver2r_bcon()           const {this->ok(); return oneOver2r_bcon_;} // half inverse curvature of track.
   float        phi0_bcon()                const {this->ok(); return phi0_bcon_;}
   float        phi0rel_bcon()             const {this->ok(); return phi0rel_bcon_;} // measured relative to centre of sector
-  float        chisquared_bcon()          const {this->ok(); return chisquared_bcon_;}
+  float        chisquaredRphi_bcon()      const {this->ok(); return chisquaredRphi_bcon_;}
 
   unsigned int iPhiSec()                  const {this->okin(); return iPhiSec_;}
   unsigned int iEtaReg()                  const {this->okin(); return iEtaReg_;}
@@ -97,7 +99,8 @@ public:
   float        orig_phi0rel()             const {this->okin(); return phi0rel_orig_;} // measured relative to centre of sector
   float        orig_z0()                  const {this->okin(); return z0_orig_;}
   float        orig_tanLambda()           const {this->okin(); return tanLambda_orig_;}
-  float        orig_chisquared()          const {this->okin(); return chisquared_orig_;}
+  float        orig_chisquaredRphi()      const {this->okin(); return chisquaredRphi_orig_;}
+  float        orig_chisquaredRz()        const {this->okin(); return chisquaredRz_orig_;}
 
   float        tp_pt()                    const {this->okin(); return tp_pt_;}
   float        tp_eta()                   const {this->okin(); return tp_eta_;}
@@ -209,13 +212,14 @@ private:
   float                phi0rel_orig_;
   float                tanLambda_orig_;
   float                z0_orig_;
-  float                chisquared_orig_;
+  float                chisquaredRphi_orig_;
+  float                chisquaredRz_orig_;
 
   float                qOverPt_bcon_orig_;
   float                oneOver2r_bcon_orig_;
   float                phi0_bcon_orig_;
   float                phi0rel_bcon_orig_;
-  float                chisquared_bcon_orig_;
+  float                chisquaredRphi_bcon_orig_;
 
   //--- Digits corresponding to track params.
 
@@ -224,11 +228,12 @@ private:
   int                  iDigi_phi0rel_;
   int                  iDigi_z0_;
   int                  iDigi_tanLambda_;
-  unsigned int         iDigi_chisquared_;
+  unsigned int         iDigi_chisquaredRphi_;
+  unsigned int         iDigi_chisquaredRz_;
 
   int                  iDigi_oneOver2r_bcon_;
   int                  iDigi_phi0rel_bcon_;
-  unsigned int         iDigi_chisquared_bcon_;
+  unsigned int         iDigi_chisquaredRphi_bcon_;
 
   //--- Floating point track coords derived from digitized info (so with degraded resolution). 
 
@@ -239,13 +244,14 @@ private:
   float                phi0rel_;
   float                z0_;
   float                tanLambda_;
-  float                chisquared_;
+  float                chisquaredRphi_;
+  float                chisquaredRz_;
 
   float                qOverPt_bcon_;
   float                oneOver2r_bcon_;
   float                phi0_bcon_;
   float                phi0rel_bcon_;
-  float                chisquared_bcon_;
+  float                chisquaredRphi_bcon_;
 };
 
 }

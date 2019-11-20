@@ -51,7 +51,7 @@ Settings::Settings() {
   handleStripsEtaSec_=false;
   kalmanFillInternalHists_=false;
   kalmanMultiScattTerm_=0.00075;
-  kalmanMultiScattFactor_=0.0;
+  kalmanChi2RphiScale_ = 8;
   //
   // Cfg params & constants required only for HYBRID tracking (as taken from DB for TMTT).
   //
@@ -278,7 +278,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   kalmanMaxStubsEasy_      ( trackFitSettings_.getParameter<unsigned>         ( "KalmanMaxStubsEasy"     ) ),
   kalmanMaxStubsPerLayer_  ( trackFitSettings_.getParameter<unsigned>         ( "KalmanMaxStubsPerLayer" ) ),
   kalmanMultiScattTerm_    ( trackFitSettings_.getParameter<double>           ( "KalmanMultiScattTerm"   ) ),
-  kalmanMultiScattFactor_  ( trackFitSettings_.getParameter<double>           ( "KalmanMultiScattFactor" ) ),
+  kalmanChi2RphiScale_     ( trackFitSettings_.getParameter<unsigned>         ( "KalmanChi2RphiScale"    ) ),
   kalmanHOtilted_          ( trackFitSettings_.getParameter<bool>             ( "KalmanHOtilted"         ) ),
   kalmanHOhelixExp_        ( trackFitSettings_.getParameter<bool>             ( "KalmanHOhelixExp"       ) ),
   kalmanHOalpha_           ( trackFitSettings_.getParameter<unsigned int>     ( "KalmanHOalpha"          ) ),

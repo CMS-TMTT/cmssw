@@ -1,4 +1,3 @@
-
 #ifndef __KFconstants__
 #define __KFconstants__
 
@@ -188,6 +187,8 @@ static const KFstateN::TD d0CutMinus[] = {0, 0, 0, -d0Cut_loose, -d0Cut_tight, -
 
 // Chi2 cut
 static const KFstateN::TCHI chi2Cut[] = {0, 0, chi2_Mult*10, chi2_Mult*30, chi2_Mult*80, chi2_Mult*120, chi2_Mult*160}; 
+// Scale down chi2 in r-phi plane by this factor when applying chi2 cut (to improve electron efficiency).
+static const unsigned int chi2rphiScale = 8; // Must be power of 2!
 
 #ifdef CMSSW_GIT_HASH
 }

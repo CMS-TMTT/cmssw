@@ -40,9 +40,9 @@ class L1KalmanComb : public TrackFitGeneric{
 	static  std::map<std::string, double> getTrackParams( const L1KalmanComb *p, const KalmanState *state );
 	virtual std::map<std::string, double> getTrackParams( const KalmanState *state ) const=0;
 
-        // Get track params with beam-spot constraint & chi2 increase from applying it..
-        virtual std::map<std::string, double> getTrackParams_BeamConstr( const KalmanState *state, double& deltaChi2 ) const {
-          deltaChi2 = 0.0;
+        // Get track params with beam-spot constraint & chi2 (r-phi) after applying it..
+  virtual std::map<std::string, double> getTrackParams_BeamConstr( const KalmanState *state, double& chi2rphi_bcon) const {
+          chi2rphi_bcon = 0.0;
           return (this->getTrackParams(state)); // Returns unconstrained result, unless derived class overrides it.
         }
 
@@ -56,14 +56,15 @@ class L1KalmanComb : public TrackFitGeneric{
 	void resetStates();
 	void deleteStubClusters();
 	const KalmanState *mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const KalmanState *last_state, 
-				    const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2 );
+				    const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2rphi, double chi2rz );
 
     protected:
 	/* Methods */
 	std::vector<double> Hx( const TMatrixD &pH, const std::vector<double> &x )const;
 	std::vector<double> Fx( const TMatrixD &pF, const std::vector<double> &x )const;
 	TMatrixD HxxH( const TMatrixD &pH, const TMatrixD &xx )const;
-	double Chi2( const TMatrixD &dcov, const std::vector<double> &delta, bool debug = false )const;
+        void getDeltaChi2( const TMatrixD &dcov, const std::vector<double> &delta, bool debug, 
+   	                   double& deltaChi2rphi, double& deltaChi2rz )const;
 	TMatrixD GetKalmanMatrix( const TMatrixD &h, const TMatrixD &pxcov, const TMatrixD &dcov )const;
 	void GetAdjustedState( const TMatrixD &K, const TMatrixD &pxcov, 
 			       const std::vector<double> &x, const StubCluster *stubCluster, const std::vector<double>& delta,  
@@ -83,7 +84,7 @@ class L1KalmanComb : public TrackFitGeneric{
 	virtual const KalmanState *updateSeedWithStub( const KalmanState &state, const StubCluster *stubCluster ){ return 0; }
 	virtual bool isGoodState( const KalmanState &state )const{ return true; }
 
-	double calcChi2( const KalmanState &state )const;
+        virtual void calcChi2( const KalmanState &state, double& chi2rphi, double& chi2rz ) const;
 
 	virtual double getRofState( unsigned layerId, const vector<double> &xa )const{ return 0;}
         virtual unsigned int getKalmanLayer(unsigned int iEtaReg, unsigned int layerIDreduced, bool barrel)const;

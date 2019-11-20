@@ -102,14 +102,15 @@ std::map<std::string, double> KFParamsComb::getTrackParams(const KalmanState *st
 }
 
 /* If using 5 param helix fit, get track params with beam-spot constraint & track fit chi2 from applying it. */
+/* (N.B. chi2rz unchanged by constraint) */
 
-std::map<std::string, double> KFParamsComb::getTrackParams_BeamConstr( const KalmanState *state, double& chi2 ) const {
+std::map<std::string, double> KFParamsComb::getTrackParams_BeamConstr( const KalmanState *state, double& chi2rphi ) const {
   if (nPar_ == 5) {
     std::map<std::string, double> y;
     std::vector<double> x = state->xa();
     TMatrixD cov_xa       = state->pxxa(); 
-    double deltaChi2 = (x.at(D0) * x.at(D0)) / cov_xa[D0][D0];
-    chi2 = state->chi2() + deltaChi2;
+    double deltaChi2rphi = (x.at(D0) * x.at(D0)) / cov_xa[D0][D0];
+    chi2rphi = state->chi2rphi() + deltaChi2rphi;
     // Apply beam-spot constraint to helix params in transverse plane only, as most sensitive to it.
     x[INV2R] -= x.at(D0) * (cov_xa[INV2R][D0] / cov_xa[D0][D0]); 
     x[PHI0 ] -= x.at(D0) * (cov_xa[PHI0 ][D0] / cov_xa[D0][D0]); 
@@ -409,27 +410,29 @@ bool KFParamsComb::isGoodState( const KalmanState &state )const
 
   // chi2 selection
 
+  double chi2scaled = state.chi2scaled(); // chi2(r-phi) scaled down to improve electron performance.
+
   if (getSettings()->kalmanMultiScattTerm() > 0.0001) {   // Scattering taken into account
 
-    if (state.chi2() > chi2Cut[nStubLayers]) goodState=false; // No separate pT selection needed
+    if (chi2scaled > chi2Cut[nStubLayers]) goodState=false; // No separate pT selection needed
 
   } else {  // scattering ignored - HISTORIC
 
     // N.B. Code below changed by Alexander Morton to allow tracking down to Pt = 2 GeV.
     if( nStubLayers == 2 ) {
-      if (state.chi2() > 15.0) goodState=false; // No separate pT selection needed
+      if (chi2scaled > 15.0) goodState=false; // No separate pT selection needed
     } else if ( nStubLayers == 3 ) {
-      if (state.chi2() > 100.0 && pt > 2.7) goodState=false;
-      if (state.chi2() > 120.0 && pt <= 2.7) goodState=false;
+      if (chi2scaled > 100.0 && pt > 2.7) goodState=false;
+      if (chi2scaled > 120.0 && pt <= 2.7) goodState=false;
     } else if ( nStubLayers == 4 ) { 
-      if (state.chi2() > 320.0 && pt > 2.7) goodState=false;
-      if (state.chi2() > 1420.0 && pt <= 2.7) goodState=false;
+      if (chi2scaled > 320.0 && pt > 2.7) goodState=false;
+      if (chi2scaled > 1420.0 && pt <= 2.7) goodState=false;
     } else if ( nStubLayers == 5 ) {  // NEEDS TUNING FOR 5 OR 6 LAYERS !!!
-      if (state.chi2() > 480.0 && pt > 2.7) goodState=false;
-      if (state.chi2() > 2130.0 && pt <= 2.7) goodState=false;
+      if (chi2scaled > 480.0 && pt > 2.7) goodState=false;
+      if (chi2scaled > 2130.0 && pt <= 2.7) goodState=false;
     } else if ( nStubLayers >= 6 ) {  // NEEDS TUNING FOR 5 OR 6 LAYERS !!!
-      if (state.chi2() > 640.0 && pt > 2.7) goodState=false;
-      if (state.chi2() > 2840.0 && pt <= 2.7) goodState=false;
+      if (chi2scaled > 640.0 && pt > 2.7) goodState=false;
+      if (chi2scaled > 2840.0 && pt <= 2.7) goodState=false;
     }
 
   }
@@ -441,7 +444,7 @@ bool KFParamsComb::isGoodState( const KalmanState &state )const
        (getSettings()->kalmanDebugLevel() >= 2 && getSettings()->hybrid()) ) {
     if (not goodState) cout<<"State veto:";
     if (goodState)     cout<<"State kept:"; 
-    cout<<" nlay="<<nStubLayers<<" nskip="<<state.nSkippedLayers()<<" chi2="<<state.chi2();
+    cout<<" nlay="<<nStubLayers<<" nskip="<<state.nSkippedLayers()<<" chi2_scaled="<<chi2scaled;
     if (tpa_ != nullptr) cout<<" pt(mc)="<<tpa_->pt();
     cout<<" pt="<<pt<<" q/pt="<<qOverPt<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
     if (nPar_ == 5) cout<<" d0="<<y["d0"];
