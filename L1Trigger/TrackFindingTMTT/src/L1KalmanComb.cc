@@ -482,6 +482,10 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
     // Fitted track params must lie in same sector as HT originally found track in.
     if (! getSettings()->hybrid() ) { // consistentSector() function not yet working for Hybrid.
+
+      // Bodge to take into account digitisation in sector consistency check.
+      if (getSettings()->enableDigitize()) returnTrk.digitizeTrack("KF4ParamsComb");
+
       if (! returnTrk.consistentSector()) {
         L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), cand->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2rphi(), cand->chi2rz(), nPar_, false);
         if(this->isHLS() && nPar_ == 4) {
@@ -859,7 +863,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     const KalmanState* stateFinal = best_state_by_nstubs.begin()->second; // First element has largest number of stubs.
     finished_states.push_back(stateFinal);
     if ( getSettings()->kalmanDebugLevel() >= 1 ) {
-      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" hitPattern="<<std::hex<<stateFinal->hitPattern()<<std::dec<<" etaReg="<<l1track3D.iEtaReg()<<" HT(m,c)=("<<l1track3D.getCellLocationHT().first<<","<<l1track3D.getCellLocationHT().second<<")";
+      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" hitPattern="<<std::hex<<stateFinal->hitPattern()<<std::dec<<" phiSec="<<l1track3D.iPhiSec()<<" etaReg="<<l1track3D.iEtaReg()<<" HT(m,c)=("<<l1track3D.getCellLocationHT().first<<","<<l1track3D.getCellLocationHT().second<<")";
       std::map<std::string, double> y = getTrackParams( stateFinal );
       cout<<" q/pt="<<y["qOverPt"]<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
       if (nPar_==5) cout<<" d0="<<y["d0"];
