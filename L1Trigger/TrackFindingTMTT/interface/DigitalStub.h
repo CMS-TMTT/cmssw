@@ -21,7 +21,11 @@ class DigitalStub {
 
 public:
 
-  // Note configuration parameters.
+  // Digitization for KF in Hybrid tracking
+
+  DigitalStub(const Settings* settings, double r, double phi, double z, unsigned int iPhiSec);
+
+  // Note configuration parameters (for TMTT tracking)
   DigitalStub(const Settings* settings);
 
   ~DigitalStub(){}

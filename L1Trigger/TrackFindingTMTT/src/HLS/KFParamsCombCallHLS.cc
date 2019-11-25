@@ -61,6 +61,12 @@ KFParamsCombCallHLS::KFParamsCombCallHLS(const Settings* settings, const uint nP
 #else
   if (settings->houghMinPt() < 2.5) throw cms::Exception("KFParamsConmbCallHLS: Edit KFpragmaOpts.h to define PT_2GEV");
 #endif
+
+#ifdef HYBRID_FORMAT
+  if (not settings_->hybrid()) throw cms::Exception("KFParamsConmbCallHLS: Edit KFpragmaOpts.h to undefine HYBRID_FORMAT");
+#else
+  if (settings_->hybrid()) throw cms::Exception("KFParamsConmbCallHLS: Edit KFpragmaOpts.h to define HYBRID_FORMAT");
+#endif
 }
 
 //=== Update KF helix params with this stub.
