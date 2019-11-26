@@ -25,7 +25,7 @@ void L1track2D::digitizeTrack(){
       if(matchedTP_ != nullptr){
         digitalTrack_.init("MiniHT", 0,
 	 iPhiSec_, iEtaReg_, mBinHT, cBinHT, 0, 0, 0,
-	 this->qOverPt(), 0, this->phi0(),estTanLambda_, estZ0_, 0,
+	 this->qOverPt(), 0, this->phi0(),estTanLambda_, estZ0_, 0, 0,
 	 0, 0, 0,
 	 nLayers_, true, true,
 	 matchedTP_->qOverPt(), matchedTP_->d0(), matchedTP_->phi0(), matchedTP_->tanLambda(), matchedTP_->z0(), matchedTP_->eta(), 
@@ -33,7 +33,7 @@ void L1track2D::digitizeTrack(){
       } else {
         digitalTrack_.init("MiniHT", 0,
 	 iPhiSec_, iEtaReg_, mBinHT, cBinHT, -1, -1, 0,     
-	 this->qOverPt(), 0, this->phi0(), estTanLambda_, estZ0_, 0, 
+	 this->qOverPt(), 0, this->phi0(), estTanLambda_, estZ0_, 0, 0,
 	 0, 0, 0,
 	 nLayers_, true, true, 
 	 0, 0, 0, 0, 0, 0, 
