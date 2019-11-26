@@ -69,17 +69,17 @@ TMTrackProducer_params = cms.PSet(
      #--- Parameters available in MP board. (And in case of Hybrid used internally in KF)
      #
      PhiSectorBits   = cms.uint32(6),    # Bits used to store phi sector number -- NOT USED
-     PhiSBits        = cms.uint32(14),   # Bits used to store phiS coord. (13 enough?)
-     PhiSRange       = cms.double(0.698131700),  # Range phiS coord. covers in radians.
+     PhiSBits        = cms.uint32(17 - 3),   # Bits used to store phiS coord. (3 less than tracklet)
+     PhiSRange       = cms.double(1.02607),  # Range phiS coord. covers in radians.
      RtBits          = cms.uint32(12),   # Bits used to store Rt coord.
-      RtRange        = cms.double(91.652837), # Range Rt coord. covers in units of cm.
-     ZBits           = cms.uint32(14),   # Bits used to store z coord.
-      ZRange          = cms.double(733.2227), # Range z coord. covers in units of cm.
+     RtRange         = cms.double(120.), # Range Rt coord. covers in units of cm.
+     ZBits           = cms.uint32(12+2),   # Bits used to store z coord.
+     ZRange          = cms.double(240.*4), # Range z coord. covers in units of cm.
      #
      #--- Parameters available in GP board (excluding any in common with MP specified above).
      #
      PhiOBits        = cms.uint32(15),      # Bits used to store PhiO parameter.
-     PhiORange      = cms.double(1.3962634), # Range PhiO parameter covers.
+     PhiORange       = cms.double(1.3962634), # Range PhiO parameter covers.
      BendBits        = cms.uint32(6),        # Bits used to store stub bend.
 
      # Parameters for hybrid data format
