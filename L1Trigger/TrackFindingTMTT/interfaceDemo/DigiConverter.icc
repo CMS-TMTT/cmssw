@@ -77,6 +77,7 @@ DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
                aFitTrk.digitaltrack().iDigi_phi0rel(),
                aFitTrk.digitaltrack().iDigi_tanLambda(),
                aFitTrk.digitaltrack().iDigi_z0(),
+	       0, // d0
                aFitTrk.digitaltrack().iDigi_chisquaredRphi(),
                aFitTrk.digitaltrack().iDigi_chisquaredRz(),
                aFitTrk.getHitPattern(),
