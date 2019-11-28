@@ -3074,7 +3074,10 @@ void Histos::endJobAnalysis() {
   // Don't bother producing summary if user didn't request histograms via TFileService in their cfg.
   if ( ! this->enabled() ) return;
 
-  if (settings_->hybrid()) {
+  // Protection when running in wierd mixed hybrid-TMTT modes.
+  bool wierdMixedMode = (hisRecoTPinvptForEff_.find("TRACKLET") == hisRecoTPinvptForEff_.end());
+
+  if (settings_->hybrid() && not wierdMixedMode) {
 
     // Produce plots of tracking efficieny after tracklet pattern reco.
     this->plotTrackletSeedEfficiency();
@@ -3164,7 +3167,7 @@ void Histos::endJobAnalysis() {
   }
   cout<<endl;
 
-  if (settings_->hybrid()) {
+  if (settings_->hybrid() && not wierdMixedMode) {
     //--- Print summary of tracklet pattern reco
     this->printTrackletSeedFindingPerformance();
     this->printTrackPerformance("TRACKLET");
