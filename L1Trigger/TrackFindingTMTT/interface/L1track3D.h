@@ -9,6 +9,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/Stub.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Sector.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HTrphi.h"
+#include "L1Trigger/TrackFindingTMTT/interface/DigitalTrack.h"
 
 #include <vector>
 #include <string>
@@ -35,10 +36,12 @@ public:
     stubs_(stubs), 
     cellLocationHT_(cellLocationHT), helixRphi_(helixRphi), helixRz_  (helixRz),  helixD0_(helixD0),
     iPhiSec_(iPhiSec), iEtaReg_(iEtaReg), optoLinkID_(optoLinkID), mergedHTcell_(mergedHTcell),
-    seedLayerType_(999), seedPS_(999)
+    seedLayerType_(999), seedPS_(999),
+      digitizedTrack_(false), digitalTrack_(settings)
   {
     nLayers_   = Utility::countLayers(settings, stubs); // Count tracker layers these stubs are in
     matchedTP_ = Utility::matchingTP(settings, stubs, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate info about match.
+    this->digitizeTrack(); // Doesn't (shouldn't) modify any members, just set new ones (unlike the equivlant function in L1fittedTrack)
   }
 
   L1track3D(const Settings* settings, const vector<const Stub*>& stubs,
@@ -211,6 +214,11 @@ public:
     return keep; // Indicate if track should be kept.
   }
 
+  // Digitize track and degrade helix parameter resolution according to effect of digitisation.
+  void digitizeTrack();
+
+  // Access to detailed info about digitized track
+  const DigitalTrack&             digitaltrack() const { return      digitalTrack_;}
 
 private:
 
@@ -238,6 +246,9 @@ private:
   const TP*                          matchedTP_;
   vector<const Stub*>                matchedStubs_;
   unsigned int                       nMatchedLayers_;
+
+  bool digitizedTrack_;
+  DigitalTrack                          digitalTrack_; // Class used to digitize track if required.
 };
 
 }

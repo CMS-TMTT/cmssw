@@ -46,7 +46,7 @@ DigiConverter::makeDigiHTStub( const TMTT::Stub& aHTStub, uint32_t aPhiSectorIdI
 
 //-----------------------------------------------------------------------------
 DigiHTMiniStub
-DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, const TMTT::L1track2D& a2DTrk, bool isFirstStubOnTrackCandidate, uint32_t aSectorId, int8_t cBin, int8_t mBin) const {
+DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, const TMTT::L1track3D& a3DTrk, bool isFirstStubOnTrackCandidate, uint32_t aSectorId, int8_t cBin, int8_t mBin) const {
     return DigiHTMiniStub(
                aHTMiniStub.digitalStub().iDigi_Hybrid_Layer(), // aHTMiniStub.layerIdReduced(),
                aSectorId,
@@ -62,11 +62,11 @@ DigiConverter::makeDigiHTMiniStub( const TMTT::Stub& aHTMiniStub, const TMTT::L1
                aHTMiniStub.barrel(),
                aHTMiniStub.psModule(),
                isFirstStubOnTrackCandidate,
-               a2DTrk.getNumStubs(),
-               a2DTrk.digitaltrack().iDigi_oneOver2r(),
-               a2DTrk.digitaltrack().iDigi_phi0rel(),
-               a2DTrk.digitaltrack().iDigi_tanLambda(),
-               a2DTrk.digitaltrack().iDigi_z0()
+               a3DTrk.getNumStubs(),
+               a3DTrk.digitaltrack().iDigi_oneOver2r(),
+               a3DTrk.digitaltrack().iDigi_phi0rel(),
+               a3DTrk.digitaltrack().iDigi_tanLambda(),
+               a3DTrk.digitaltrack().iDigi_z0()
            );
 }
 //-----------------------------------------------------------------------------
@@ -77,8 +77,6 @@ DigiKF4Track
 DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
 
     const uint numPhiSecPerNon = mSettings->numPhiSectors() / mSettings->numPhiNonants();
-
-    if (aFitTrk.getHitPattern() > 127) cout<<"HIT "<<aFitTrk.getHitPattern()<<endl;
 
     return DigiKF4Track(
                aFitTrk.digitaltrack().iDigi_oneOver2r(),
@@ -91,12 +89,16 @@ DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
                0, // aFitTrk.digitaltrack().iDigi_bendchisquaredRphiBin(),
                0, // aFitTrk.digitaltrack().iDigi_bendchisquaredRzBin(),
 	       0, // Bend chi2
-               aFitTrk.digitaltrack().hitPattern(),
+               aFitTrk.getHitPattern(),
+               aFitTrk.getNumLayers(), // Not in final Hybrid format, but currently in FW.
+               0, // eventID
+               aFitTrk.getCellLocationHT().first - mSettings->houghNbinsPt() / 2, // Not in final Hybrid format
+               aFitTrk.getCellLocationHT().second - mSettings->houghNbinsPhi() / 2,
+               aFitTrk.iPhiSec()%numPhiSecPerNon, // Not in final Hybrid format
+               aFitTrk.iEtaReg(),
                0, // aFitTrk.digitaltrack().iDigi_mvaquality(),
                0, // aFitTrk.digitaltrack().iDigi_mvaqualityExtra1(),
                0, // aFitTrk.digitaltrack().iDigi_mvaqualityExtra2(),
-               0, // aFitTrk.digitaltrack().iDigi_reserved(),
-               0, // eventID
                true
            );
 }

@@ -262,6 +262,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     //
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
 
+        unsigned int iNonant = iPhiSec / numPhiSecPerNon;
         unsigned int iPhiSecInNonant = iPhiSec%numPhiSecPerNon;
 
         for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
@@ -305,7 +306,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                                                 mSel
                                             );
 
-                    digiHTStub.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), (uint16_t)trk.optoLinkID(), DigiRouteId::kNullTimeIndex});
+                    digiHTStub.setRouteId({(uint16_t)(iNonant), (uint16_t)trk.optoLinkID(), DigiRouteId::kNullTimeIndex});
                     allDigiHTStubs->push_back(digiHTStub);
                 }
             }
@@ -318,7 +319,12 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         miniHTstage.exec( mHtRphis );
     }
 
+    // Identify which MHT track in each (nonant,link) gives rise to each fitted track, 
+    // so demonstrator code can determine which ones were lost.
+    map<pair<unsigned int, unsigned int>, vector<const TMTT::L1track3D*>> linkToTrk3DMap;
+
     //=== Make 3D tracks, optionally running r-z track filters (such as Seed Filter) & duplicate track removal.
+
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
         unsigned int iPhiSecInNonant = iPhiSec%numPhiSecPerNon;
 
@@ -337,13 +343,19 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
             // Convert 2D tracks found by HT to 3D tracks (optionally by running r-z filters & duplicate track removal)
             get3Dtrk.run(htRphi.trackCands2D());
 
+            const vector<TMTT::L1track3D>& vecTrk3D = get3Dtrk.trackCands3D(false);
+
             // Loop over the tracks
-            for ( const TMTT::L1track2D& trk : htRphi.trackCands2D()) {
+            for (const TMTT::L1track3D& trk : vecTrk3D) {
                 int8_t cBin = trk.getCellLocationHT().second - settings_->houghNbinsPhi() / 2;
                 int8_t mBin = trk.getCellLocationHT().first - settings_->houghNbinsPt() / 2;
 
     	        unsigned int iLink = trk.optoLinkID();
+	        unsigned int iNonant = iPhiSec / numPhiSecPerNon;
+		linkToTrk3DMap[{iNonant, iLink}].push_back(&trk);
+
                 bool isFirstStubOnTrackCandidate = true;
+
                 for (const TMTT::Stub* stub : trk.getStubs()) {
 
                     DigiHTMiniStub digiHTMiniStub = digiConverter.makeDigiHTMiniStub(
@@ -356,7 +368,8 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                                                         cBin,
                                                         mBin
                                                     );
-                    digiHTMiniStub.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), (uint16_t)iLink, DigiRouteId::kNullTimeIndex});
+
+                    digiHTMiniStub.setRouteId({(uint16_t)(iNonant), (uint16_t)iLink, DigiRouteId::kNullTimeIndex});
                     allDigiHTMiniStubs->push_back(digiHTMiniStub);
 
                     isFirstStubOnTrackCandidate = false;
@@ -432,9 +445,19 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 		    }
 
 		    if (passDiffCut) {
+		      
+		      unsigned int iNonant = iPhiSec / numPhiSecPerNon;
+		      const TMTT::L1track3D& trk3D = fitTrk.getL1track3D();
+		      const vector<const TMTT::L1track3D*>& trksOnLink = linkToTrk3DMap.at({iNonant, trk3D.optoLinkID()});
+		      // Find where trk3D was inside vector trksOnLink.
+		      vector<const TMTT::L1track3D*>::const_iterator trkPos = std::find_if(trksOnLink.begin(), trksOnLink.end(), [trk3D] (const TMTT::L1track3D* t) {return ( t->qOverPt() == trk3D.qOverPt() && t->phi0() == trk3D.phi0() && t->z0() == trk3D.z0() && t->tanLambda() == trk3D.tanLambda() );} );
+		      unsigned int iPos = std::distance(trksOnLink.begin(), trkPos);		      
+
                       DigiKF4Track digiTrack = digiConverter.makeDigiKF4Track(fitTrk);
 
-                      digiTrack.setRouteId({(uint16_t)(iPhiSec / numPhiSecPerNon), (uint16_t)fitTrk.optoLinkID(), DigiRouteId::kNullTimeIndex});
+                      digiTrack.setRouteId({(uint16_t)(iNonant), (uint16_t)fitTrk.optoLinkID(), DigiRouteId::kNullTimeIndex});
+		      digiTrack.setTrk3DID((uint8_t)(iPos));
+
                       allDigiKF4TracksWithDups->push_back(digiTrack);
 		    }
                 }
