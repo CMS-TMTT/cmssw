@@ -93,7 +93,7 @@ If changes (new commits) have been made to the central CMS-TMTT repository since
 ```
 git pull --rebase TMTT TMTT_1060
 ```
-You may have to resolve conflicts, in the usual git way.
+You may have to resolve conflicts, in the usual git way. Then "git push --force" if you want to submit your changes
 
 Alternatively, if you don't want to commit your local changes, you can do ```git stash```, perform the rebase, and then ```git stash pop```.
 
