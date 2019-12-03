@@ -30,8 +30,6 @@
 <!-- /flags CXXFLAGS="-DPRINT_HLSARGS"/ --> 
 <flags CXXFLAGS="-Wno-int-in-bool-context -Wno-unknown-pragmas"/> <!-- Suppress warnings from HLS library and HLS pragmas -->
 
-<flags CXXFLAGS="-DHYBRID_FORMAT"/> <!-- Use hybrid data format inside KF HLS -->
-
 <export>
     <lib name="1"/>
 </export>

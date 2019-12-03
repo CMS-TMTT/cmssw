@@ -12,6 +12,6 @@
 //#define PT_2GEV
 
 // If defined, HLS assumes hybrid (=tracklet) input format & digitisation multipliers.
-//#define HYBRID_FORMAT
+#define HYBRID_FORMAT
 
 #endif
