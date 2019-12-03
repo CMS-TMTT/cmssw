@@ -166,7 +166,8 @@ public:
 class OneOverInt {
 public:
   enum {BDET=9}; // Number of significant bits used to calculate 1/determinant. Keep small to save resources.
-  enum {MINN = (1 << (BDET - 2)), MAXN = (1 << BDET)}; // pow(2,BSR) // Min & max. value of r
+  //enum {MINN = (1 << (BDET - 2)), MAXN = (1 << BDET)}; // Min & max. value of r
+  enum {MINN = (1 << (BDET - 2)) + (1 <<(BDET - 3)), MAXN = (1 << BDET)}; // // Min & max. value of r - with min tweaked to allow room in bit range for higher order corrections later.
   enum {BOI=2-BDET}; // Large enough to contain reciprocal.
   typedef ap_ufixed<BDET,BOI>   TOI;
 public:
