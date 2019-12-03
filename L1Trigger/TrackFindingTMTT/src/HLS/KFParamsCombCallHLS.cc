@@ -419,29 +419,31 @@ bool KFParamsCombCallHLS::isGoodState( const KalmanState &state ) const
 
   // Check if HLS & C++ KF agree ...
 
-  if (goodState && not goodState_HLS) {
-    // Errors caused by small precision errors in chi2 cut value.
-    if (nPar_ == 4) {
-      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<selectOutDigi4_.z0Cut<<" "<<selectOutDigi4_.ptCut<<" "<<selectOutDigi4_.chiSquaredCut<<" "<<selectOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
-    } else {
-      cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<selectOutDigi5_.z0Cut<<" "<<selectOutDigi5_.ptCut<<" "<<selectOutDigi5_.chiSquaredCut<<" "<<selectOutDigi5_.sufficientPScut<<" "<<selectOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
-    }
-  } else if (not goodState && goodState_HLS) {
-    // Failures here usually caused by failing chi2 cut by miniscule amount.
-    if (nPar_ == 4) {
-      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<selectOutDigi4_.z0Cut<<" "<<selectOutDigi4_.ptCut<<" "<<selectOutDigi4_.chiSquaredCut<<" "<<selectOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
-    } else {
-      cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<selectOutDigi5_.z0Cut<<" "<<selectOutDigi5_.ptCut<<" "<<selectOutDigi5_.chiSquaredCut<<" "<<selectOutDigi5_.sufficientPScut<<" "<<selectOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
-    }
+  if (settings_->kalmanDebugLevel() >= 1) {
+    if (goodState && not goodState_HLS) {
+      // Errors caused by small precision errors in chi2 cut value.
+      if (nPar_ == 4) {
+	cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<selectOutDigi4_.z0Cut<<" "<<selectOutDigi4_.ptCut<<" "<<selectOutDigi4_.chiSquaredCut<<" "<<selectOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
+      } else {
+	cout<<"ERROR: KF HLS incorrectly rejected state "<<nStubLayers<<" "<<selectOutDigi5_.z0Cut<<" "<<selectOutDigi5_.ptCut<<" "<<selectOutDigi5_.chiSquaredCut<<" "<<selectOutDigi5_.sufficientPScut<<" "<<selectOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
+      }
+    } else if (not goodState && goodState_HLS) {
+      // Failures here usually caused by failing chi2 cut by miniscule amount.
+      if (nPar_ == 4) {
+	cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<selectOutDigi4_.z0Cut<<" "<<selectOutDigi4_.ptCut<<" "<<selectOutDigi4_.chiSquaredCut<<" "<<selectOutDigi4_.sufficientPScut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<endl;
+      } else {
+	cout<<"ERROR: KF HLS incorrectly kept state "<<nStubLayers<<" "<<selectOutDigi5_.z0Cut<<" "<<selectOutDigi5_.ptCut<<" "<<selectOutDigi5_.chiSquaredCut<<" "<<selectOutDigi5_.sufficientPScut<<" "<<selectOutDigi5_.d0Cut<<" : chi2="<<state.chi2()<<" pt="<<pt<<" 1/2R="<<state.xa()[INV2R]<<" z0="<<state.xa()[Z0]<<" d0="<<state.xa()[D0]<<endl;
+      }
 #ifdef IRT_DEBUG
-  } else {
-    cout<<"KF HLS CUTS GOOD "<<nStubLayers<<" "<<goodState_HLS<<" algo50 "<<algo50_HLS<<endl;
+    } else {
+      cout<<"KF HLS CUTS GOOD "<<nStubLayers<<" "<<goodState_HLS<<" algo50 "<<algo50_HLS<<endl;
 #endif
-  }
+    }
 
 #ifdef IRT_DEBUG
-  if (trueTP) cout<<"L1K GOOD STATE CHECK: vtrue="<<vTrueTP<<" good="<<goodState_HLS<<" nLay="<<nStubLayers<<" chi2="<<state.chi2()<<" pt="<<pt<<" z0="<<state.xa()[Z0]<<" skip="<<state.nSkippedLayers()<<endl;
+    if (trueTP) cout<<"L1K GOOD STATE CHECK: vtrue="<<vTrueTP<<" good="<<goodState_HLS<<" nLay="<<nStubLayers<<" chi2="<<state.chi2()<<" pt="<<pt<<" z0="<<state.xa()[Z0]<<" skip="<<state.nSkippedLayers()<<endl;
 #endif
+  }
 
   //return goodState;
 
