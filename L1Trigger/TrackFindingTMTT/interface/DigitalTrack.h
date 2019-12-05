@@ -234,7 +234,6 @@ private:
   unsigned int         iDigi_chisquaredRz_;
   unsigned int         iDigi_chisquaredRphiBin_;
   unsigned int         iDigi_chisquaredRzBin_;
-
   int                  iDigi_oneOver2r_bcon_;
   int                  iDigi_phi0rel_bcon_;
   unsigned int         iDigi_chisquaredRphi_bcon_;

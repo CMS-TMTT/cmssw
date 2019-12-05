@@ -347,12 +347,13 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
             // Loop over the tracks
             for (const TMTT::L1track3D& trk : vecTrk3D) {
+
                 int8_t cBin = trk.getCellLocationHT().second - settings_->houghNbinsPhi() / 2;
                 int8_t mBin = trk.getCellLocationHT().first - settings_->houghNbinsPt() / 2;
 
-    	        unsigned int iLink = trk.optoLinkID();
-	        unsigned int iNonant = iPhiSec / numPhiSecPerNon;
-		linkToTrk3DMap[{iNonant, iLink}].push_back(&trk);
+    	          unsigned int iLink = trk.optoLinkID();
+	              unsigned int iNonant = iPhiSec / numPhiSecPerNon;
+	            	linkToTrk3DMap[{iNonant, iLink}].push_back(&trk);
 
                 bool isFirstStubOnTrackCandidate = true;
 
@@ -363,7 +364,7 @@ void DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                                                         trk,
                                                         isFirstStubOnTrackCandidate,
                                                         // SectorID
-							iPhiSecInNonant,
+							                                          iPhiSecInNonant,
                                                         //iEtaReg,
                                                         cBin,
                                                         mBin
