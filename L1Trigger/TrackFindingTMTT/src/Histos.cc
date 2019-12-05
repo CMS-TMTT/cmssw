@@ -2119,6 +2119,8 @@ map<string, TFileDirectory> Histos::bookTrackFitting() {
 
     hisFitChi2Matched_[fitName]    = inputDir.make<TH1F>(addn("FitChi2Matched"), ";#chi^{2};", nBinsChi2, chi2Bins );
     hisFitChi2DofMatched_[fitName] = inputDir.make<TH1F>(addn("FitChi2DofMatched"), ";#chi^{2}/DOF;", nBinsChi2, chi2dofBins );
+    hisFitChi2DofRphiMatched_[fitName] = inputDir.make<TH1F>(addn("FitChi2DofRphiMatched"), ";#chi^{2}rphi;", nBinsChi2, chi2Bins );
+    hisFitChi2DofRzMatched_[fitName]   = inputDir.make<TH1F>(addn("FitChi2DofRzMatched"), ";#chi^{2}rz/DOF;", nBinsChi2, chi2Bins );
     if (settings_->kalmanAddBeamConstr() && fitName.find("KF5") != string::npos) { // Histograms of chi2 with beam-spot constraint only make sense for 5 param fit.
       hisFitBeamChi2Matched_[fitName]    = inputDir.make<TH1F>(addn("FitBeamChi2Matched"), "; Beam constr #chi^{2};", nBinsChi2, chi2Bins);
       hisFitBeamChi2DofMatched_[fitName] = inputDir.make<TH1F>(addn("FitBeamChi2DofMatched"), ";Beam constr #chi^{2}/DOF;", nBinsChi2, chi2dofBins );
@@ -2137,6 +2139,8 @@ map<string, TFileDirectory> Histos::bookTrackFitting() {
   
     hisFitChi2Unmatched_[fitName]    = inputDir.make<TH1F>(addn("FitChi2Unmatched"), ";#chi^{2};", nBinsChi2, chi2Bins );
     hisFitChi2DofUnmatched_[fitName] = inputDir.make<TH1F>(addn("FitChi2DofUnmatched"), ";#chi^{2}/DOF;", nBinsChi2, chi2dofBins );
+    hisFitChi2DofRphiUnmatched_[fitName] = inputDir.make<TH1F>(addn("FitChi2DofRphiUnmatched"), ";#chi^{2}rphi/DOF;", nBinsChi2, chi2Bins );
+    hisFitChi2DofRzUnmatched_[fitName]   = inputDir.make<TH1F>(addn("FitChi2DofRzUnmatched"), ";#chi^{2}rz/DOF;", nBinsChi2, chi2Bins );
     if (settings_->kalmanAddBeamConstr() && fitName.find("KF5") != string::npos) { // Histograms of chi2 with beam-spot constraint only make sense for 5 param fit.
       hisFitBeamChi2Unmatched_[fitName]    = inputDir.make<TH1F>(addn("FitBeamChi2Unmatched"), "; Beam constr #Chi^{2};", nBinsChi2, chi2Bins );
       hisFitBeamChi2DofUnmatched_[fitName] = inputDir.make<TH1F>(addn("FitBeamChi2DofUnmatched"), "; Beam constr #Chi^{2}/DOF;", nBinsChi2, chi2dofBins );
@@ -2399,6 +2403,8 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
  
 	hisFitChi2Matched_[fitName]->Fill( fitTrk.chi2() );
 	hisFitChi2DofMatched_[fitName]->Fill( fitTrk.chi2dof() );
+	hisFitChi2DofRphiMatched_[fitName]->Fill( fitTrk.chi2rphi() / fitTrk.numDOFrphi());
+	hisFitChi2DofRzMatched_[fitName]->Fill( fitTrk.chi2rz() / fitTrk.numDOFrz());
 	if (settings_->kalmanAddBeamConstr() && fitName.find("KF5") != string::npos) { // Histograms of chi2 with beam-spot constraint only make sense for 5 param fit.
 	  hisFitBeamChi2Matched_[fitName]->Fill( fitTrk.chi2_bcon() );
 	  hisFitBeamChi2DofMatched_[fitName]->Fill( fitTrk.chi2dof_bcon() );
@@ -2455,6 +2461,8 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
  
 	hisFitChi2Unmatched_[fitName]->Fill( fitTrk.chi2() );
 	hisFitChi2DofUnmatched_[fitName]->Fill( fitTrk.chi2dof() );
+	hisFitChi2DofRphiUnmatched_[fitName]->Fill( fitTrk.chi2rphi() / fitTrk.numDOFrphi());
+	hisFitChi2DofRzUnmatched_[fitName]->Fill( fitTrk.chi2rz() / fitTrk.numDOFrz());
 	if (settings_->kalmanAddBeamConstr() && fitName.find("KF5") != string::npos) { // Histograms of chi2 with beam-spot constraint only make sense for 5 param fit.
 	  hisFitBeamChi2Unmatched_[fitName]->Fill( fitTrk.chi2_bcon() );
 	  hisFitBeamChi2DofUnmatched_[fitName]->Fill( fitTrk.chi2dof_bcon() );
@@ -3066,7 +3074,10 @@ void Histos::endJobAnalysis() {
   // Don't bother producing summary if user didn't request histograms via TFileService in their cfg.
   if ( ! this->enabled() ) return;
 
-  if (settings_->hybrid()) {
+  // Protection when running in wierd mixed hybrid-TMTT modes.
+  bool wierdMixedMode = (hisRecoTPinvptForEff_.find("TRACKLET") == hisRecoTPinvptForEff_.end());
+
+  if (settings_->hybrid() && not wierdMixedMode) {
 
     // Produce plots of tracking efficieny after tracklet pattern reco.
     this->plotTrackletSeedEfficiency();
@@ -3156,7 +3167,7 @@ void Histos::endJobAnalysis() {
   }
   cout<<endl;
 
-  if (settings_->hybrid()) {
+  if (settings_->hybrid() && not wierdMixedMode) {
     //--- Print summary of tracklet pattern reco
     this->printTrackletSeedFindingPerformance();
     this->printTrackPerformance("TRACKLET");

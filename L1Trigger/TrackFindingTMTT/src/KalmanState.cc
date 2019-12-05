@@ -4,12 +4,12 @@
 
 namespace TMTT {
 
-KalmanState::KalmanState(): kLayerNext_(0), layerId_(0), xa_(0), pxxa_(), K_(), dcov_(), stubCluster_(0), chi2_(0), fitter_(0), fXtoTrackParams_(0), barrel_(true), n_skipped_(0){
+KalmanState::KalmanState(): kLayerNext_(0), layerId_(0), xa_(0), pxxa_(), K_(), dcov_(), stubCluster_(0), chi2rphi_(0), chi2rz_(0), fitter_(0), fXtoTrackParams_(0), barrel_(true), n_skipped_(0){
 }
 
 KalmanState::KalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, const KalmanState *last_state, 
 	const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, 
-	const StubCluster* stubCluster, double chi2,
+	const StubCluster* stubCluster, double chi2rphi, double chi2rz,
 	L1KalmanComb *fitter, GET_TRACK_PARAMS f ){
 
     l1track3D_ = candidate;
@@ -26,7 +26,9 @@ KalmanState::KalmanState( const L1track3D& candidate, unsigned n_skipped, unsign
     dcov_.ResizeTo( dcov.GetNrows(), dcov.GetNcols() );
     dcov_ = dcov;
     stubCluster_ = stubCluster;
-    chi2_ = chi2;
+    chi2rphi_ = chi2rphi;
+    chi2rz_   = chi2rz;
+    kalmanChi2RphiScale_ = fitter->getSettings()->kalmanChi2RphiScale();
 
     hitPattern_ = 0;
     if (last_state != nullptr) hitPattern_ = last_state->hitPattern(); // Bit encoded list of hit layers
@@ -68,7 +70,8 @@ KalmanState::KalmanState(const KalmanState &p){
     K_ = p.K();
     dcov_ = p.dcov();
     stubCluster_ = p.stubCluster();
-    chi2_ = p.chi2();
+    chi2rphi_ = p.chi2rphi();
+    chi2rz_ = p.chi2rz();
     n_stubs_ = p.nStubLayers();
     fitter_ = p.fitter();
     fXtoTrackParams_ = p.fXtoTrackParams();
@@ -93,7 +96,8 @@ KalmanState & KalmanState::operator=( const KalmanState &other )
     K_ = other.K();
     dcov_ = other.dcov();
     stubCluster_ = other.stubCluster();
-    chi2_ = other.chi2();
+    chi2rphi_ = other.chi2rphi();
+    chi2rz_ = other.chi2rz();
     n_stubs_ = other.nStubLayers();
     fitter_ = other.fitter();
     fXtoTrackParams_ = other.fXtoTrackParams();
@@ -118,7 +122,7 @@ bool KalmanState::good( const TP *tp )const{
 
 double KalmanState::reducedChi2() const
 { 
-    if( 2 * n_stubs_ - xa_.size() > 0 ) return chi2_ / ( 2 * n_stubs_ - xa_.size() ); 
+    if( 2 * n_stubs_ - xa_.size() > 0 ) return (this->chi2())/ ( 2 * n_stubs_ - xa_.size() ); 
     else return 0; 
 } 
 
@@ -153,16 +157,12 @@ std::vector<const Stub *> KalmanState::stubs()const
 
 bool KalmanState::order(const KalmanState *left, const KalmanState *right){ return (left->nStubLayers() > right->nStubLayers()); }
 
-bool KalmanState::orderReducedChi2(const KalmanState *left, const KalmanState *right){ 
-  return ( left->reducedChi2() < right->reducedChi2() );
-}
-
 bool KalmanState::orderMinSkipChi2(const KalmanState *left, const KalmanState *right){ 
-  return ( left->chi2()*(left->nSkippedLayers()+1) < right->chi2()*(right->nSkippedLayers()+1) );
+  return ( left->chi2scaled()*(left->nSkippedLayers()+1) < right->chi2scaled()*(right->nSkippedLayers()+1) );
 }
 
 bool KalmanState::orderChi2(const KalmanState *left, const KalmanState *right){ 
-  return ( left->chi2() < right->chi2() );
+  return ( left->chi2scaled() < right->chi2scaled() );
 }
 
 void KalmanState::dump( ostream &os, const TP *tp, bool all )const
@@ -197,7 +197,8 @@ void KalmanState::dump( ostream &os, const TP *tp, bool all )const
 
     os << "xcov" << endl;
     pxxa_.Print(); 
-    os << " chi2 = " << chi2_ << ", "; 
+    os << " chi2rphi = " << chi2rphi_ << ", "; 
+    os << " chi2rz = " << chi2rz_ << ", "; 
     os << " # of stublayers = " << n_stubs_ << endl;
     std::vector<const Stub *> stub_list = stubs();
     for( auto &stub : stub_list ){

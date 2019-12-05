@@ -27,9 +27,9 @@ StubKiller Stub::stubKiller_;
 
 //=== Store useful info about the stub (for use with HYBRID code), with hard-wired constants to allow use outside CMSSW.
 
-Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology, unsigned int ID) : 
+Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModule, bool barrel, unsigned int iphi, double alpha, const Settings* settings, const TrackerTopology* trackerTopology, unsigned int ID, unsigned int iPhiSec) : 
   phi_(phi), r_(r), z_(z), bend_(bend), iphi_(iphi), alpha_(alpha), psModule_(psModule), layerId_(layerid), endcapRing_(0), barrel_(barrel), 
-  digitalStub_(settings), stubWindowSuggest_(settings)
+  digitalStub_(settings, r, phi, z, iPhiSec), stubWindowSuggest_(settings)
 { //work in progress on better constructor for new hybrid
   if (psModule && barrel) {
     double zMax[4];
@@ -47,7 +47,7 @@ Stub::Stub(double phi, double r, double z, double bend, int layerid, bool psModu
   index_in_vStubs_ = ID; // A unique ID to label the stub.
 }
 
-//=== Store useful info about stub (for use with TMTT code).
+//=== Store useful info about stub (for use with TMTT tracking).
 
 Stub::Stub(const TTStubRef& ttStubRef, unsigned int index_in_vStubs, const Settings* settings, 
            const TrackerGeometry*  trackerGeometry, const TrackerTopology*  trackerTopology) : 

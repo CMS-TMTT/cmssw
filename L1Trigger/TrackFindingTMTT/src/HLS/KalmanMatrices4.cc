@@ -156,9 +156,9 @@ MatrixC<4>::MatrixC(const MatrixC<4>& C, const MatrixK<4>& K, const MatrixS<4>& 
   double c33new = double(C._33) - (double(K._30) * double(S._03) + double(K._31) * double(S._13));
   double c01new = double(C._01) - (double(K._00) * double(S._01) + double(K._01) * double(S._11));
   double c23new = double(C._23) - (double(K._20) * double(S._03) + double(K._21) * double(S._13));
-  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.03);
+  CHECK_AP::checkCalc("C00_new", _00, c00new, 0.05);
   CHECK_AP::checkCalc("C11_new", _11, c11new, 0.03);
-  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.03);
+  CHECK_AP::checkCalc("C22_new", _22, c22new, 0.04);
   CHECK_AP::checkCalc("C33_new", _33, c33new, 0.03);
   CHECK_AP::checkCalc("C01_new", _01, c01new, 0.03);
   CHECK_AP::checkCalc("C23_new", _23, c23new, 0.03);

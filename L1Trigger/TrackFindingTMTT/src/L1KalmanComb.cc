@@ -448,7 +448,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     // Get track helix params.
     std::map<std::string, double> trackParams = getTrackParams(cand);
 
-    L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), cand->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
+    L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), cand->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2rphi(), cand->chi2rz(), nPar_, true);
 
     bool consistentHLS = false;  // No longer used
     //    if (this->isHLS()) {
@@ -474,16 +474,20 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     // and store inside L1fittedTrack object.
     if (getSettings()->kalmanAddBeamConstr()) {
       if (nPar_ == 5) {
-	double chi2_bcon = 0.;
-	std::map<std::string, double> trackParams_bcon = getTrackParams_BeamConstr(cand, chi2_bcon);
-	returnTrk.setBeamConstr(trackParams_bcon["qOverPt"], trackParams_bcon["phi0"], chi2_bcon);
+	double chi2rphi_bcon = 0.;
+	std::map<std::string, double> trackParams_bcon = getTrackParams_BeamConstr(cand, chi2rphi_bcon);
+	returnTrk.setBeamConstr(trackParams_bcon["qOverPt"], trackParams_bcon["phi0"], chi2rphi_bcon);
       }
     }
 
     // Fitted track params must lie in same sector as HT originally found track in.
     if (! getSettings()->hybrid() ) { // consistentSector() function not yet working for Hybrid.
+
+      // Bodge to take into account digitisation in sector consistency check.
+      if (getSettings()->enableDigitize()) returnTrk.digitizeTrack("KF4ParamsComb");
+
       if (! returnTrk.consistentSector()) {
-        L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), cand->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
+        L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), cand->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2rphi(), cand->chi2rz(), nPar_, false);
         if(this->isHLS() && nPar_ == 4) {
           failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_, consistentHLS );
         } else {
@@ -538,7 +542,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 					const KalmanState *state = *it_last;
 				
 					//std::map<std::string, double> trackParams = getTrackParams(state);
-					//L1fittedTrack returnTrk(getSettings(), l1track3D, state->stubs(), state->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state->chi2(), nPar_, true);
+					//L1fittedTrack returnTrk(getSettings(), l1track3D, state->stubs(), state->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], state->chi2rphi(), state->chi2rz(), nPar_, true);
 				
 				
 					std::vector<const Stub *> sstubs = state->stubs();
@@ -568,7 +572,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
       }
     }
 
-    L1fittedTrack returnTrk(getSettings(), l1track3D, l1track3D.getStubs(), 0, l1track3D.qOverPt(), 0, l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 9999, nPar_, false);
+    L1fittedTrack returnTrk(getSettings(), l1track3D, l1track3D.getStubs(), 0, l1track3D.qOverPt(), 0, l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 9999, 9999, nPar_, false);
     returnTrk.setInfoKF( 0, numUpdateCalls_ );
     return returnTrk;
   }
@@ -593,7 +597,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   TMatrixD K( nPar_, 2 );
   TMatrixD dcov( 2, 2 );
 	
-  const KalmanState *state0 = mkState( l1track3D, 0, 0, 0, nullptr, x0, pxx0, K, dcov, 0, 0 );
+  const KalmanState *state0 = mkState( l1track3D, 0, 0, 0, nullptr, x0, pxx0, K, dcov, nullptr, 0, 0 );
 	
   if( getSettings()->kalmanFillInternalHists() ) fillSeedHists( state0, tpa );
 	
@@ -844,7 +848,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 			
       if( tpa && tpa->useForAlgEff() ) {
       std::map<std::string, double> trackParams = getTrackParams(best_state);
-      L1fittedTrack returnTrk(getSettings(), l1track3D, best_state->stubs(), best_state->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], best_state->chi2(), nPar_, true);
+      L1fittedTrack returnTrk(getSettings(), l1track3D, best_state->stubs(), best_state->hitPattern(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], best_state->chi2rphi(), best_state->chi2rz(), nPar_, true);
       if (returnTrk.getNumMatchedLayers()>=4) {
       //temp_states.push_back(best_state);
       if(i==0) found = true;
@@ -859,7 +863,7 @@ std::vector<const KalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     const KalmanState* stateFinal = best_state_by_nstubs.begin()->second; // First element has largest number of stubs.
     finished_states.push_back(stateFinal);
     if ( getSettings()->kalmanDebugLevel() >= 1 ) {
-      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" hitPattern="<<std::hex<<stateFinal->hitPattern()<<std::dec<<" etaReg="<<l1track3D.iEtaReg()<<" HT(m,c)=("<<l1track3D.getCellLocationHT().first<<","<<l1track3D.getCellLocationHT().second<<")";
+      cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" hitPattern="<<std::hex<<stateFinal->hitPattern()<<std::dec<<" phiSec="<<l1track3D.iPhiSec()<<" etaReg="<<l1track3D.iEtaReg()<<" HT(m,c)=("<<l1track3D.getCellLocationHT().first<<","<<l1track3D.getCellLocationHT().second<<")";
       std::map<std::string, double> y = getTrackParams( stateFinal );
       cout<<" q/pt="<<y["qOverPt"]<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
       if (nPar_==5) cout<<" d0="<<y["d0"];
@@ -980,7 +984,7 @@ const KalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
     new_pxxa.Print();
   }
 
-  const KalmanState *new_state = mkState( state.candidate(), skipped, layer, stubCluster->layerId(), &state, new_xa, new_pxxa, k, dcov, stubCluster, 0 );
+  const KalmanState *new_state = mkState( state.candidate(), skipped, layer, stubCluster->layerId(), &state, new_xa, new_pxxa, k, dcov, stubCluster, 0, 0 );
   if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "new state" << endl;
     new_state->dump( cout, tpa  );
@@ -991,15 +995,14 @@ const KalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
 }
 
 
-double L1KalmanComb::calcChi2( const KalmanState &state )const{
+void L1KalmanComb::calcChi2( const KalmanState &state, double& chi2rphi, double& chi2rz )const{
 
   if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "calcChi2 " << endl;
   }
-  double chi2(0), chi2_p(0);
+  double deltaChi2rphi(0), deltaChi2rz;
 
   if( state.last_state() ) {
-    chi2 = state.last_state()->chi2();
 			
     const StubCluster *stubCluster = state.stubCluster();
 			
@@ -1036,46 +1039,43 @@ double L1KalmanComb::calcChi2( const KalmanState &state )const{
 	cout << "---" << endl;
 	cout << scientific << "delta = " << delta[0] << ", " << delta[1] << endl;
       }
-      chi2_p = Chi2( covR, delta );  
+      this->getDeltaChi2( covR, delta, false, deltaChi2rphi, deltaChi2rz );  
 	
     }
-    chi2 += chi2_p;
+    chi2rphi = state.last_state()->chi2rphi() + deltaChi2rphi;
+    chi2rz   = state.last_state()->chi2rz()   + deltaChi2rz;
 #ifdef RECALC_DEBUG
-    cout<<"  FITTER CHI2 UPDATE = "<<chi2<<" delta chi2="<<chi2_p<<" ID="<<ID<<endl;
+    cout<<"  FITTER CHI2 UPDATE = "<<(chi2rphi+chi2rz)<<" delta chi2="<<(deltaChi2rphi+deltaChi2rz)<<" ID="<<ID<<endl;
 #endif
   }
-
-  return chi2;
+  return;
 }
 
 
-double L1KalmanComb::Chi2( const TMatrixD &dcov, const std::vector<double> &delta, bool debug )const
+void L1KalmanComb::getDeltaChi2( const TMatrixD &dcov, const std::vector<double> &delta, bool debug,  
+                                 double& deltaChi2rphi, double& deltaChi2rz) const
 {
   if( getSettings()->kalmanDebugLevel() >= 4 ){
     cout << "dcov" << endl;
     dcov.Print();
   }
 
-  if( dcov.Determinant() == 0 ) return 999;
+  if( dcov.Determinant() == 0 ) {
+    deltaChi2rphi = 999;
+    deltaChi2rz   = 999;
+    return;
+  };
 
 
   TMatrixD dcovi( dcov );
   dcovi.Invert();
 
-  vector<double> tmp(2,0);
-  for( int i=0; i < dcovi.GetNrows(); i++ ){ 
-    for( int j=0; j < dcovi.GetNcols(); j++ ){ 
-      tmp.at(j) += delta.at(i) * dcovi(i,j); 
-    }
-  }
-  double chi2(0);
-  for( int j=0; j < 2; j++ ){ 
-    chi2 += tmp.at(j) * delta.at(j);
-  }
+  // Change in chi2 (with r-phi/r-z correlation term included in r-phi component)
+  deltaChi2rphi = delta.at(0) * delta.at(0) * dcovi(0,0) + 2 * delta.at(0) * delta.at(1) * dcovi(0,1); 
+  deltaChi2rz   = delta.at(1) * delta.at(1) * dcovi(1,1); 
 
 #ifdef RECALC_DEBUG
-  cout<<"    FITTER DELTA CHI2: rphi="<<dcovi(0,0)*delta.at(0)*delta.at(0)
-      <<" rz="<<dcovi(1,1)*delta.at(1)*delta.at(1)<<endl;
+  cout<<"    FITTER DELTA CHI2: rphi="<<deltaCii2rphi<<" rz="<<deltaChi2rz<<endl;
 #endif
 
   if( debug ){
@@ -1087,7 +1087,7 @@ double L1KalmanComb::Chi2( const TMatrixD &dcov, const std::vector<double> &delt
     for( unsigned i=0; i < delta.size(); i++ ) cout << delta.at(i) << " ";
     cout << endl;
   }
-  return chi2;
+  return;
 }
 
 
@@ -1238,14 +1238,15 @@ void L1KalmanComb::resetStates()
 
 
 const KalmanState *L1KalmanComb::mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const KalmanState *last_state, 
-					  const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2 )
+					  const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2rphi, double chi2rz )
 {
 
-  KalmanState *new_state = new KalmanState( candidate, skipped, layer, layerId, last_state, x, pxx, K, dcov, stubCluster, chi2, this, &getTrackParams );
+  KalmanState *new_state = new KalmanState( candidate, skipped, layer, layerId, last_state, x, pxx, K, dcov, stubCluster, chi2rphi, chi2rz, this, &getTrackParams );
 
-  if( chi2 == 0 ){
-    double new_state_chi2 = calcChi2( *new_state ); 
-    new_state->setChi2( new_state_chi2 );
+  if( chi2rphi + chi2rz == 0 ){
+    double new_state_chi2rphi = 0., new_state_chi2rz = 0.;
+    this->calcChi2( *new_state, new_state_chi2rphi, new_state_chi2rz ); 
+    new_state->setChi2( new_state_chi2rphi, new_state_chi2rz );
   }
 
   state_list_.push_back( new_state );

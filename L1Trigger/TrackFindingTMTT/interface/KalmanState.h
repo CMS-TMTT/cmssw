@@ -19,7 +19,7 @@ class KalmanState{
 	KalmanState();
 	KalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, const KalmanState *last_state, 
 		const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, 
-		const StubCluster* stubcl, double chi2, 
+		const StubCluster* stubcl, double chi2rphi, double chi2rz, 
 		L1KalmanComb *fitter, GET_TRACK_PARAMS f );
 	KalmanState(const KalmanState &p);
 	~KalmanState(){}
@@ -45,7 +45,10 @@ class KalmanState{
 	TMatrixD                  dcov() const { return            dcov_; }
         // Hit
 	const  StubCluster* stubCluster() const { return     stubCluster_; }
-	double                    chi2() const { return            chi2_; }
+	double                    chi2() const { return chi2rphi_ + chi2rz_; }
+        double              chi2scaled() const { return chi2rphi_/kalmanChi2RphiScale_ + chi2rz_; } // Improves electron performance.
+	double                chi2rphi() const { return        chi2rphi_; }
+	double                  chi2rz() const { return          chi2rz_; }
 	unsigned           nStubLayers() const { return         n_stubs_; }
         L1track3D            candidate() const { return       l1track3D_; }
         unsigned int        hitPattern() const { return      hitPattern_; } // Bit-encoded KF layers the fitted track has stubs in.
@@ -58,13 +61,12 @@ class KalmanState{
 	GET_TRACK_PARAMS     fXtoTrackParams() const{ return fXtoTrackParams_; };
 
 
-	static bool orderReducedChi2(const KalmanState *left, const KalmanState *right);
 	static bool orderChi2(const KalmanState *left, const KalmanState *right);
 	static bool orderMinSkipChi2(const KalmanState *left, const KalmanState *right);
 
 	static bool order(const KalmanState *left, const KalmanState *right);
 	void dump( ostream &os, const TP *tp=0, bool all=0 ) const;
-	void setChi2( double p ){ chi2_ = p; }
+        void setChi2( double chi2rphi, double chi2rz ){ chi2rphi_ = chi2rphi; chi2rz_ = chi2rz; }
 
         // If using HLS, note/get additional output produced by HLS core.
         //void setHLSselect(unsigned int mBinHelix, unsigned int cBinHelix, bool consistent) { mBinHelixHLS_ = mBinHelix; cBinHelixHLS_ = cBinHelix; consistentHLS_ = consistent;}
@@ -81,7 +83,9 @@ class KalmanState{
 	TMatrixD                       K_;
 	TMatrixD                    dcov_;
 	const StubCluster   *stubCluster_;
-	double                      chi2_;
+	double                  chi2rphi_;
+	double                    chi2rz_;
+        unsigned int  kalmanChi2RphiScale_;
 	unsigned                 n_stubs_;
 	L1KalmanComb             *fitter_;
 	GET_TRACK_PARAMS fXtoTrackParams_;

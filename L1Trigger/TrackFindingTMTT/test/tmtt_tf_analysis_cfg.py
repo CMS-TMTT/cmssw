@@ -44,7 +44,7 @@ elif GEOMETRY == "D41":
   inputMCtxt = getTxtFile('MCsamples/1060/RelVal/TTbar/PU200.txt')
 
 # Fastest to use a local copy ...
-#inputMCtxt = getTxtFile('L1Trigger/TrackFindingTMTT/test/MCsamples/1040/RelVal/TTbar/localRAL/PU200.txt') 
+#inputMCtxt = getTxtFile('MCsamples/1040/RelVal/TTbar/localRAL/PU200.txt') 
 
 options.register('inputMC', inputMCtxt, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "Files to be processed")
 
@@ -104,8 +104,7 @@ process.load('L1Trigger.TrackFindingTMTT.TMTrackProducer_cff')
 #--- Optionally override default configuration parameters here (example given of how).
 
 #process.TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring(
-#                                "KF5ParamsComb",
-#                                "KF4ParamsComb"
+#                                "KF4ParamsCombHLS",
 #                                )
 
 # If the input samples contain stubs and the truth association, then you can just use the following path

@@ -347,8 +347,8 @@ public:
   unsigned int         kalmanMaxStubsPerLayer()         const { return kalmanMaxStubsPerLayer_;}
   // Multiple scattering term - inflate hit phi errors by this divided by Pt
   double               kalmanMultiScattTerm()           const { return kalmanMultiScattTerm_;}
-  // Multiple scattering factor -- buggy so don't use!
-  double               kalmanMultiScattFactor()         const { return kalmanMultiScattFactor_;}
+  // Scale down chi2 in r-phi plane by this factor to improve electron performance.
+  unsigned int         kalmanChi2RphiScale()            const { return kalmanChi2RphiScale_;}
   //--- Enable Higher order corrections
   // Treat z uncertainty in tilted barrel modules correctly.
   bool                kalmanHOtilted()                  const {return kalmanHOtilted_;}
@@ -693,7 +693,7 @@ private:
   unsigned int         kalmanMaxStubsEasy_;
   unsigned int         kalmanMaxStubsPerLayer_;
   double               kalmanMultiScattTerm_; 
-  double               kalmanMultiScattFactor_; 
+  unsigned int         kalmanChi2RphiScale_;
   bool                 kalmanHOtilted_;
   bool                 kalmanHOhelixExp_;
   unsigned int         kalmanHOalpha_;

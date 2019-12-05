@@ -39,9 +39,9 @@ namespace KalmanHLS {
 template <unsigned int NPAR>
 void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPAR>& stateOut, KFselect<NPAR>& selectOut);
 
-// Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
+// Calculate increase in chi2 (in r-phi & r-z) from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
 template <unsigned int NPAR>
-TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv);
+void calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv, TCHI_INT& dChi2_phi, TCHI_INT& dChi2_z);
 
 // Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.
 // (Relevant only to 5-param helix fit)

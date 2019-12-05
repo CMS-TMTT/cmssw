@@ -27,7 +27,7 @@ TrackFitGeneric::TrackFitGeneric( const Settings* settings, const string &fitter
 //=== Specify which phi sector and eta region it is in.
  
 L1fittedTrack TrackFitGeneric::fit(const L1track3D& l1track3D) {
-  return L1fittedTrack (settings_, l1track3D, l1track3D.getStubs(), 0, 0, 0, 0, 0, 0, 999999., 0);
+  return L1fittedTrack (settings_, l1track3D, l1track3D.getStubs(), 0, 0, 0, 0, 0, 0, 0, 999999., 0);
 }
  
 TrackFitGeneric* TrackFitGeneric::create(std::string fitter, const Settings* settings) {

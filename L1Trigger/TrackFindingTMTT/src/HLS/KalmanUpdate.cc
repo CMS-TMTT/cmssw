@@ -37,9 +37,9 @@ template void kalmanUpdate(const KFstubC& stub, const KFstate<4>& stateIn, KFsta
 
 template void kalmanUpdate(const KFstubC& stub, const KFstate<5>& stateIn, KFstate<5>& stateOut, KFselect<5>& selectOut);
 
-template TCHI_INT calcDeltaChi2(const VectorRes<4>& res, const MatrixInverseR<4>& Rinv);
+template void calcDeltaChi2(const VectorRes<4>& res, const MatrixInverseR<4>& Rinv, TCHI_INT& dChi2_phi, TCHI_INT& dChi2_z);
 
-template TCHI_INT calcDeltaChi2(const VectorRes<5>& res, const MatrixInverseR<5>& Rinv);
+template void calcDeltaChi2(const VectorRes<5>& res, const MatrixInverseR<5>& Rinv, TCHI_INT& dChi2_phi, TCHI_INT& dChi2_z);
 
 //=== Add stub to old KF helix state to get new KF helix state.
 
@@ -141,13 +141,17 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
   CHECK_AP::checkDet("recalc_rz",c22,c33,c23); 
  */
 
-  // Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
-  TCHI_INT deltaChi2 = calcDeltaChi2(res, RmatInv);
-  TCHI_INT chi2 = stateIn.chiSquared + deltaChi2;
+  // Calculate increase in chi2 (in r-phi & r-z) from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
+  TCHI_INT deltaChi2_phi = 0, deltaChi2_z = 0;
+  calcDeltaChi2(res, RmatInv, deltaChi2_phi, deltaChi2_z);
+  TCHI_INT chi2_phi = stateIn.chiSquaredRphi + deltaChi2_phi;
+  TCHI_INT chi2_z   = stateIn.chiSquaredRz   + deltaChi2_z;
   // Truncate chi2 to avoid overflow.
   static const TCHI_INT MAX_CHI2 = (1 << KFstateN::BCHI) - 1;
-  if (chi2 > MAX_CHI2) chi2 = MAX_CHI2;
-  stateOut.chiSquared = chi2;
+  if (chi2_phi > MAX_CHI2) chi2_phi = MAX_CHI2;
+  if (chi2_z   > MAX_CHI2) chi2_z   = MAX_CHI2;
+  stateOut.chiSquaredRphi = chi2_phi;
+  stateOut.chiSquaredRz = chi2_z;
   
   stateOut.inv2R = x_new._0;
   stateOut.phi0  = x_new._1;
@@ -179,7 +183,7 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
   // Also, don't do "cut_z0_minus = - cut_z0" or this fails Vivado implementation with timing errors.
   selectOut.z0Cut = ((x_new._3 >= cut_z0_minus    && x_new._3 <= cut_z0)    || (cut_z0 == 0));  // cut = 0 means cut not applied.
   selectOut.ptCut = ((x_new._0 >= cut_inv2R_minus && x_new._0 <= cut_inv2R) || (cut_inv2R == 0)); 
-  selectOut.chiSquaredCut = ((chi2 <= cut_chi2)        || (cut_chi2 == 0));
+  selectOut.chiSquaredCut = ((chi2_phi / chi2rphiScale + chi2_z <= cut_chi2) || (cut_chi2 == 0));
   selectOut.sufficientPScut = not (nStubs <= 2 && V._2Smodule);
   // IRT -- very useful whilst optimising variable bit ranges, to skip all but first iteration.
   //selectOut.ptCut = false;
@@ -196,27 +200,28 @@ void kalmanUpdate(const KFstubC& stub, const KFstate<NPAR>& stateIn, KFstate<NPA
 #endif
 }
 
-//=== Calculate increase in chi2 from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
+//=== Calculate increase in chi2 (in r-phi & r-z) from adding new stub: delta(chi2) = res(transpose) * R(inverse) * res
 
 template <unsigned int NPAR>
-TCHI_INT calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv) {
+void calcDeltaChi2(const VectorRes<NPAR>& res, const MatrixInverseR<NPAR>& Rinv, TCHI_INT& dChi2_phi, TCHI_INT& dChi2_z) {
   // Simplify calculation by noting that Rinv is symmetric.
   typedef typename MatrixInverseR<NPAR>::TRI00_short TRI00_short;
   typedef typename MatrixInverseR<NPAR>::TRI11_short TRI11_short;
   typedef typename MatrixInverseR<NPAR>::TRI01_short TRI01_short;
-  TCHI_INT dChi2 = (res._0 * res._0) * TRI00_short(Rinv._00) +
-                   (res._1 * res._1) * TRI11_short(Rinv._11) +
+  dChi2_phi = (res._0 * res._0) * TRI00_short(Rinv._00) +
                2 * (res._0 * res._1) * TRI01_short(Rinv._01);
+  dChi2_z   = (res._1 * res._1) * TRI11_short(Rinv._11);
 #ifdef PRINT_SUMMARY
-  double chi2_phi = double(res._0) * double(res._0) * double(Rinv._00);
-  double chi2_z   = double(res._1) * double(res._1) * double(Rinv._11);
-  double chi2_c   = double(res._0) * double(res._1) * double(Rinv._01);
-  CHECK_AP::checkCalc("dchi2", dChi2, chi2_phi + chi2_z + 2*chi2_c, 0.1, 0.1);
+  double chi2_00 = double(res._0) * double(res._0) * double(Rinv._00);
+  double chi2_01 = double(res._0) * double(res._1) * double(Rinv._01);
+  double chi2_11 = double(res._1) * double(res._1) * double(Rinv._11);
+  CHECK_AP::checkCalc("dChi2_phi", dChi2_phi, chi2_00 + 2*chi2_01, 0.1, 0.1);
+  CHECK_AP::checkCalc("dChi2_z"  , dChi2_z  , chi2_11            , 0.1, 0.1);
 #ifdef PRINT
-  std::cout<<"Delta chi2 = "<<dChi2<<" res (phi,z) = "<<res._0<<" "<<res._1<<" chi2 (phi,z) = "<<chi2_phi<<" "<<chi2_z<<std::endl;
+  std::cout<<"Delta chi2_phi = "<<dChi2_phi<<" delta chi2_z = "<<dChi2_z<<" res (phi,z) = "<<res._0<<" "<<res._1<<std::endl;
 #endif
 #endif
-  return dChi2;
+  return;
 }
 
 //=== Set output helix params & associated cov matrix related to d0, & check if d0 passes cut.

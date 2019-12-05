@@ -157,7 +157,7 @@ public:
 
   KFstate<4>() : inv2R(0), phi0(0), tanL(0), z0(0),
     cov_00(0), cov_11(0), cov_22(0), cov_33(0), cov_01(0), cov_23(0),
-    chiSquared(0), cBin_ht(0), mBin_ht(0), layerID(0), nSkippedLayers(0), hitPattern(0),
+    chiSquaredRphi(0), chiSquaredRz(0), cBin_ht(0), mBin_ht(0), layerID(0), nSkippedLayers(0), hitPattern(0),
     trackID(0), eventID(0), phiSectID(0), etaSectID(0), etaSectZsign(0),
     valid(0) {}
 
@@ -178,7 +178,8 @@ public:
   KFstateN::TC01  cov_01; // (inv2R, phi0) -- other off-diagonal elements assumed negligible.
   KFstateN::TC23  cov_23; // (tanL,  z0)   -- other off-diagonal elements assumed negligible.
 
-  KFstateN::TCHI  chiSquared;    // No idea why Maxeller doesn't use 18 bits for this.
+  KFstateN::TCHI  chiSquaredRphi; // Chi2 in r-phi plane + small contributions from r-phi & r-z correlations.
+  KFstateN::TCHI  chiSquaredRz;   // Chi2 in r-z plane   
 
   KFstateN::TC    cBin_ht;  // The HT cell (cbin, mbin) are centred on zero here.
   KFstateN::TM    mBin_ht;     
@@ -214,7 +215,8 @@ public:
 	   <<" phi0="<<ap_int<B18>(phi0.range())
 	   <<" tanL="<<ap_int<B18>(tanL.range())
 	   <<" z0="  <<ap_int<B18>(z0.range())
-	   <<" chi2="<<ap_uint<B17>(chiSquared.range())
+	   <<" chi2rphi="<<ap_uint<B17>(chiSquaredRphi.range())
+	   <<" chi2rz="<<ap_uint<B17>(chiSquaredRz.range())
 	   <<std::endl;
       std::cout<<"      "<<std::dec
            <<" cov00="<<ap_uint<KFstateN::BLENCOV>(cov_00.range())
