@@ -443,7 +443,7 @@ TMTrackProducer_params = cms.PSet(
     KF_d0Bits = cms.uint32(12),
     KF_d0Range  = cms.double(31.992876),
     KF_phi0Bits = cms.uint32(12),
-    KF_phi0Range = cms.double(0.6981317),  # phi0 is actually only digitised relative to centre of sector.
+    KF_phi0Range = cms.double(0.6981317),  # phi0 digitised relative to centre of sector. (Required range 2pi/18 + 2*overlap; overlap = 0.19206rads*(2GeV/ptCut)*(chosenR/67.24)
     KF_z0Bits = cms.uint32(12),
     KF_z0Range  = cms.double(45.826419),
     KF_tanlambdaBits = cms.uint32(16),
