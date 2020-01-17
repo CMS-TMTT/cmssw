@@ -70,8 +70,6 @@ DigiConverter::makeDigiKF4Track( const TMTT::L1fittedTrack& aFitTrk ) const {
 
     const uint numPhiSecPerNon = mSettings->numPhiSectors() / mSettings->numPhiNonants();
 
-    if (aFitTrk.getHitPattern() > 127) cout<<"HIT "<<aFitTrk.getHitPattern()<<endl;
-
     return DigiKF4Track(
                aFitTrk.digitaltrack().iDigi_oneOver2r(),
                aFitTrk.digitaltrack().iDigi_phi0rel(),
