@@ -57,3 +57,9 @@ TMTrackProducer.HTArraySpecRphi.MiniHoughMinPt      = cms.double(3.0) # Mini-HT 
 TMTrackProducer.L1TrackDef.MinStubLayers            = cms.uint32(4) 
 TMTrackProducer.HTFillingRphi.BusySectorMbinRanges  = cms.vuint32(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 24)
 TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47)
+
+#--- phi digitisation range needs to be increased to go down to 2 GeV.
+#--- phi0 digitised relative to centre of sector. (Required range 2pi/18 + 2*overlap; overlap = 0.19206rads*(2GeV/ptCut)*(chosenR/67.24)
+
+TMTrackProducer.TrackDigi.KF_phi0Range = cms.double(2*0.6981317)
+# FIX: To make this change in KF FW, change phi0 bit selection in DRstate.vhd to bits 17-6 (instead of 16-5).

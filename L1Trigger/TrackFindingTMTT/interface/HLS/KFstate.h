@@ -67,6 +67,8 @@ namespace KFstateN {
 // Cov. mat. bits can change, but remember to change protostate cov. matrix in VHDL.
 
 // Number of integer+sign bits for helix params & chi2.
+// FIX: BCHI should be increased to 11, to allow for loose chi2(rphi) cut.
+//      (requires updating HLS IP in KF firmware & removing "bodge" from DigitalTrack.h).
 enum {BH0 = 3, BH1 = 15, BH2 = 5, BH3 = 11, BH4=25, BCHI = 10};
 // Number of bits needed for integer part of helix covariance matrix
 //enum {BC00 = -6, BC11 = 16, BC22 = -1, BC33=16, BC44=41+2, BC01=6, BC23=8, BC04=18, BC14=20+8+2};

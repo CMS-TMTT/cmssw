@@ -89,7 +89,7 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
 		        unsigned int hitPattern,
 			float qOverPt_orig, float d0_orig, float phi0_orig, float tanLambda_orig, float z0_orig, float chisquaredRphi_orig, float chisquaredRz_orig,
 			float qOverPt_bcon_orig, float phi0_bcon_orig, float chisquaredRphi_bcon_orig, // beam-spot constrained values. 
-			unsigned int nLayers, bool consistent, bool accepted, 
+			unsigned int nLayers, bool consistent, bool consistentSect, bool accepted, 
 			float tp_qOverPt, float tp_d0, float tp_phi0, float tp_tanLambda, float tp_z0, float tp_eta, 
 			int tp_index, bool tp_useForAlgEff, bool tp_useForEff, int tp_pdgId) 
 {
@@ -103,6 +103,10 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
 
   double phiCentreSec0 = -M_PI/float(numPhiNonants_) + M_PI/float(numPhiSectors_);
   phiSectorCentre_ = phiSectorWidth_ * float(iPhiSec) + phiCentreSec0; 
+
+  // FIX: Remove this BODGE once BCHI increased to 11 in KFstate.h
+  if (chisquaredRphi_orig >= chisquaredRange_) chisquaredRphi_orig = chisquaredRange_ - 0.1;
+  if (chisquaredRphi_bcon_orig >= chisquaredRange_) chisquaredRphi_bcon_orig = chisquaredRange_ - 0.1;
 
   qOverPt_orig_   = qOverPt_orig;
   oneOver2r_orig_ = qOverPt_orig*invPtToDPhi_;
@@ -131,6 +135,7 @@ void DigitalTrack::init(const string& fitterName, unsigned int nHelixParams,
   hitPattern_      = hitPattern;
 
   consistent_      = consistent;
+  consistentSect_  = consistentSect;
   accepted_        = accepted;
   tp_tanLambda_    = tp_tanLambda;
   tp_qoverpt_      = tp_qOverPt;
@@ -259,7 +264,9 @@ void DigitalTrack::makeDigitalTrack() {
 void DigitalTrack::checkInRange() const {
   if (accepted_) { // Don't bother apply to tracks rejected by the fitter.
     if (fabs(oneOver2r_orig_) >= 0.5*oneOver2rRange_)   throw cms::Exception("DigitalTrack: Track oneOver2r is out of assumed digitization range.")<<" |oneOver2r| = " <<fabs(oneOver2r_orig_) <<" > "<<0.5*oneOver2rRange_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
-    if (fabs(phi0rel_orig_) >= 0.5*phi0Range_)   throw cms::Exception("DigitalTrack: Track phi0rel is out of assumed digitization range.")<<" |phi0rel| = " <<fabs(phi0rel_orig_) <<" > "<<0.5*phi0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
+    if (consistentSect_) { // don't bother if track will fail sector consistency cut.
+      if (fabs(phi0rel_orig_) >= 0.5*phi0Range_)   throw cms::Exception("DigitalTrack: Track phi0rel is out of assumed digitization range.")<<" |phi0rel| = " <<fabs(phi0rel_orig_) <<" > "<<0.5*phi0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl; 
+    } 
     if (fabs(z0_orig_) >= 0.5*z0Range_)   throw cms::Exception("DigitalTrack:  Track z0 is out of assumed digitization range.")<<" |z0| = " <<fabs(z0_orig_) <<" > "<<0.5*z0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(d0_orig_) >= 0.5*d0Range_)   throw cms::Exception("DigitalTrack:  Track d0 is out of assumed digitization range.")<<" |d0| = " <<fabs(d0_orig_) <<" > "<<0.5*d0Range_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
     if (fabs(tanLambda_orig_) >= 0.5*tanLambdaRange_)   throw cms::Exception("DigitalTrack: Track tanLambda is out of assumed digitization range.")<<" |tanLambda| = " <<fabs(tanLambda_orig_) <<" > "<<0.5*tanLambdaRange_<<"; Fitter="<<fitterName_<<"; track accepted = "<<accepted_<<endl;  
