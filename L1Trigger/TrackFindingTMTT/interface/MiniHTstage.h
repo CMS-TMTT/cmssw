@@ -22,6 +22,11 @@ public:
 
 private:
 
+  // Do load balancing
+  unsigned int linkIDLoadBalanced(unsigned int link, unsigned int mBin, unsigned int cBin, unsigned int numStubs, map< pair<unsigned int, unsigned int>, unsigned int>& numStubsPerLinkStage1, map< pair<unsigned int, unsigned int>, unsigned int>& numStubsPerLinkStage2, bool test = false) const;
+
+private:
+
   const Settings* settings_; // Configuration parameters
   bool miniHTstage_;
   unsigned int muxOutputsHT_;

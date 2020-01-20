@@ -63,3 +63,8 @@ TMTrackProducer.HTFillingRphi.BusySectorMbinOrder   = cms.vuint32(0,2,4,6,8,10,1
 
 TMTrackProducer.TrackDigi.KF_phi0Range = cms.double(2*0.6981317)
 # FIX: To make this change in KF FW, change phi0 bit selection in DRstate.vhd to bits 17-6 (instead of 16-5).
+
+# MuxHToutputs sends all HT outputs for an entire nonant and 1 m-bin to a single output link.
+# This works for Pt > 3 GeV, gives truncation for Pt > 2 GeV. To solve, need to double number of outputs,
+# with one for each phi sector in nonant. Not yet implemented, so for now disable HT output truncation.
+TMTrackProducer.HTFillingRphi.BusySectorNumStubs = cms.uint32(999) 
