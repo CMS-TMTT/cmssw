@@ -1311,7 +1311,7 @@ void Histos::fillTrackCands(const InputData& inputData, const vector<L1track3D>&
     static bool firstMess = true;
     const unsigned int numPhiSecPerNon = numPhiSectors_/numPhiNonants;
     // Hard-wired bodge
-    const unsigned int nLinks = 16; // Hard-wired. Check
+    const unsigned int nLinks = houghNbinsPt_/2; // Hard-wired to number of course HT bins. Check.
 
     for (unsigned int iPhiNon = 0; iPhiNon < numPhiNonants; iPhiNon++) {
       // Each nonant has a separate set of links.

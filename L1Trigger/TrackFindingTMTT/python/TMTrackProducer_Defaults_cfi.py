@@ -177,7 +177,7 @@ TMTrackProducer_params = cms.PSet(
      MiniHoughMinPt    = cms.double(3.0), # Below this Pt threshold, the mini HT will not be used, to reduce sensitivity to scattering, with instead tracks found by 1st stage coarse HT sent to output. (HT cell numbering remains as if mini HT were in use everywhere).
      MiniHoughDontKill = cms.bool(False), # If true, allows tracks found by 1st stage coarse HT to be output if 2nd stage mini HT finds no tracks.
      MiniHoughDontKillMinPt = cms.double(8.0), # If MiniHoughDontKill=True, this option restricts it to keep 1st stage HT tracks only if their Pt is exceeds this cut. (Used to improve electron tracking above this threshold).
-     MiniHoughLoadBalance = cms.uint32(0) # Load balancing disabled = 0; static load balancing of output links = 1; dynamic load balancing of output links = 2.
+     MiniHoughLoadBalance = cms.uint32(2) # Load balancing disabled = 0; static load balancing of output links = 1; dynamic load balancing of output links = 2.
   ),
 
   #=== Rules governing how stubs are filled into the r-phi Hough Transform array.

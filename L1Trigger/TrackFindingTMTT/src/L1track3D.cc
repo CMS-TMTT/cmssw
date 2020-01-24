@@ -27,7 +27,7 @@ void L1track3D::digitizeTrack(){
 	 iPhiSec_, iEtaReg_, mBinHT, cBinHT, 0, 0, 0,
 	 this->qOverPt(), 0, this->phi0(),this->tanLambda(), this->z0(), 0, 0,
 	 0, 0, 0,
-	 nLayers_, true, true,
+	 nLayers_, true, true, true,
 	 matchedTP_->qOverPt(), matchedTP_->d0(), matchedTP_->phi0(), matchedTP_->tanLambda(), matchedTP_->z0(), matchedTP_->eta(), 
 	 matchedTP_->index(), matchedTP_->useForAlgEff(), matchedTP_->useForEff(), matchedTP_->pdgId());
       } else {
@@ -35,7 +35,7 @@ void L1track3D::digitizeTrack(){
 	 iPhiSec_, iEtaReg_, mBinHT, cBinHT, -1, -1, 0,     
 	 this->qOverPt(), 0, this->phi0(), this->tanLambda(), this->z0(), 0, 0,
 	 0, 0, 0,
-	 nLayers_, true, true, 
+	 nLayers_, true, true, true,
 	 0, 0, 0, 0, 0, 0, 
 	 -1, 0, 0, 0);
       }

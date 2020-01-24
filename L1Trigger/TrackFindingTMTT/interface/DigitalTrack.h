@@ -38,7 +38,7 @@ public:
 	    unsigned int hitPattern,
 	    float qOverPt_orig, float d0_orig, float phi0_orig, float tanLambda_orig, float z0_orig, float chisquaredRphi_orig, float chisquaredRz_orig, 
 	    float qOverPt_bcon_orig, float phi0_bcon_orig, float chisquaredRphi_bcon_orig, // beam-spot constrained values. 
-	    unsigned int nLayers, bool consistent, bool accepted, 
+	    unsigned int nLayers, bool consistent, bool consistentSect, bool accepted, 
 	    float tp_qOverPt, float tp_d0, float tp_phi0, float tp_tanLambda, float tp_z0, float tp_eta, 
 	    int tp_index, bool tp_useForAlgEff, bool tp_useForEff, int tp_pdgId);
 
@@ -155,6 +155,7 @@ private:
   int                 mBinhelix_;
   int                 cBinhelix_;
   bool                consistent_;
+  bool                consistentSect_;
   int                 mBin_;
   int                 cBin_;
   bool                accepted_;

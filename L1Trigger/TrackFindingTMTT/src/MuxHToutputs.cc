@@ -75,6 +75,8 @@ void MuxHToutputs::exec(matrix<HTrphi>& mHtRphis) const {
 	  numStubsPerLink[ link ] += nStubs;
 	  // Check if this track can be output within the time-multiplexed period.
           bool keep = ( (not busySectorKill_) || (numStubsPerLink[ link ] <= busySectorNumStubs_));
+	  // FIX: with 2 GeV threshold, this causes significant truncation. 
+	  // Consider using one output link for each phi sector in nonant
 	  if (keep) keptTracks.push_back(&trk);
 	}
 
